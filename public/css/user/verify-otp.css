@@ -1,0 +1,215 @@
+body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+    }
+
+    .otp-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    
+    .otp-card {
+      max-width: 1250px; 
+      width: 100%;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+    }
+
+    .image-section {
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand {
+      width: 520px; 
+      height: auto;
+      max-height: 520px;
+      object-fit: contain;
+      transition: all 0.3s ease;
+    }
+
+    .form-section {
+      padding: 50px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .form-content {
+      flex-grow: 1;
+    }
+
+    .otp-title {
+      font-size: 2.8rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #1a1a1a;
+      margin-top: -10px;
+      transition: all 0.3s ease;
+    }
+
+    .otp-subtitle {
+      font-size: 1.2rem;
+      color: #555;
+      margin-bottom: 10px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .timer-text {
+      font-size: 0.9rem;
+      color: #888;
+      text-align: right;
+      margin-bottom: 25px;
+    }
+
+    .form-label {
+      font-size: 0.95rem;
+      color: #666;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .form-control {
+      border: none;
+      border-bottom: 1px solid #ccc;
+      border-radius: 0;
+      padding: 12px 0;
+      font-size: 1.05rem;
+      background: transparent;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-control:focus {
+      box-shadow: none;
+      border-bottom-color: #000;
+    }
+
+    .verify-btn {
+      background-color: #000;
+      color: white;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 0;
+      font-size: 1.05rem;
+      font-weight: 500;
+      margin-top: 35px;
+      transition: background-color 0.3s ease;
+    }
+
+    .verify-btn:hover {
+      background-color: #333;
+    }
+
+    .resend-text {
+      text-align: center;
+      font-size: 0.95rem;
+      color: #666;
+      margin-top: 25px;
+    }
+
+    .resend-link {
+      color: #4a90e2;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    
+
+    .footer-brand {
+      text-align: right;
+      font-size: 0.9rem;
+      color: #1a1a1a;
+      font-weight: 500;
+      margin-top: 40px;
+      letter-spacing: 1px;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 991.98px) {
+      .otp-card {
+        max-width: 95%;
+        margin: 10px;
+      }
+
+      .form-section {
+        padding: 40px 30px;
+      }
+
+      .otp-title {
+        font-size: 2.3rem;
+      }
+
+      .otp-subtitle {
+        font-size: 1.05rem;
+      }
+
+      .brand {
+        width: 420px;
+        max-height: 420px;
+      }
+    }
+
+    @media (min-width: 768px) and (max-width: 991.98px) {
+      .image-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .brand {
+        width: 400px;
+        height: auto;
+        max-height: 400px;
+        object-fit: contain;
+      }
+    }
+
+    /* Hide image completely below 768px */
+    @media (max-width: 767.98px) {
+      .image-section {
+        display: none;
+      }
+
+      
+
+      .otp-card {
+        max-width: 100%;
+        margin: 0;
+      }
+
+      .otp-container {
+        padding: 15px;
+      }
+
+      .form-section {
+        padding: 30px 20px;
+      }
+
+      .otp-title {
+        font-size: 1.8rem;
+      }
+
+      .otp-subtitle {
+        font-size: 1rem;
+      }
+
+      .footer-brand {
+        text-align: center;
+      }
+    }

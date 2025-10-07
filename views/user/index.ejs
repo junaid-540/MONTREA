@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MONTRÉA - Landing Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/public/css/user/index.css" />
+
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-transparent">
+        <div class="container">
+            <a class="navbar-brand text-brown" href="#">MONTRÉA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">HOME</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">SHOP</a>
+                    </li>
+                </ul>
+                <div class="auth-buttons">
+                    <a href="/signup" class="btn btn-dark me-2">SIGN UP</a>
+                    <a href="" class="btn btn-dark">LOG IN</a>
+                    <!-- <button class="btn btn-dark me-2">SIGN UP</button> -->
+                    <!-- <button class="btn btn-dark">LOG IN</button> -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Banner -->
+    <section class="pt-5 mt-5">
+        <div class="container">
+            <div class="row align-items-center hero-grid gx-md-2 gy-4">
+
+                <div class="col-md-4 d-flex justify-content-center">
+                    <img src="/public/images/hero-left.png" class="img-fluid left" alt="Left Image">
+                </div>
+
+                <div class="col-md-4 hero-center d-flex flex-column align-items-center justify-content-center">
+                    <div class="hero-top mb-3">
+                        <img src="/public/images/hero-top.png" class="img-fluid top" alt="Top Image">
+                    </div>
+
+                    <h2 class="display-5 fw-bold text-center hero-t ">New Arrivals<br />Just<br />DROPPED</h2>
+                    <a href="#shop" class="btn btn-dark mt-2">SHOP THE VIBE</a>
+
+                    <div class="hero-bottom mt-3">
+                        <img src="/public/images/hero-bottom.png" class="img-fluid bottom" alt="Bottom Image">
+                    </div>
+                </div>
+
+                <div class="col-md-4 d-flex justify-content-center">
+                    <img src="/public/images/hero-right.png" class="img-fluid right" alt="Right Image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Section -->
+    <section class="text-center py-5">
+  <div class="container categories">
+    <h3 class="mb-4 c-head">EXPLORE</h3>
+    <h2 class="fw-bold mb-5 c-head2">WEAR YOUR IDENTITY</h2>
+    <hr>
+    <div class="row justify-content-center">
+      <% categories.forEach(category => { %>
+        <div class="col-md-3 col-6 mb-4">
+          <img src="<%= category.image %>" class="category-img rounded-circle" alt="<%= category.name %>">
+          <div class="category-title"><%= category.name %></div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+
+
+    <!-- Featured Products Section -->
+    <section id="shop" class="py-5">
+        <div class="container">
+            <h3 class="mb-4 p-head text-center">EXPLORE</h3>
+            <h2 class="text-center fw-bold mb-5 p-head2">FEATURED PRODUCTS</h2>
+            <hr class="featured-hr">
+            <div class="row g-4">
+                <% products.forEach(product=>{ %>
+                    <div class="col-md-4">
+                        <div class="card shadow-sm-h-100 border-0">
+                            <img src="<%=product.image %>" class="card-img-top" alt="<%= product.name %>">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">
+                                    <%= product.name %>
+                                </h5>
+                                <p class="card-text">
+                                    <%= product.price %>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <% }) %>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h2 class="fw-bold logo">MONTRÉA</h2>
+                </div>
+
+                <div class="col-md-8 d-flex justify-content-end">
+                    <div class="me-5">
+                        <p class="footer-heading">Info</p>
+                        <a href="#" class="d-block">Contact us</a>
+                        <a href="#" class="d-block">About us</a>
+                    </div>
+                    <div>
+                        <p class="footer-heading">Policies</p>
+                        <a href="#" class="d-block">Privacy Notice</a>
+                        <a href="#" class="d-block">Return policy</a>
+                        <a href="#" class="d-block">Terms and Conditions</a>
+                        <a href="#" class="d-block">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <hr class="footer-line my-4">
+
+
+        <div class="text-center pb-3 social">
+            <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+        </div>
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/public/js/user/index.js"></script>
+</body>
+
+</html>

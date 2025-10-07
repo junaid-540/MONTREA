@@ -1,0 +1,56 @@
+.password-container {
+    position: relative;
+}
+
+.password-container input {
+    padding-right: 2.5rem;
+}
+
+/* Eye toggle button */
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #6b7280;
+    width: 1.8rem;
+    height: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle:hover {
+    color: #374151;
+}
+
+.head{
+    font-size: 3rem;
+
+}
+
+input{
+    height: 3.5rem;
+}
+
+.Below {
+    font-style: italic;
+    position: absolute;
+    bottom: 1rem; 
+    right: 1rem;   
+    font-weight: bold;
+    color: #000; 
+}
+
+
+@media (max-width: 992px) {
+    .Below {
+        position: static;  
+        text-align: center; 
+        margin-top: 1.5rem; 
+    }
+}
