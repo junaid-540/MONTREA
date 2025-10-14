@@ -1,4 +1,4 @@
-// Elements
+
 const passwordInput = document.getElementById('password');
 const passwordToggle = document.getElementById('passwordToggle');
 const form = document.getElementById('loginForm');
@@ -6,7 +6,7 @@ const emailInput = document.getElementById('email');
 const emailError = document.getElementById('emailError');
 const passwordError = document.getElementById('passwordError');
 
-// ------------------ Password toggle functionality ------------------
+
 passwordToggle.addEventListener('click', function() {
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
@@ -17,7 +17,7 @@ passwordToggle.addEventListener('click', function() {
     }
 });
 
-// ------------------ Validation Helpers ------------------
+
 function validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -34,7 +34,7 @@ function hideError(input, errorElement) {
     errorElement.style.display = 'none';
 }
 
-// ------------------ Real-time Validation ------------------
+
 emailInput.addEventListener('blur', function() {
     if (!this.value) {
         showError(this, emailError, 'Email is required');
@@ -94,7 +94,7 @@ form.addEventListener('submit', function(e) {
     }
 });
 
-// ------------------ Clear errors on focus ------------------
+
 [emailInput, passwordInput].forEach(input => {
     input.addEventListener('focus', function() {
         if (this.classList.contains('error')) {
@@ -104,3 +104,30 @@ form.addEventListener('submit', function(e) {
         }
     });
 });
+
+
+
+document.addEventListener("DOMContentLoaded",()=>{
+    if(successMessage){
+    Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: successMessage,
+      showConfirmButton: true,
+      confirmButtonColor: '#3085d6',
+      timer: 4000
+    });
+  }
+
+
+    if(errorMessage){
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: errorMessage,
+      confirmButtonColor: '#e31414ff',
+    });
+  }
+
+
+})

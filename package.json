@@ -22,7 +22,10 @@
     "joi": "^18.0.1",
     "mongodb": "^6.20.0",
     "mongoose": "^8.18.1",
-    "nodemailer": "^7.0.7"
+    "nocache": "^4.0.0",
+    "nodemailer": "^7.0.7",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

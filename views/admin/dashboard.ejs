@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <%- include ('../partials/admin/header') %>
+
+<body>
+    <!-- Sidebar Overlay -->
+    
+    
+    <!-- Main Container -->
+    <%- include ('../partials/admin/sidebar') %>
+
+    <main class="content-area">
+        <!-- Your dashboard content goes here -->
+        <h2>Welcome to Dashboard</h2>
+        <p>Select a menu item to view content.</p>
+    </main>
+</div>
+    <!-- Footer -->
+     <%- include('../partials/admin/footer') %>
+    <script>
+        const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+    </script> 
+    
+</body>
+</html>

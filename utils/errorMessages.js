@@ -19,9 +19,11 @@ const errorMessages = {
     NAME_INVALID: "Name must contain letters only, 2-30 characters.",
     EMAIL_REQUIRED: "Email is required.",
     EMAIL_INVALID: "Please enter a valid email address.",
+    EMAIL_NOT_REGISTERED: "Email not registered.",
     PHONE_REQUIRED: "Phone number is required.",
     PHONE_INVALID: "Please enter a valid 10-digit phone number.",
     PASSWORD_REQUIRED: "Password is required.",
+    INVALID_PASSWORD: "Incorrect password.",
     PASSWORD_INVALID: "Password must include letters and numbers only, min 6 chars.",
     CONFIRM_PASSWORD_REQUIRED: "Please confirm your password.",
     CONFIRM_PASSWORD_MISMATCH: "Passwords do not match.",
@@ -30,6 +32,7 @@ const errorMessages = {
     // Admin //
     ADMIN_NOT_FOUND: "Admin not found.",
     UNAUTHORIZED_ADMIN: "You are not authorized to access this resource.",
+    INACTIVE_ADMIN: "Your admin account is inactive. Please contact support.",
 
     // Product / Category //
     PRODUCT_NOT_FOUND: "Product not found.",

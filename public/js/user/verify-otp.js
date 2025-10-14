@@ -3,9 +3,31 @@
 
 
 
+
 document.addEventListener('DOMContentLoaded',()=>{
     const timerEl = document.getElementById("timer")
     let timeLeft = 60 //1 minute//
+
+    
+
+    if(successMessage){
+        Toastify({
+            text:successMessage,
+            duration:4000,
+            gravity:"top",
+            position:"center",
+            style:{background: "#28a745"}
+        }).showToast();
+    }
+
+    if(errorMessage){
+        Swal.fire({
+            icon:"error",
+            title:"Oops...",
+            text:errorMessage,
+            confirmButtonColor:"#ec0e0eff"
+        });
+    }
 
 
     const countdown = setInterval(()=>{

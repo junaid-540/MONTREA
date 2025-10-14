@@ -11,6 +11,11 @@ export const getHomePage = (req, res) => {
         { name: 'UNISEX', image: '/public/images/UNISEXMAIN.png' }
     ];
 
-    res.render('user/index',{products,categories})
+    const successMessage = req.session.successMessage || null
+
+    req.session.successMessage = null
+
+    res.render('user/index',{products,categories,successMessage , user:res.locals.user || null})
 };
+
 

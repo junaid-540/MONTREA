@@ -1,5 +1,4 @@
-
-        body {
+ body {
             background-color: #f8f9fa;
             height: 100vh;
             display: flex;
@@ -7,18 +6,18 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
         }
-       
+
         .navbar {
             padding: 1rem 0;
             background-color: #f8f9fa;
-            border-bottom: 1px solid #e0e0e0;
+            /* border-bottom: 1px solid #e0e0e0; */
         }
 
         .navbar-brand {
             font-family: serif;
             font-style: italic;
             color: #b8976d !important;
-            font-size: 1.8rem;
+            font-size: 2.5rem;
             font-weight: 400;
             letter-spacing: 0.5px;
         }
@@ -27,7 +26,7 @@
             color: #000 !important;
             font-weight: 600;
             margin: 0 1.5rem;
-            font-size: 1rem;
+            font-size: 1.15rem;
             transition: color 0.3s ease;
             letter-spacing: 0.5px;
         }
@@ -35,20 +34,56 @@
         .navbar-nav .nav-link:hover {
             color: #b8976d !important;
         }
+        
+
+        
+
+
 
         .search-container {
             position: relative;
             margin: 0 2rem;
         }
 
+        #searchForm {
+            position: relative;
+        }
+
         .search-input {
             border: 1px solid #d0d0d0;
             border-radius: 25px;
-            padding: 8px 20px;
+            padding: 8px 40px 8px 20px;
             width: 220px;
             font-size: 0.9rem;
             transition: all 0.3s ease;
         }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: #888;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .search-icon:hover svg {
+            stroke: #b8976d;
+        }
+
 
         .search-input:focus {
             outline: none;
@@ -103,7 +138,20 @@
                 margin-top: 1rem;
                 justify-content: center;
             }
+            
         }
+
+        /* @media (min-width:991.99px) {
+            .home{
+            margin-left: 11.25rem !important;
+        }
+
+        .shop{
+            margin-left: 1.56rem !important;
+        }
+
+        } */
+
         .content {
             flex: 1;
             display: flex;
@@ -112,10 +160,12 @@
             text-align: center;
             padding: 20px;
         }
+
         .footer {
             background-color: #0d0f13;
             color: #fff;
         }
+
         .logo {
             font-family: serif;
             font-style: italic;
@@ -123,11 +173,13 @@
             font-size: clamp(2rem, 8vw, 6rem);
             color: #a47f5f;
         }
+
         .footer-heading {
             font-weight: 600;
             font-size: 0.9rem;
             margin-bottom: 0.5rem;
         }
+
         footer a {
             font-size: 0.9rem;
             color: #fff;
@@ -136,16 +188,20 @@
             display: block;
             transition: color 0.3s ease;
         }
+
         footer a:hover {
             color: #a47f5f !important;
         }
+
         .footer .fab {
             font-size: 1.2rem;
             transition: color 0.3s ease;
         }
+
         .footer .fab:hover {
             color: #a47f5f;
         }
+
         .footer-line {
             all: unset;
             display: block;
@@ -154,7 +210,8 @@
             background-color: #fff !important;
             width: 100%;
         }
+
         .social a {
             display: inline-block;
+            margin-bottom: 10px;
         }
-   

@@ -1,12 +1,15 @@
+
 import mongoose from "mongoose";
-import { type } from "os";
+
 
 
 const userSchema = new mongoose.Schema(
     {
         name:{
             type : String,
-            required : true,
+            required : function(){
+                return !this.googleId;
+            },
             trim : true,
         },
 
@@ -27,7 +30,8 @@ const userSchema = new mongoose.Schema(
             type : String,
             required : function (){
                 return !this.googleId //this is for only when user is not login with google
-            }
+            },
+            default: null,
         },
 
         googleId :{
@@ -46,6 +50,12 @@ const userSchema = new mongoose.Schema(
         isVerified: {
             type: Boolean,
             default : false,
+        },
+
+        unverifiedCreatedAt:{
+            type:Date,
+            default:undefined,
+            expires:900,
         },
 
     },

@@ -10,11 +10,43 @@ import cookieParser from 'cookie-parser';
 import adminRoutes from './routes/adminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import { notFoundHandler,globalErrorHandler } from './middleware/errorHandler.js';
+import './config/oauth.js'
+import passport from 'passport';
+import nocache from 'nocache';
+import { userFinder } from './middleware/userfinder.js';
+
+
 
 dotenv.config()
 
 const app = express()
 const port = process.env.PORT || 3000
+
+
+
+app.use(session({
+    secret:process.env.SESSION_SECRET,
+    resave:false,
+    saveUninitialized:false,
+    cookie:{
+        maxAge:1000*60*60,
+        httpOnly:true,
+    },
+    store:MongoStore.create({
+        mongoUrl:process.env.MONGO_URI,
+        collectionName:"sessions",
+    }),
+}))
+
+app.use(passport.initialize())
+app.use(passport.session())
+
+
+app.use(nocache())
+
+
+app.use(userFinder)
+
 
 //get the current directory name , because in ES module __dirname is not available
 const __filename = fileURLToPath(import.meta.url)
@@ -35,19 +67,6 @@ app.set('view engine','ejs')
 app.set('views',path.join(__dirname,'views'))
 
 
-app.use(session({
-    secret:process.env.SESSION_SECRET,
-    resave:false,
-    saveUninitialized:false,
-    cookie:{
-        maxAge:1000*60*60,
-        httpOnly:true,
-    },
-    store:MongoStore.create({
-        mongoUrl:process.env.MONGO_URI,
-        collectionName:"sessions",
-    }),
-}))
 
 
 app.use('/',userRoutes)

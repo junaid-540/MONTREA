@@ -7,6 +7,7 @@
     <title>MONTRÉA - Landing Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="/public/css/user/index.css" />
 
 </head>
@@ -14,31 +15,8 @@
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-transparent">
-        <div class="container">
-            <a class="navbar-brand text-brown" href="#">MONTRÉA</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">HOME</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">SHOP</a>
-                    </li>
-                </ul>
-                <div class="auth-buttons">
-                    <a href="/signup" class="btn btn-dark me-2">SIGN UP</a>
-                    <a href="" class="btn btn-dark">LOG IN</a>
-                    <!-- <button class="btn btn-dark me-2">SIGN UP</button> -->
-                    <!-- <button class="btn btn-dark">LOG IN</button> -->
-                </div>
-            </div>
-        </div>
-    </nav>
+    
+    <%- include('../partials/user/navbar') %>
 
     <!-- Hero Banner -->
     <section class="pt-5 mt-5">
@@ -68,6 +46,61 @@
             </div>
         </div>
     </section>
+
+    <% if (user) { %>
+    <!-- Banner/Carousel (Only shown when user is logged in) -->
+    <section class="banner-section py-5">
+        <div class="container">
+            <div id="promoBanner" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#promoBanner" data-bs-slide-to="0" class="active"></button>
+                    <button type="button" data-bs-target="#promoBanner" data-bs-slide-to="1"></button>
+                    <button type="button" data-bs-target="#promoBanner" data-bs-slide-to="2"></button>
+                </div>
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="banner-slide" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="banner-content">
+                                <h3>SEASON SALE</h3>
+                                <h2>UP TO 50% OFF</h2>
+                                <p>On Selected Items</p>
+                                <a href="#shop" class="btn btn-light">Shop Now</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="banner-slide" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="banner-content">
+                                <h3>NEW COLLECTION</h3>
+                                <h2>SPRING ESSENTIALS</h2>
+                                <p>Fresh Styles Just Arrived</p>
+                                <a href="#shop" class="btn btn-light">Explore</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="banner-slide" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="banner-content">
+                                <h3>FREE SHIPPING</h3>
+                                <h2>ON ORDERS OVER ₹999</h2>
+                                <p>Limited Time Offer</p>
+                                <a href="#shop" class="btn btn-light">Get Started</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#promoBanner" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#promoBanner" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </section>
+    <% } %>
 
     <!-- Category Section -->
     <section class="text-center py-5">
@@ -115,41 +148,14 @@
     </section>
 
     <!-- Footer -->
-    <footer class="footer bg-dark text-white pt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <h2 class="fw-bold logo">MONTRÉA</h2>
-                </div>
+    
+    <%- include('../partials/user/footer') %>
 
-                <div class="col-md-8 d-flex justify-content-end">
-                    <div class="me-5">
-                        <p class="footer-heading">Info</p>
-                        <a href="#" class="d-block">Contact us</a>
-                        <a href="#" class="d-block">About us</a>
-                    </div>
-                    <div>
-                        <p class="footer-heading">Policies</p>
-                        <a href="#" class="d-block">Privacy Notice</a>
-                        <a href="#" class="d-block">Return policy</a>
-                        <a href="#" class="d-block">Terms and Conditions</a>
-                        <a href="#" class="d-block">Cookie Policy</a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <hr class="footer-line my-4">
-
-
-        <div class="text-center pb-3 social">
-            <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
-        </div>
-    </footer>
-
-
+    <script>
+     const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/public/js/user/index.js"></script>
 </body>

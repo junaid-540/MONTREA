@@ -1,0 +1,78 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-transparent">
+    <div class="container">
+        <a class="navbar-brand text-brown" href="#">MONTRÉA</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">HOME</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">SHOP</a>
+                </li>
+            </ul>
+            
+            <div class="icon-nav">
+                <% if (user) { %>
+                    <!-- Search Bar (Only visible when logged in) -->
+                    <div class="search-container">
+                        <form id="searchForm">
+                            <input type="text" class="search-input" id="searchQuery" placeholder="Search">
+                            <button type="submit" class="search-icon" aria-label="Search">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                <% } %>
+
+                <!-- Profile Dropdown with SVG Icon -->
+                <div class="profile-dropdown">
+                    <button class="icon-nav-item" id="profileDropdown" aria-label="User account">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" />
+                        </svg>
+                        <% if (user) { %>
+                            <span class="login-text"><%= user.name %></span>
+                        <% } else { %>
+                            <span class="login-text">Login</span>
+                        <% } %>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <% if (user) { %>
+                            <!-- Logged in menu -->
+                            <a href="/profile" class="btn btn-dark">PROFILE</a>
+                            <a href="/logout" class="btn btn-dark">LOGOUT</a>
+                        <% } else { %>
+                            <!-- Not logged in menu -->
+                            <a href="/signup" class="btn btn-dark">SIGN UP</a>
+                            <a href="/signin" class="btn btn-dark">SIGN IN</a>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Wishlist Icon with SVG -->
+                <a href="#" class="icon-nav-item" aria-label="Favorites">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                </a>
+
+                <!-- Shopping Cart Icon with SVG -->
+                <a href="#" class="icon-nav-item" aria-label="Shopping cart">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
