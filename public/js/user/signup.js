@@ -195,10 +195,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+window.addEventListener('pageshow',function (){
+    const form = document.getElementById('signupForm');
+    if(form) form.reset()
+})
 
 
-// ------------------ Google Sign Up will implement later ------------------
-// document.querySelector('.google-btn').addEventListener('click', (e) => {
-//     e.preventDefault();
-//     alert('Sign up with Google functionality will be implemented here.');
-// });
+

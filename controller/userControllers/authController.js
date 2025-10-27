@@ -81,12 +81,16 @@ export const postSignup = async (req,res,next) =>{
             console.log("Error Saving OTP :",err)
         }
 
+
         await sendEmail(email,'Verify Your MONTRÉA Account',otp)
         
         req.session.signupEmail = email;
 
         // console.log("Email save in session", email)
-        res.status(statusCodes.CREATED).render('user/verify-otp',{email})
+
+        res.status(statusCodes.CREATED).render('user/verify-otp',{
+            email,
+        });
 
     } catch (err) {
         console.error("Error in signup:", err);
@@ -170,6 +174,8 @@ export const getResendOtp = async (req,res,next) =>{
 
         await Otp.create({email,otp:newOtp});
 
+        
+
         await sendEmail(email,"Your New MONTRÉA OTP",newOtp);
 
         res.render('user/verify-otp',{
@@ -208,6 +214,10 @@ export const postSignin = async (req,res,next) =>{
             })
         }
 
+        if(user.status === 'blocked'){
+            return res.render('user/signin',{error :"Your account has been blocked by admin."})
+        }
+
         const isMatch = await bcrypt.compare(password,user.password);
 
         if(!isMatch){
@@ -225,6 +235,9 @@ export const postSignin = async (req,res,next) =>{
         req.session.userId = user._id;
         req.session.successMessage = `Welcome back, ${user.name}! 🎉`;
 
+
+        
+
         res.redirect('/')
     } catch (err) {      
         console.error('Signin Error :',err)
@@ -233,10 +246,15 @@ export const postSignin = async (req,res,next) =>{
 }
 
 
-export const  oauthCallbackController = (req,res)=>{
+export const  oauthCallbackController = async  (req,res)=>{
     if(!req.user){
         return res.redirect('/signin');
     }
+
+    // const user = await User.findById(req.session.userId)
+    // if(user.status === 'blocked'){
+    //     res.render('user/signin',{error: "Your account has been blocked by admin."})
+    // }
 
     req.session.userId = req.user._id;
     req.session.successMessage = `Welcome, ${req.user.name}! 🎉`,
@@ -248,7 +266,7 @@ export const  oauthCallbackController = (req,res)=>{
 
 export const userLogout = (req,res,next) =>{
     try {
-            //this checks if the user is logged in through the G-oath
+            
         if(req.isAuthenticated && req.isAuthenticated()){
             req.logout(err=>{
                 if(err) return next(err)

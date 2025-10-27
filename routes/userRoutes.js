@@ -4,12 +4,14 @@ import { getSignup , postSignup , postVerifyOtp , getResendOtp , getSignin , pos
 import passport from 'passport';
 import { userFinder } from '../middleware/userfinder.js';
 import { preventCache, redirectIfLoggedIn } from '../middleware/preventcache.js';
+import { checkBlockedUser } from '../middleware/userBlockCheck.js';
 
 
 const router = express.Router()
 
 
 router.use(userFinder)
+router.use(checkBlockedUser)
 //authentication//
 
 router.get("/", getHomePage);

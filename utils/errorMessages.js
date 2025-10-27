@@ -39,6 +39,44 @@ const errorMessages = {
     PRODUCT_ALREADY_EXISTS: "Product already exists.",
     CATEGORY_NOT_FOUND: "Category not found.",
     OUT_OF_STOCK: "Product is out of stock.",
+    PRODUCT_UPDATED_SUCCESS: "Product updated successfully.",
+    // CATEGORY_UPDATED_SUCCESS: "Category updated successfully.",
+
+    // Pagination & Query
+    NO_DATA_FOUND: "No records found.",
+    INVALID_PAGE_NUMBER: "Invalid page number.",
+    INVALID_LIMIT: "Invalid limit value.",
+
+
+    // Customer Management
+    USER_BLOCKED_SUCCESS: "User has been blocked successfully.",
+    USER_UNBLOCKED_SUCCESS: "User has been unblocked successfully.",
+    USER_ALREADY_BLOCKED: "User is already blocked.",
+    USER_ALREADY_ACTIVE: "User is already active.",
+    
+
+
+    // Category Validation / Controller Messages
+    CATEGORY_NAME_REQUIRED: "Category name is required.",
+    CATEGORY_NAME_INVALID: "Category name must be at least 3 characters.",
+    CATEGORY_NAME_PATTERN: "Category name can only contain letters, spaces, and hyphens.",
+    CATEGORY_NAME_LIMIT: "Name must be at most 30 characters.",
+    CATEGORY_DESCRIPTION_REQUIRED: "Category description is required.",
+    CATEGORY_DESCRIPTION_INVALID: "Category description must be at least 10 characters.",
+    CATEGORY_DESCRIPTION_LIMIT: "Description must be at most 250 characters.",
+    CATEGORY_ALREADY_EXISTS: "Category already exists.",
+    CATEGORY_CREATED_SUCCESS: "Category created successfully.",
+    CATEGORY_UPDATED_SUCCESS: "Category updated successfully.",
+    CATEGORY_LISTED_SUCCESS: "Category has been listed successfully.",
+    CATEGORY_UNLISTED_SUCCESS: "Category has been unlisted successfully.",
+
+
+
+    // Common success & info messages
+    SUCCESS: "Operation completed successfully.",
+    UPDATED_SUCCESS: "Record updated successfully.",
+    DELETED_SUCCESS: "Record deleted successfully.",
+    CREATED_SUCCESS: "Record created successfully.",
 
     // Order //
     ORDER_NOT_FOUND: "Order not found.",
@@ -52,6 +90,10 @@ const errorMessages = {
     COUPON_INVALID: "Coupon code is invalid.",
     COUPON_EXPIRED: "Coupon has expired.",
     COUPON_ALREADY_USED: "You have already used this coupon.",
+
+    //Generic Validation //
+    MISSING_REQUIRED_FIELDS: "Required fields are missing.",
+    INVALID_ID: "Invalid ID format.",
 };
 
 export default errorMessages;

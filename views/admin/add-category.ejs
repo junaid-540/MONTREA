@@ -1,0 +1,49 @@
+<html>
+
+<%- include('../partials/admin/header') %>
+
+    <body>
+
+        <%- include('../partials/admin/sidebar') %>
+
+            <!-- Main Content Area -->
+            <main class="content-area">
+        <div class="add-category-container">
+            <h2 class="page-title">Add Category</h2>
+
+            <form id="addCategoryForm">
+                
+                <div class="mb-4">
+                    <label for="categoryName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="categoryName" name="name"
+                        placeholder="Enter category name" />
+                    <div class="invalid-feedback" id="nameFeedback"></div>
+                </div>
+
+                
+                <div class="mb-4">
+                    <label for="categoryDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="categoryDescription" name="description"
+                        placeholder="Enter category description"></textarea>
+                    <div class="invalid-feedback" id="descFeedback"></div>
+                </div>
+
+                
+                <button type="submit" class="btn btn-add">Add Category</button>
+                <button type="button" class="btn btn-cancel"  onclick="window.history.back()">Cancel</button>
+                
+            </form>
+        </div>
+    </main>
+
+            </div>
+
+            <!-- <script>
+                const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+                const errorMessage = "<%= typeof errorMessage !== 'undefined' && errorMessage ? errorMessage : '' %>";
+            </script> -->
+
+            <%- include('../partials/admin/footer') %>
+    </body>
+
+</html>

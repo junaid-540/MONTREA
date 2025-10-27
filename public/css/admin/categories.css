@@ -1,0 +1,299 @@
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f5f5;
+    }
+
+    /* Main Content */
+    /* .main-container {
+        background-color: #999;
+        padding: 30px;
+        min-height: calc(100vh - 140px);
+    } */
+
+    .categories-container {
+        padding-top: 2rem;
+        margin: 0;
+        /* background-color: #999;  */
+    }
+
+    .categories-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .add-category-btn {
+        background-color: #0c0d0d;
+        color: #fff;
+        border: none;
+        padding: 8px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .add-category-btn:hover {
+        background-color: #a47f5f;
+    }
+
+    /* Search Section */
+    /* .search-section {
+        background-color: #999;
+    }
+
+    .search-input {
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+
+    .search-section .btn {
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .search-section .btn:hover {
+        background-color: #555;
+    } */
+
+    /* Table */
+    .table-responsive {
+        background-color: #999;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .categories-table {
+        background-color: #000;
+        color: #fff;
+        margin-bottom: 0;
+    }
+
+    .categories-table thead {
+        background-color: #000;
+    }
+
+    .categories-table thead th {
+        color: #000;
+        border-color: #333;
+        padding: 15px;
+        font-weight: 600;
+    }
+
+    .categories-table tbody tr {
+        background-color: #e8e8e8;
+        color: #333;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .categories-table tbody td {
+        padding: 15px;
+        vertical-align: middle;
+    }
+
+    .categories-table tbody tr:hover {
+        background-color: #d0d0d0;
+    }
+
+    /* Status Badges */
+    .badge-listed {
+        background-color: #167c06;
+        color: #ffffff;
+        padding: 5px 10px;
+        /* border-radius: 20px; */
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-unlisted {
+        background-color: red;
+        color: #ffffff;
+        padding: 5px 10px;
+        /* border-radius: 20px; */
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Action Buttons */
+    .btn-edit {
+        background-color: #000;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-right: 5px;
+    }
+
+    .btn-edit:hover {
+        background-color: #a47f5f;
+        color: #fff;
+    }
+
+    .btn-Unlist {
+        background-color: #ff0000;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-Unlist:hover {
+        background-color: #a47f5f;
+        color: #fff;
+    }
+
+    .btn-list {
+        background-color: #00ff00;
+        color: #333;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .btn-list:hover {
+        background-color: #a47f5f;
+        color: #fff;
+    }
+
+    .hidden{
+        display: none !important; /* This is for one of the buttons to stay hidden (list & unlist) */
+    }
+
+    /* Pagination */
+    .pagination-section {
+        margin-top: 20px;
+        background-color: #999;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .pagination .page-link {
+        background-color: #e8e8e8;
+        color: #333;
+        border: 1px solid #ddd;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .pagination .page-link:hover {
+        background-color: #d0d0d0;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #333;
+        color: #fff;
+        border-color: #333;
+    }
+
+
+    
+
+.search {
+    background-color: #0c0d0d; 
+    color: white;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    transition: background-color 0.3s ease;
+}
+
+.search:hover {
+    background-color: #a47f5f; 
+    border-color: transparent;
+}
+
+.clear {
+    background-color: #0c0d0d;
+    color: white;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    transition: background-color 0.3s ease;
+}
+
+.clear:hover {
+    background-color: #a47f5f;
+    border-color: transparent;
+}
+
+/* Pagination */
+
+.pagination .page-link {
+    border-radius: 4px;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    text-decoration: none;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #333;
+    color: #fff;
+    border-color: #333;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+
+.pagination .page-link:hover {
+    background-color: #a47f5f;
+    color: #fff;
+    border-color: transparent;
+}
+
+    
+    @media (max-width: 768px) {
+        .main-content {
+            padding: 15px;
+        }
+
+        .categories-title {
+            font-size: 20px;
+        }
+
+        .add-category-btn {
+            padding: 6px 15px;
+            font-size: 12px;
+        }
+
+        .categories-table thead th,
+        .categories-table tbody td {
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        .btn-edit,
+        .btn-Unlist,
+        .btn-list {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .search-input {
+            font-size: 13px;
+        }
+    }
+

@@ -154,11 +154,12 @@
             z-index: 999; /* stays below sidebar but above page */
             opacity: 0;
             transition: opacity 0.3s ease;
+            pointer-events: none; /* allow interaction when not active */
         }
 
         .sidebar-overlay.active {
             opacity: 1;
-            
+            pointer-events: auto; /* block interaction with page when overlay visible */
         }
         
         /* Responsive Design */

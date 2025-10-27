@@ -1,0 +1,147 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* Main Content */
+.main-content {
+    background-color: #999;
+    padding: 30px;
+    min-height: calc(100vh - 140px);
+}
+
+.add-category-container {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 40px;
+    max-width: 700px;
+    margin: 0 auto;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.form-control {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 12px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #b8956a;
+    box-shadow: 0 0 0 0.2rem rgba(184, 149, 106, 0.25);
+}
+
+.form-control::placeholder {
+    color: #999;
+}
+
+textarea.form-control {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.btn-add {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.btn-add:hover {
+    background-color: #a47f5f;
+    color: #fff;
+}
+
+.btn-cancel {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-cancel:hover{
+    background-color: #a47f5f;
+    color: #fff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 15px;
+    }
+
+    .add-category-container {
+        padding: 25px 20px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .btn-add,
+    .btn-cancel {
+        padding: 10px 30px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: 10px;
+        min-height: auto;
+    }
+
+    .add-category-container {
+        padding: 20px 15px;
+    }
+
+    .page-title {
+        font-size: 20px;
+    }
+
+    .form-control {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+    }
+}

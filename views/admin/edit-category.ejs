@@ -1,0 +1,42 @@
+<html>
+<%- include('../partials/admin/header') %>
+
+    <body>
+        <%- include('../partials/admin/sidebar') %>
+
+            <!-- Main Content Area -->
+            <main class="content-area">
+                <div class="edit-category-container">
+                    <h2 class="page-title">Edit Category</h2>
+
+
+                    <form id="editCategoryForm" data-id="<%= category._id %>">
+
+                        <div class="mb-4">
+                            <label for="categoryName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="categoryName" name="name"
+                                value="<%= category.name %>">
+                        </div>
+
+
+                        <div class="mb-4">
+                            <label for="categoryDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="categoryDescription"
+                                name="description"><%= category.description %></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-save">Save Changes</button>
+                        <button type="button" class="btn btn-cancel" onclick="window.history.back()">Cancel</button>
+                    </form>
+
+                </div>
+            </main>
+        </div>
+            <script>
+                const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+            </script>
+
+            <%- include('../partials/admin/footer') %>
+    </body>
+
+</html>

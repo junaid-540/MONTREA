@@ -133,8 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// ------------------ Google Sign In will implement later ------------------
-// document.querySelector('.google-btn').addEventListener('click', (e) => {
-//     e.preventDefault();
-//     alert('Sign in with Google functionality will be implemented here.');
-// });
+window.addEventListener('pageshow',function (){
+    const form = document.getElementById('signinForm');
+    if(form) form.reset()
+})
+

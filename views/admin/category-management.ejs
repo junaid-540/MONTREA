@@ -1,0 +1,138 @@
+<html>
+
+<%- include('../partials/admin/header') %>
+
+    <body>
+
+        <%- include('../partials/admin/sidebar') %>
+
+            <!-- Main Content Area -->
+            <main class="content-area">
+                <div class="categories-container">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h2 class="categories-title">Categories</h2>
+                        <a href="/admin/category/add" class="btn btn-dark btn-sm add-category-btn">Add Category</a>
+                    </div>
+
+
+                    <div class="d-flex justify-content-end align-items-center mb-4">
+                        <form method="GET" action="/admin/category" class="d-flex gap-2">
+                            <input type="text" class="form-control border-start-0" name="search"
+                                placeholder="Search here" value="<%= search || '' %>">
+                            <button type="submit" class="btn btn-outline-dark btn-sm search">Search</button>
+                            <button type="button" class="btn btn-outline-dark btn-sm clear"
+                                onclick="window.location.href='/admin/category'">Clear</button>
+                        </form>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-responsive">
+                        <table class="table categories-table">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Category Name</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (categories.length===0) { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center">No categories found</td>
+                                    </tr>
+                                    <% } else { %>
+                                        <% categories.forEach((category, index)=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= (currentPage - 1) * pageSize + index + 1 %>
+                                                </td>
+                                                <td>
+                                                    <%= category.name %>
+                                                </td>
+                                                <td>
+                                                    <%= category.description %>
+                                                </td>
+                                                <td>
+                                                    <% if (category.isListed) { %>
+                                                        <span class="badge badge-listed">Listed</span>
+                                                        <% } else { %>
+                                                            <span class="badge badge-unlisted">Unlisted</span>
+                                                            <% } %>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-edit" data-id="<%= category._id %>"
+                                                        data-name="<%= category.name %>">Edit</button>
+
+                                                    <button
+                                                        class="btn btn-sm btn-list <%= category.isListed ? 'hidden' : '' %>"
+                                                        data-id="<%= category._id %>" data-name="<%= category.name %>">
+                                                        List
+                                                    </button>
+
+                                                    <button
+                                                        class="btn btn-sm btn-Unlist <%= category.isListed ? '' : 'hidden' %>"
+                                                        data-id="<%= category._id %>" data-name="<%= category.name %>">
+                                                        Unlist
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                                <% } %>
+                            </tbody>
+
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav aria-label="Category pagination" class="mt-4">
+                        <div class="d-flex justify-content-end">
+                            <ul class="pagination mb-0">
+                                <% if(currentPage> 1) { %>
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                            href="?page=<%= currentPage - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">&lt;</a>
+                                    </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#">&lt;</a>
+                                        </li>
+                                        <% } %>
+
+                                            <% for(let i=1; i <=totalPages; i++) { %>
+                                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                                    <a class="page-link"
+                                                        href="?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">
+                                                        <%= i %>
+                                                    </a>
+                                                </li>
+                                                <% } %>
+
+                                                    <% if(currentPage < totalPages) { %>
+                                                        <li class="page-item">
+                                                            <a class="page-link"
+                                                                href="?page=<%= currentPage + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>">&gt;</a>
+                                                        </li>
+                                                        <% } else { %>
+                                                            <li class="page-item disabled">
+                                                                <a class="page-link" href="#">&gt;</a>
+                                                            </li>
+                                                            <% } %>
+                            </ul>
+                        </div>
+                    </nav>
+
+                </div>
+            </main>
+
+            </div>
+
+            <script>
+                const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+            </script>
+
+            <%- include('../partials/admin/footer') %>
+    </body>
+
+</html>

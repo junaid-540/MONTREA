@@ -66,8 +66,14 @@ const userSchema = new mongoose.Schema(
 
 //this is used sometimes the sparse key wont work inside the schema field 
 
-userSchema.index({phone : 1},{unique : true , sparse : true})
-userSchema.index({googleId : 1},{unique : true ,  sparse :true})
+userSchema.index(
+    {googleId:1},
+    {unique:true, partialFilterExpression :{ googleId : { $type: "string"}}}
+);
+userSchema.index(
+    {phone: 1},
+    {unique: true , partialFilterExpression : { phone :{ $type : "string"}}}
+)
 
 
 
