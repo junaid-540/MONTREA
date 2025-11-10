@@ -42,6 +42,7 @@ export const getCategories = async (req,res,next) =>{
                 totalPages,
                 search,
                 pageSize,
+                activePage: 'category',
             })
 
 
@@ -59,6 +60,7 @@ export const getAddCategoryPage = async (req,res,next) =>{
             Title: 'Add Category',
             pageCSS: '/public/css/admin/add-category.css',
             pageJS: '/public/js/admin/add-category.js',
+            activePage:'category',
         })
     } catch (err) {
         console.error("Error in getAddCategoryPage:",err);
@@ -141,6 +143,7 @@ export const getEitCategoryPage = async (req,res,next) =>{
         pageCSS: "/public/css/admin/edit-category.css",
         pageJS: "/public/js/admin/edit-category.js",
         category,
+        activePage:'category',
     })
 
     } catch (err) {

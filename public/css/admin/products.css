@@ -1,0 +1,271 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+}
+
+/* Container */
+.products-container {
+  padding-top: 2rem;
+  margin: 0;
+}
+
+
+.products-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Add Product Button */
+.add-product-btn {
+  background-color: #0c0d0d;
+  color: #fff;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-product-btn:hover {
+  background-color: #a47f5f;
+}
+
+/* Search + Filter Buttons */
+.search,
+.clear {
+  background-color: #0c0d0d;
+  color: white;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  transition: background-color 0.3s ease;
+}
+
+.search:hover,
+.clear:hover{
+  background-color: #a47f5f;
+  border-color: transparent;
+}
+
+/* Table */
+.table-responsive {
+  background-color: #999;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.products-table {
+  background-color: #000;
+  color: #fff;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.products-table thead {
+  background-color: #000;
+}
+
+.products-table thead th {
+  color: #000;
+  border-color: #333;
+  padding: 15px;
+  font-weight: 600;
+}
+
+.products-table tbody tr {
+  background-color: #e8e8e8;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+}
+
+.products-table tbody td {
+  padding: 15px;
+  vertical-align: middle;
+}
+
+.products-table tbody tr:hover {
+  background-color: #d0d0d0;
+}
+
+
+.products-table img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+
+.badge.bg-success {
+  background-color: #167c06 !important;
+}
+
+.badge.bg-danger {
+  background-color: red !important;
+}
+
+
+
+.dropdown-menu {
+  background-color: #0c0d0d; 
+  border: none;
+  border-radius: 5px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #a47f5f; 
+  color: #fff;
+}
+
+
+.filter {
+  background-color: #0c0d0d !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 0.7rem;
+  transition: background-color 0.3s ease;
+}
+
+.filter:hover {
+  background-color: #a47f5f !important;
+  color: #fff !important;
+}
+
+
+
+
+/* Action Buttons */
+.btn-edit {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 5px;
+}
+
+.btn-edit:hover {
+  background-color: #a47f5f;
+  color: #fff;
+}
+
+.btn-delete {
+  background-color: #ff0000;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+  background-color: #a47f5f;
+  color: #fff;
+}
+
+
+
+
+.form-check-input.toggle-status {
+  width: 50px;
+  height: 25px;
+  cursor: pointer;
+}
+.form-check-input.toggle-status:checked {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+.form-check-input.toggle-status:not(:checked) {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+.form-check-label {
+  margin-left: 8px;
+  font-weight: 500;
+}
+
+
+/* Pagination */
+.pagination .page-link {
+  border-radius: 4px;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 5px 10px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+  background-color: #a47f5f;
+  color: #fff;
+  border-color: transparent;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #6c757d;
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .products-title {
+    font-size: 20px;
+  }
+
+  .add-product-btn {
+    padding: 6px 15px;
+    font-size: 12px;
+  }
+
+  .products-table thead th,
+  .products-table tbody td {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .search,
+  .clear {
+    font-size: 13px;
+  }
+}
+
+
+.products-subtitle {
+  font-size: 14px;
+  color: #2f2e2e;
+  margin-top: 4px;
+}

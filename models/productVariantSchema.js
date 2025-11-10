@@ -4,7 +4,7 @@ const productVariantSchema = new mongoose.Schema({
     productId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Product",
-        required: true,
+        required: false,  // Fixed: Allow temporary null during creation
     },
     color: {
         type: String,
@@ -33,7 +33,8 @@ const productVariantSchema = new mongoose.Schema({
     },
     SKU: {
         type: String,
-        required: true,
+        required: false,
+        sparse: true,
         unique: true,
         trim: true,
     },

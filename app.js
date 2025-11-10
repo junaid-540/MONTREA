@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 import adminRoutes from './routes/adminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import { notFoundHandler,globalErrorHandler } from './middleware/errorHandler.js';
+import { multerErrorHandler } from './middleware/multerConfig.js';
 import './config/oauth.js'
 import passport from 'passport';
 import nocache from 'nocache';
@@ -74,7 +75,7 @@ app.use('/admin',adminRoutes)
 
 
 
-
+app.use(multerErrorHandler)
 app.use(notFoundHandler)
 app.use(globalErrorHandler)
 

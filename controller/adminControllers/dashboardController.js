@@ -9,7 +9,12 @@ export const getDashboard = (req,res,next)=>{
         const successMessage = req.session.successMessage;
         delete req.session.successMessage
 
-        res.render('admin/dashboard',{admin:req.session.admin,successMessage,Title:"Dashboard"})
+        res.render('admin/dashboard',{
+            admin:req.session.admin,
+            successMessage,
+            Title:"Dashboard",
+            activePage:'dashboard',
+        })
     } catch (err) {
         console.error("Dashboard Error:",err)
         next()        

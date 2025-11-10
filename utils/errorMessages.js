@@ -12,7 +12,7 @@ const errorMessages = {
     OTP_SENT: "OTP has been sent to your phone/email.",
     OTP_INVALID: "Invalid OTP entered.",
     OTP_EXPIRED: "OTP has expired. Please request a new one.",
-    
+
 
     // User validation messages for Joi
     NAME_REQUIRED: "Name is required.",
@@ -40,6 +40,7 @@ const errorMessages = {
     CATEGORY_NOT_FOUND: "Category not found.",
     OUT_OF_STOCK: "Product is out of stock.",
     PRODUCT_UPDATED_SUCCESS: "Product updated successfully.",
+    PRODUCT_CREATED: "Product created successfully",
     // CATEGORY_UPDATED_SUCCESS: "Category updated successfully.",
 
     // Pagination & Query
@@ -53,7 +54,7 @@ const errorMessages = {
     USER_UNBLOCKED_SUCCESS: "User has been unblocked successfully.",
     USER_ALREADY_BLOCKED: "User is already blocked.",
     USER_ALREADY_ACTIVE: "User is already active.",
-    
+
 
 
     // Category Validation / Controller Messages
@@ -69,6 +70,65 @@ const errorMessages = {
     CATEGORY_UPDATED_SUCCESS: "Category updated successfully.",
     CATEGORY_LISTED_SUCCESS: "Category has been listed successfully.",
     CATEGORY_UNLISTED_SUCCESS: "Category has been unlisted successfully.",
+
+
+
+
+    PRODUCT_NAME_REQUIRED: "Product name is required",
+    PRODUCT_NAME_MIN: "Product name must be at least 3 characters",
+    PRODUCT_NAME_MAX: "Product name cannot exceed 50 characters",
+    PRODUCT_NAME_PATTERN: "Product name can only contain letters, numbers, spaces, and hyphens",
+
+    PRODUCT_DESCRIPTION_REQUIRED: "Description is required",
+    PRODUCT_DESCRIPTION_MIN: "Description must be at least 10 characters",
+    PRODUCT_DESCRIPTION_MAX: "Description cannot exceed 2000 characters",
+
+    PRODUCT_CATEGORY_REQUIRED: "Please select a category",
+    PRODUCT_BRAND_REQUIRED: "Brand name is required",
+
+    PRODUCT_PRICE_REQUIRED: "Price is required",
+    PRODUCT_PRICE_MIN: "Price must be at least 1",
+    PRODUCT_PRICE_NUMBER: "Price must be a valid number",
+
+    PRODUCT_DISCOUNT_NUMBER: "Discount must be a valid number",
+    PRODUCT_DISCOUNT_LESS: "Discount must be less than the actual price",
+
+    PRODUCT_STOCK_REQUIRED: "Stock is required",
+    PRODUCT_STOCK_NUMBER: "Stock must be a number",
+    PRODUCT_STOCK_MIN: "Stock cannot be negative",
+
+    PRODUCT_VARIANTS_ARRAY: "Variants must be a valid array",
+    PRODUCT_VARIANTS_MIN: "At least one variant is required",
+
+    // Color
+    VARIANT_COLOR_REQUIRED: "Variant color is required.",
+    VARIANT_COLOR_PATTERN: "Color should only contain letters and spaces.",
+    VARIANT_COLOR_LENGTH: "Color must be between 3 and 30 characters long.",
+
+    // Size
+    VARIANT_SIZE_REQUIRED: "Variant size is required.",
+    VARIANT_SIZE_INVALID: "Invalid size selected. Choose from S, M, L, XL.",
+
+    // Price
+    VARIANT_PRICE_REQUIRED: "Price is required.",
+    VARIANT_PRICE_MIN: 'Price must be a number greater than 0',
+
+    // Discount Price
+    VARIANT_DISCOUNT_PRICE_MIN: "Discount price must be greater than  0.",
+    VARIANT_DISCOUNT_PRICE_INVALID: "Discount price cannot exceed the original price.",
+
+    // Stock
+    VARIANT_STOCK_REQUIRED: "Stock quantity is required.",
+    VARIANT_STOCK_MIN: "Stock must be greater than 0.",
+
+    // Images
+    VARIANT_IMAGES_REQUIRED: "At least one image is required for the variant.",
+    VARIANT_IMAGES_COUNT: "Each variant must have exactly 3 images.",
+    VARIANT_IMAGE_INVALID: "Invalid image data provided.",
+
+    PRODUCT_IMAGES_ARRAY: "Images must be an array",
+    PRODUCT_IMAGES_MIN: "At least 3 images are required",
+    PRODUCT_IMAGES_REQUIRED: "Images are required",
 
 
 

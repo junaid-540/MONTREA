@@ -1,0 +1,187 @@
+<%- include('../partials/admin/header') %>
+    <body>
+        <%- include('../partials/admin/sidebar') %>
+            <main class="content-area">
+                <div class="add-product-container">
+                    <h2 class="page-title">Add Product</h2>
+                    <form id="productForm">
+                        <div class="mb-4">
+                            <label class="form-label">Product Name</label>
+                            <input type="text" class="form-control" name="name" placeholder="Enter product name">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description"
+                                placeholder="Enter product description"></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Category</label>
+                            <!-- Fixed field name from "category" to "categoryId" to match backend validation -->
+                            <select class="form-control" name="categoryId">
+                                <option value="">Select category</option>
+                                <% categories.forEach(category=> { %>
+                                    <option value="<%= category._id %>">
+                                        <%= category.name %>
+                                    </option>
+                                    <% }) %>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Highlights (comma separated)</label>
+                            <input type="text" class="form-control" name="highlights"
+                                placeholder="e.g. Cotton, Slim Fit, Machine Wash">
+                        </div>
+                        <button type="button" class="btn btn-add-variant" id="openModalBtn">
+                            <i class="fas fa-plus"></i> Add Variant
+                        </button>
+                        
+                        <!-- Variants Table -->
+                        <table id="variantTable" class="variant-table mt-3">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Color</th>
+                                    <th>Size</th>
+                                    <th>Price (₹)</th>
+                                    <th>Discount Price (₹)</th>
+                                    <th>Stock</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                        <!-- Image Preview Section (below table) -->
+                        <div id="variantImagesPreviewSection" style="display: none; margin-top: 30px;">
+                            <h3 style="font-size: 18px; margin-bottom: 15px; color: #333;">Variant Images Preview</h3>
+                            <div id="allVariantsImagesContainer"></div>
+                        </div>
+
+                        <div class="submit-section">
+                            <button type="submit" class="btn btn-add">Add Product</button>
+                            <button type="button" class="btn btn-cancel" onclick="window.history.back()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+            </div>
+            
+            <!-- Variant Modal -->
+            <div class="modal" id="variantModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Add Variant</h3>
+                        <span class="close-modal" id="closeModal">&times;</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Color</label>
+                        <input type="text" class="form-control" id="variantColor" placeholder="e.g. Black, Blue">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Size</label>
+                        <select class="form-control" id="variantSize">
+                            <option value="">Select size</option>
+                            <option>S</option>
+                            <option>M</option>
+                            <option>L</option>
+                            <option>XL</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price (₹)</label>
+                        <input type="number" class="form-control" id="variantPrice" placeholder="0.00">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Discount Price (₹)</label>
+                        <input type="number" class="form-control" id="variantDiscountPrice" placeholder="0.00">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stock</label>
+                        <input type="number" class="form-control" id="variantStock" placeholder="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Product Images (3 images)</label>
+                        <div class="variant-images" id="variantImagesContainer">
+                            <div class="image-upload" data-variant="0" data-image="0">
+                                <div class="upload-icon">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <div class="upload-text">Image 1</div>
+                                <div class="image-preview-container hidden">
+                                    <img class="image-preview" src="/placeholder.svg" alt="Preview">
+                                    <button type="button" class="delete-image-btn" aria-label="Delete image">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <input type="file" name="variantImages" accept="image/*"
+                                    style="display: none;" id="variantImage-0-0" aria-label="Image 1 for variant 1">
+                                <input type="hidden" name="croppedImages" class="cropped-image-data">
+                                <button type="button" class="upload-btn"
+                                    onclick="document.getElementById('variantImage-0-0').click()"
+                                    aria-label="Browse image 1 for variant 1">BROWSE IMAGE</button>
+                            </div>
+                            <div class="image-upload" data-variant="0" data-image="1">
+                                <div class="upload-icon">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <div class="upload-text">Image 2</div>
+                                <div class="image-preview-container hidden">
+                                    <img class="image-preview" src="/placeholder.svg" alt="Preview">
+                                    <button type="button" class="delete-image-btn" aria-label="Delete image">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <input type="file" name="variantImages" accept="image/*"
+                                    style="display: none;" id="variantImage-0-1" aria-label="Image 2 for variant 1">
+                                <input type="hidden" name="croppedImages" class="cropped-image-data">
+                                <button type="button" class="upload-btn"
+                                    onclick="document.getElementById('variantImage-0-1').click()"
+                                    aria-label="Browse image 2 for variant 1">BROWSE IMAGE</button>
+                            </div>
+                            <div class="image-upload" data-variant="0" data-image="2">
+                                <div class="upload-icon">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <div class="upload-text">Image 3</div>
+                                <div class="image-preview-container hidden">
+                                    <img class="image-preview" src="/placeholder.svg" alt="Preview">
+                                    <button type="button" class="delete-image-btn" aria-label="Delete image">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <input type="file" name="variantImages" accept="image/*"
+                                    style="display: none;" id="variantImage-0-2" aria-label="Image 3 for variant 1">
+                                <input type="hidden" name="croppedImages" class="cropped-image-data">
+                                <button type="button" class="upload-btn"
+                                    onclick="document.getElementById('variantImage-0-2').click()"
+                                    aria-label="Browse image 3 for variant 1">BROWSE IMAGE</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-add" id="saveVariant">Save Variant</button>
+                </div>
+            </div>
+
+            <!-- Image Cropping Modal -->
+            <div id="cropModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Crop Image</h3>
+                        <span class="close">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="crop-container">
+                            <img id="cropImage" src="/placeholder.svg" alt="Image to crop">
+                        </div>
+                        <div class="crop-actions">
+                            <button type="button" id="cancelCrop" class="btn btn-cancel">Cancel</button>
+                            <button type="button" id="applyCrop" class="btn btn-add">Apply Crop</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <%- include('../partials/admin/footer') %>
+            
+    </body>
+</html>

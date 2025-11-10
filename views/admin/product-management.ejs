@@ -1,0 +1,179 @@
+<html>
+
+<%- include('../partials/admin/header') %>
+
+    <body>
+        <%- include('../partials/admin/sidebar') %>
+
+            <!-- Main Content Area -->
+            <main class="content-area">
+                <div class="products-container">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <h2 class="products-title">Products</h2>
+                            <p class="products-subtitle">Manage & organize all your products</p>
+                        </div>
+                        <a href="/admin/products/add" class="btn btn-dark btn-sm add-product-btn">Add Product</a>
+                    </div>
+
+                    <!-- Search, Clear, and Filter -->
+                    <div class="d-flex justify-content-end align-items-center mb-4">
+                        <form method="GET" action="/admin/products" class="d-flex gap-2">
+                            <input type="text" class="form-control border-start-0" name="search"
+                                placeholder="Search products..." value="<%= search || '' %>">
+
+                            <button type="submit" class="btn btn-outline-dark btn-sm search">Search</button>
+
+                            <button type="button" class="btn btn-outline-dark btn-sm clear"
+                                onclick="window.location.href='/admin/products'">Clear</button>
+
+                            <!-- Filter Dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-dark btn-sm dropdown-toggle filter" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    Filter
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="/admin/products?status=active<%= search ? '&search=' + encodeURIComponent(search) : '' %>">Active</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="/admin/products?status=inactive<%= search ? '&search=' + encodeURIComponent(search) : '' %>">Inactive</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="/admin/products?<%= search ? 'search=' + encodeURIComponent(search) : '' %>">All</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-responsive">
+                        <table class="table products-table">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Image</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Stock</th>
+                                    <th>Variants</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (products.length===0) { %>
+                                    <tr>
+                                        <td colspan="8" class="text-center">No products found</td>
+                                    </tr>
+                                    <% } else { %>
+                                        <% products.forEach((product, index)=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= (currentPage - 1) * pageSize + index + 1 %>
+                                                </td>
+                                                <td>
+                                                    <% if (product.variants?.length &&
+                                                        product.variants[0].images?.[0]?.url) { %>
+                                                        <img src="<%= product.variants[0].images[0].url %>"
+                                                            alt="Product Image" width="60" height="60"
+                                                            style="object-fit:cover;">
+                                                        <% } else { %>
+                                                            <span class="text-muted">No image</span>
+                                                            <% } %>
+                                                </td>
+
+                                                <td>
+                                                    <%= product.name %>
+                                                </td>
+                                                <td>
+                                                    <%= product.categoryName || 'N/A' %>
+                                                </td>
+
+                                                <td>
+                                                    <%= product.totalStock || 0 %>
+                                                </td>
+
+                                                <td>
+                                                    <a href="/admin/products/<%= product._id %>/variants"
+                                                        class="btn btn-outline-dark btn-sm">Manage (<%=
+                                                            product.variantCount || 0 %>)</a>
+                                                </td>
+
+                                                <td>
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input toggle-status" type="checkbox"
+                                                            role="switch" data-id="<%= product._id %>"
+                                                            <%=product.isListed ? 'checked' : '' %>>
+                                                        <label class="form-check-label">
+                                                            <%= product.isListed ? 'Active' : 'Inactive' %>
+                                                        </label>
+                                                    </div>
+                                                </td>
+
+
+                                                <td>
+                                                    <a href="/admin/products/edit/<%= product._id %>"
+                                                        class="btn btn-sm btn-edit">Edit</a>
+                                                    <a href="/admin/products/delete/<%= product._id %>"
+                                                        class="btn btn-sm btn-delete">Delete</a>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav aria-label="Product pagination" class="mt-4">
+                        <div class="d-flex justify-content-end">
+                            <ul class="pagination mb-0">
+                                <% if(currentPage> 1) { %>
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                            href="?page=<%= currentPage - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= status ? '&status=' + encodeURIComponent(status) : '' %>">&lt;</a>
+                                    </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled"><a class="page-link" href="#">&lt;</a></li>
+                                        <% } %>
+
+                                            <% for(let i=1; i <=totalPages; i++) { %>
+                                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                                    <a class="page-link"
+                                                        href="?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= status ? '&status=' + encodeURIComponent(status) : '' %>">
+                                                        <%= i %>
+                                                    </a>
+                                                </li>
+                                                <% } %>
+
+                                                    <% if(currentPage < totalPages) { %>
+                                                        <li class="page-item">
+                                                            <a class="page-link"
+                                                                href="?page=<%= currentPage + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= status ? '&status=' + encodeURIComponent(status) : '' %>">&gt;</a>
+                                                        </li>
+                                                        <% } else { %>
+                                                            <li class="page-item disabled"><a class="page-link"
+                                                                    href="#">&gt;</a></li>
+                                                            <% } %>
+                            </ul>
+                        </div>
+                    </nav>
+
+                </div>
+            </main>
+            </div>
+
+            <script>
+                const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+            </script>
+
+            <%- include('../partials/admin/footer') %>
+    </body>
+
+</html>

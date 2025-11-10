@@ -43,6 +43,7 @@ export const getCustomersPage = async (req, res, next) => {
             currentPage,
             totalPages,
             search,
+            activePage:'customer',
         });
     } catch (err) {
         console.error("Error fetching customers:", err)
