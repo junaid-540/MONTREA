@@ -5,10 +5,11 @@ import { getCustomersPage, toggleBlockUser } from '../controller/adminController
 import { adminAuth } from '../middleware/adminAuth.js';
 import { getCategories , addCategory , editCategory , toggleCategoryStatus, getAddCategoryPage , getEitCategoryPage} from '../controller/adminControllers/categoryController.js';
 import validateRequest from '../middleware/validateRequest.js';
-import { addCategoryValidation , addProductValidation, addVariantValidation, editCategoryValidation} from '../validations/adminValidation.js';
-import { getProducts , getAddProductPage, addProduct} from '../controller/adminControllers/productController.js';
-import { addVariant, getProductVariants , toggleVariantStatus ,editVariant } from '../controller/adminControllers/productVariantController.js';
+import { addCategoryValidation , addProductValidation, addVariantValidation, editCategoryValidation, editProductValidation, editVariantValidation} from '../validations/adminValidation.js';
+import { getProducts , getAddProductPage, addProduct, getEditProductPage, editProduct, toggleProductStatus} from '../controller/adminControllers/productController.js';
+import { addVariant, getProductVariants , toggleVariantStatus ,editVariant, getAddVariant, getEditVariant } from '../controller/adminControllers/productVariantController.js';
 import upload from '../middleware/multerConfig.js';
+// import { validateVariantImages } from '../middleware/validateVariantImages.js';
 
 
 const router = express.Router()
@@ -46,9 +47,9 @@ router.patch('/category/toggle/:id',adminAuth,toggleCategoryStatus)
 router.get("/products", adminAuth, getProducts);
 router.get("/products/add", adminAuth, getAddProductPage);
 router.post("/products/add", adminAuth,upload.any(),validateRequest(addProductValidation),addProduct);
-router.get("/products/edit/:id", adminAuth);
-router.put("/products/edit/:id", adminAuth);
-router.patch("/products/toggle/:id", adminAuth);
+router.get("/products/edit/:id", adminAuth,getEditProductPage);
+router.put("/products/edit/:id", adminAuth,validateRequest(editProductValidation),editProduct);
+router.patch("/products/toggle/:id", adminAuth,toggleProductStatus);
 
 
 
@@ -60,8 +61,10 @@ router.patch("/products/toggle/:id", adminAuth);
 // Product Variants Management
 
 router.get("/products/:productId/variants", adminAuth, getProductVariants);
+router.get('/products/:productId/variants/add',adminAuth,getAddVariant)
 router.post("/products/:productId/variants/add",adminAuth,upload.array("images", 3),validateRequest(addVariantValidation), addVariant);
-router.put("/products/variants/edit/:id",adminAuth,upload.array("images", 3),editVariant);
+router.get('/products/variants/edit/:id',adminAuth,getEditVariant)
+router.put("/products/variants/edit/:id", adminAuth, upload.any(), editVariant);
 router.patch("/products/variants/toggle/:id", adminAuth, toggleVariantStatus);
 
 

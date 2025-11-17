@@ -120,6 +120,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (resetPasswordSuccess) {
+    Toastify({
+        text: resetPasswordSuccess,
+        duration: 2000,
+        gravity: "top",
+        position: "right",
+        close: true,
+        style:{
+        background: "linear-gradient(to right, #00b09b, #96c93d)",
+        color: "#fff",
+        borderRadius: "8px"
+      },
+        stopOnFocus: true,
+    }).showToast();
+}
+
   // Smooth scroll (optional)
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener("click", function(e){

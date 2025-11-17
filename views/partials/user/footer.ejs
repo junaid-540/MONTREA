@@ -1,33 +1,45 @@
 <footer class="footer bg-dark text-white pt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <h2 class="fw-bold logo">MONTRÉA</h2>
-                </div>
-
-                <div class="col-md-8 d-flex justify-content-end">
-                    <div class="me-5">
-                        <p class="footer-heading">Info</p>
-                        <a href="#" class="d-block">Contact us</a>
-                        <a href="#" class="d-block">About us</a>
-                    </div>
-                    <div>
-                        <p class="footer-heading">Policies</p>
-                        <a href="#" class="d-block">Privacy Notice</a>
-                        <a href="#" class="d-block">Return policy</a>
-                        <a href="#" class="d-block">Terms and Conditions</a>
-                        <a href="#" class="d-block">Cookie Policy</a>
-                    </div>
-                </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-4 col-sm-4 col-md-4 mb-3">  <!-- Added col-4 for xs screens -->
+                <h2 class="fw-bold logo">MONTRÉA</h2>
             </div>
 
+            <div class="col-8 col-sm-8 col-md-8 d-flex justify-content-end">  <!-- Added col-8 for xs screens -->
+                <!-- Future middle content can go here, e.g., another col-* div inside this one if needed -->
+                
+                <div>
+                    <p class="footer-heading">Policies</p>
+                    <a href="#" class="d-block">Privacy Notice</a>
+                    <a href="#" class="d-block">Return policy</a>
+                    <a href="#" class="d-block">Terms and Conditions</a>
+                    <a href="#" class="d-block">Cookie Policy</a>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <hr class="footer-line my-4">
+    <hr class="footer-line my-4">
+
+    <div class="text-center pb-3 social">
+        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 
 
-        <div class="text-center pb-3 social">
-            <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
-        </div>
-    </footer>
+<!-- Page-specific JS -->
+<% if (typeof pageJs !=='undefined' ) { %>
+    <script src="<%= pageJs %>"></script>
+    <% } %>
+
+        </body>
+
+        </html>

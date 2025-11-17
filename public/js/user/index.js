@@ -2,21 +2,21 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Landing page loaded!");
 
-    const profileDropdown = document.getElementById('profileDropdown');
-        const dropdownMenu = document.getElementById('dropdownMenu');
+    // const profileDropdown = document.getElementById('profileDropdown');
+    //     const dropdownMenu = document.getElementById('dropdownMenu');
 
-        profileDropdown.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('show');
-        });
+    //     profileDropdown.addEventListener('click', function(e) {
+    //         e.preventDefault();
+    //         e.stopPropagation();
+    //         dropdownMenu.classList.toggle('show');
+    //     });
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                dropdownMenu.classList.remove('show');
-            }
-        });
+    //     // Close dropdown when clicking outside
+    //     document.addEventListener('click', function(e) {
+    //         if (!profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+    //             dropdownMenu.classList.remove('show');
+    //         }
+    //     });
 
         
   if(successMessage){

@@ -9,7 +9,8 @@ export const notFoundHandler = (req, res, next) => {
         errorMessage: errorMessages.INVALID_REQUEST || "Page Not Found",
         backLink: isAdminRoute ? '/admin/dashboard' : '/',
         isAdminRoute,
-        Title: isAdminRoute ? "Dashboard - Page Not Found" : "Page Not Found"
+        Title: isAdminRoute ? "Dashboard - Page Not Found" : "Page Not Found",
+        is404 : true,
     });
 };
 
@@ -48,7 +49,8 @@ export const globalErrorHandler = (err, req, res, next) => {
         errorMessage: errorMessages.INTERNAL_SERVER_ERROR || "Something went wrong. Please try again later.",
         backLink: isAdminRoute ? '/admin/dashboard' : '/',
         isAdminRoute,
-        Title: isAdminRoute ? "Dashboard - Error" : "Error"
+        Title: isAdminRoute ? "Dashboard - Error" : "Error",
+        is404 : true,
     });
 
 

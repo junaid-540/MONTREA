@@ -10,16 +10,11 @@ import cloudinary from "../../config/cloudinary.js"
 
 export const getProducts = async (req, res, next) => {
   try {
-    const {
-      data: products,
-      search,
-      totalPages,
-      currentPage,
-    } = await getPaginateData(Product, req, {
+    const { data: products, search, totalPages, currentPage, } = await getPaginateData(Product, req, {
       searchFields: ["name", "description"],
       filters: {},
       sort: { createdAt: -1 },
-      limit: 5,
+      limit: 7,
     });
 
     const status = req.query.status || "";
@@ -31,21 +26,22 @@ export const getProducts = async (req, res, next) => {
       filteredProducts = products.filter((p) => p.isListed === false);
     }
 
-    
+
     const populatedProducts = await Product.find({
       _id: { $in: filteredProducts.map((p) => p._id) },
     })
       .populate("categoryId", "name")
       .populate({
         path: "variants",
-        select: "stock images", 
-      });
+        select: "stock images isListed",
+      }).sort({ createdAt: -1 });
 
-    
+
     const finalProducts = populatedProducts.map((product) => {
-      const totalStock = product.variants?.reduce((sum, v) => sum + (v.stock || 0), 0) || 0;
+      const listedVariants = product.variants?.filter((v) => v.isListed) || [];
+      const totalStock = listedVariants.reduce((sum, v) => sum + (v.stock || 0), 0);
       const firstImage = product.variants?.[0]?.images?.[0]?.url || null;
-      const variantCount = product.variants?.length || 0;
+      const variantCount = listedVariants.length;
 
       return {
         ...product.toObject(),
@@ -56,7 +52,7 @@ export const getProducts = async (req, res, next) => {
       };
     });
 
-    const pageSize = 5;
+    const pageSize = 7;
 
     res.render("admin/product-management", {
       Title: "Product Management",
@@ -95,7 +91,6 @@ export const getAddProductPage = async (req, res, next) => {
 }
 
 
-
 const cleanupCloudinaryImages = async (publicIds) => {
   if (!publicIds || publicIds.length === 0) return;
   try {
@@ -107,8 +102,6 @@ const cleanupCloudinaryImages = async (publicIds) => {
     console.error("Cloudinary cleanup failed:", err);
   }
 };
-
-
 
 
 export const addProduct = async (req, res, next) => {
@@ -176,7 +169,7 @@ export const addProduct = async (req, res, next) => {
       const variantFiles = filesByVariant[i] || [];
       console.log(`Variant ${i}: files count=${variantFiles.length}`);
       const uploadedImages = variantFiles.map(file => {
-        // Extract public_id safely
+        
         let publicId = file.public_id;
         if (!publicId && file.filename) {
           publicId = file.filename.startsWith('montrea_products/')
@@ -222,7 +215,9 @@ export const addProduct = async (req, res, next) => {
       { _id: { $in: variantIds } },
       { $set: { productId: newProduct._id } }
     );
+
     console.log("Success: Product + variants created");
+
     return sendResponse(res, {
       success: true,
       message: "Product created successfully",
@@ -242,17 +237,16 @@ export const addProduct = async (req, res, next) => {
       message: err.message || "Error creating product",
       statusCode: statusCodes.INTERNAL_SERVER_ERROR,
     });
-    
+
   }
 };
-
 
 
 export const getEditProductPage = async (req, res, next) => {
   try {
     const { id } = req.params
-    const product = await Product.findById(id)
-
+    const product = await Product.findById(id).populate("categoryId", "name")
+    const categories = await Category.find({ isListed: true }).sort({ name: 1 })
     if (!product) {
       return sendResponse(res, {
         success: false,
@@ -266,7 +260,8 @@ export const getEditProductPage = async (req, res, next) => {
       pageCSS: "/public/css/admin/edit-product.css",
       pageJS: "/public/js/admin/edit-product.js",
       product,
-      activePage:'products',
+      activePage: 'products',
+      categories,
     })
   } catch (err) {
     console.error("Error in getEditProductPage:", err)
@@ -277,7 +272,7 @@ export const getEditProductPage = async (req, res, next) => {
 export const editProduct = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { name, description, highlights } = req.body
+    const { name, description, highlights, categoryId } = req.body
 
     const product = await Product.findById(id)
     if (!product) {
@@ -291,6 +286,7 @@ export const editProduct = async (req, res, next) => {
     product.name = name ?? product.name
     product.description = description ?? product.description
     product.highlights = highlights ?? product.highlights
+    product.categoryId = categoryId ?? product.categoryId
 
     await product.save()
 

@@ -1,6 +1,6 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-transparent">
+<nav class="navbar navbar-expand-lg navbar-light">
     <div class="container">
-        <a class="navbar-brand text-brown" href="#">MONTRÉA</a>
+        <a class="navbar-brand text-brown" href="/">MONTRÉA</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -11,20 +11,34 @@
                     <a class="nav-link" href="/">HOME</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">SHOP</a>
+                    <a class="nav-link" href="/shop">SHOP</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">ABOUT US</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/contact">CONTACT US</a>
                 </li>
             </ul>
             
             <div class="icon-nav">
-                <% if (user) { %>
-                    <!-- Search Bar (Only visible when logged in) -->
+                <% if (user && (typeof is404 === 'undefined' || !is404)) { %>
+                    <!-- Search Bar: Magnifying glass LEFT, X button RIGHT -->
                     <div class="search-container">
                         <form id="searchForm">
-                            <input type="text" class="search-input" id="searchQuery" placeholder="Search">
-                            <button type="submit" class="search-icon" aria-label="Search">
+                            <!-- Search icon (magnifying glass) on LEFT -->
+                            <span class="search-icon" aria-label="Search">
                                 <svg viewBox="0 0 24 24">
                                     <circle cx="11" cy="11" r="8" />
                                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </span>
+                            <input type="text" class="search-input" id="searchQuery" placeholder="Search">
+                            <!-- Clear button (X icon) on RIGHT -->
+                            <button type="button" class="search-clear" id="clearSearch" aria-label="Clear search">
+                                <svg viewBox="0 0 24 24">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
                                 </svg>
                             </button>
                         </form>
@@ -76,3 +90,142 @@
         </div>
     </div>
 </nav>
+
+<% if (user) { %>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Profile Dropdown Functionality
+  const profileDropdown = document.getElementById('profileDropdown');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+
+  if (profileDropdown && dropdownMenu) {
+    profileDropdown.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('show');
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.classList.remove('show');
+      }
+    });
+  }
+
+  // Search Functionality with Clear Button
+  const searchForm = document.getElementById('searchForm');
+  const searchInput = document.getElementById('searchQuery');
+  const clearButton = document.getElementById('clearSearch');
+  const searchIcon = document.querySelector('.search-icon');
+
+  if (searchForm && searchInput && clearButton) {
+    // Preserve search query from URL on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('search');
+    if (searchQuery) {
+      searchInput.value = searchQuery;
+    }
+
+    // Show/hide clear button based on input
+    function toggleClearButton() {
+      if (searchInput.value.trim()) {
+        clearButton.classList.add('show');
+      } else {
+        clearButton.classList.remove('show');
+      }
+    }
+
+    // Check on page load
+    toggleClearButton();
+
+    searchInput.addEventListener('input', toggleClearButton);
+
+    // Clear button functionality
+    clearButton.addEventListener('click', function() {
+      searchInput.value = '';
+      searchInput.focus();
+      toggleClearButton();
+      
+      // Remove search param from URL and reload
+      const currentPath = window.location.pathname;
+      const params = new URLSearchParams(window.location.search);
+      params.delete('search');
+      const newUrl = params.toString() ? `${currentPath}?${params.toString()}` : currentPath;
+      window.location.href = newUrl;
+    });
+
+    // Make magnifying glass clickable (same as submit)
+    if (searchIcon) {
+      searchIcon.style.cursor = 'pointer';
+      searchIcon.style.pointerEvents = 'auto';
+      searchIcon.addEventListener('click', function() {
+        searchForm.dispatchEvent(new Event('submit'));
+      });
+    }
+
+    // Search form submission
+    searchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const query = searchInput.value.trim();
+      if (!query) return;
+
+      const currentPath = window.location.pathname;
+      let redirectUrl = '';
+
+      switch (true) {
+        case currentPath === '/' || currentPath === '/home':
+          redirectUrl = `/shop?search=${encodeURIComponent(query)}`;
+          break;
+        case currentPath.startsWith('/shop'):
+          const currentParams = new URLSearchParams(window.location.search);
+          currentParams.set('search', query);
+          redirectUrl = `/shop?${currentParams.toString()}`;
+          break;
+        case currentPath === '/wishlist':
+          redirectUrl = `/wishlist?search=${encodeURIComponent(query)}`;
+          break;
+        case currentPath.startsWith('/product/'):
+          redirectUrl = `/shop?search=${encodeURIComponent(query)}`;
+          break;
+        case currentPath === '/profile':
+          redirectUrl = `/profile?search=${encodeURIComponent(query)}`;
+          break;
+        default:
+          redirectUrl = `/shop?search=${encodeURIComponent(query)}`;
+      }
+
+      window.location.href = redirectUrl;
+    });
+
+    // Clear on escape
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchInput.value = '';
+        toggleClearButton();
+      }
+    });
+  }
+});
+</script>
+<% } else { %>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const profileDropdown = document.getElementById('profileDropdown');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+
+  if (profileDropdown && dropdownMenu) {
+    profileDropdown.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('show');
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.classList.remove('show');
+      }
+    });
+  }
+});
+</script>
+<% } %>

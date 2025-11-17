@@ -202,7 +202,59 @@ export const addProductValidation = Joi.object({
 })
 
 
+
+export const editProductValidation = Joi.object({
+    name: Joi.string()
+        .trim()
+        .min(3)
+        .max(100)
+        .pattern(/^[A-Za-z0-9\s\-\&']+$/)
+        .messages({
+            'string.empty': errorMessages.PRODUCT_NAME_REQUIRED ,
+            'string.min': errorMessages.PRODUCT_NAME_MIN,
+            'string.max': errorMessages.PRODUCT_NAME_MAX,
+            'string.pattern.base': errorMessages.PRODUCT_NAME_PATTERN
+        })
+        .optional()
+        .allow(null),
+
+        description: Joi.string()
+            .trim()
+            .min(10)
+            .max(2000)
+            .messages({
+                'string.empty': errorMessages.PRODUCT_DESCRIPTION_REQUIRED,
+                'string.min': errorMessages.PRODUCT_DESCRIPTION_MIN,
+                'string.max': errorMessages.PRODUCT_DESCRIPTION_MAX,
+            })
+            .optional()
+            .allow(null),
+
+        categoryId: Joi.string()
+            .trim()
+            .messages({
+                'string.empty': errorMessages.PRODUCT_CATEGORY_REQUIRED,
+            })
+            .optional()
+            .allow(null),
+
+
+        highlights: Joi.string()
+            .trim()
+            .allow('')
+            .optional()
+            .allow(null),
+})
+
+
+
 export const addVariantValidation = Joi.object({
+    productId: Joi.string()
+        .required()
+        .messages({
+            'string.empty': 'Product ID is required',
+        }),
+
     color: Joi.string()
         .trim()
         .min(3)
@@ -236,12 +288,12 @@ export const addVariantValidation = Joi.object({
             "any.required": errorMessages.VARIANT_PRICE_REQUIRED || 'Price is required',
         }),
 
-    discountedPrice: Joi.number()
-        .min(0)
-        .optional()
-        .less(Joi.ref("price"))
+    discountedPrice: Joi.alternatives()
+        .try(
+            Joi.number().min(0).less(Joi.ref("price")),
+            Joi.string().allow('').optional()
+        )
         .messages({
-            "number.base": errorMessages.VARIANT_DISCOUNT_PRICE_INVALID || 'Invalid discount price',
             "number.min": errorMessages.VARIANT_DISCOUNT_PRICE_MIN || 'Discount price must be 0 or more',
             "number.less": 'Discount price must be less than regular price',
         }),
@@ -256,19 +308,77 @@ export const addVariantValidation = Joi.object({
             "number.integer": 'Stock must be a whole number',
             "any.required": errorMessages.VARIANT_STOCK_REQUIRED || 'Stock is required',
         }),
+});
 
-    images: Joi.array()
-        .items(
-            Joi.object({
-                url: Joi.string().uri().required(),
-                public_id: Joi.string().required(),
-            })
-        )
-        .length(3)
+
+// Edit Variant Validation
+export const editVariantValidation = Joi.object({
+    variantId: Joi.string()
         .required()
         .messages({
-            "array.base": errorMessages.VARIANT_IMAGES_REQUIRED || 'Images are required',
-            "array.length": errorMessages.VARIANT_IMAGES_COUNT || 'Exactly 3 images are required',
-            "any.required": errorMessages.VARIANT_IMAGES_REQUIRED || 'Images are required',
+            'string.empty': 'Variant ID is required',
         }),
-})
+    
+    productId: Joi.string()
+        .required()
+        .messages({
+            'string.empty': 'Product ID is required',
+        }),
+
+    color: Joi.string()
+        .trim()
+        .min(3)
+        .max(20)
+        .pattern(/^[A-Za-z\s]+$/)
+        .messages({
+            'string.empty': errorMessages.VARIANT_COLOR_REQUIRED || 'Color is required',
+            'string.pattern.base': errorMessages.VARIANT_COLOR_PATTERN || 'Color can only contain letters and spaces',
+            'string.min': errorMessages.VARIANT_COLOR_LENGTH || 'Color must be between 3-20 characters',
+            'string.max': errorMessages.VARIANT_COLOR_LENGTH || 'Color must be between 3-20 characters',
+        })
+        .optional(),
+
+    size: Joi.string()
+        .trim()
+        .valid("S", "M", "L", "XL")
+        .messages({
+            'any.only': errorMessages.VARIANT_SIZE_INVALID || 'Size must be S, M, L, or XL',
+        })
+        .optional(),
+    
+    price: Joi.number()
+        .positive()
+        .messages({
+            'number.base': errorMessages.VARIANT_PRICE_REQUIRED || 'Price is required',
+            'number.positive': errorMessages.VARIANT_PRICE_MIN || 'Price must be greater than 0',
+        })
+        .optional(),
+
+    discountedPrice: Joi.alternatives()
+        .try(
+            Joi.number().min(0).less(Joi.ref("price")),
+            Joi.string().allow('').optional()
+        )
+        .messages({
+            "number.min": errorMessages.VARIANT_DISCOUNT_PRICE_MIN || 'Discount price must be 0 or more',
+            "number.less": 'Discount price must be less than regular price',
+        })
+        .optional(),
+
+    stock: Joi.number()
+        .integer()
+        .min(0)
+        .messages({
+            "number.min": errorMessages.VARIANT_STOCK_MIN || 'Stock must be 0 or more',
+            "number.integer": 'Stock must be a whole number',
+        })
+        .optional(),
+
+    // FIXED: Allow existingImages fields (optional strings for URLs, can be empty)
+    ...Object.fromEntries(
+        [0, 1, 2].map(i => [
+            `existingImages[${i}]`, 
+            Joi.string().uri({ allowRelative: true }).allow('').optional()
+        ])
+    ),
+});

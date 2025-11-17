@@ -1,0 +1,348 @@
+/* ========================= */
+/* ======= NAVBAR ========= */
+/* ========================= */
+
+.navbar {
+    background-color: #f3f3f3;
+    font-family: 'Georgia', serif;
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+}
+
+.navbar-brand {
+    font-family: serif;
+    font-style: italic;
+    color: #a47f5f; 
+    font-size: 2.5rem;
+    font-weight: 400;
+}
+
+.navbar-brand:active,
+.navbar-brand:focus {
+    color: #a47f5f !important;
+    outline: none; 
+    text-decoration: none; 
+}
+
+.navbar-brand:hover {
+    color: #a47f5f; 
+    text-decoration: none;
+}
+
+.navbar-nav .nav-link {
+    color: #000 !important;
+    font-weight: 500;
+    margin: 0 1rem;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #B8860B !important; 
+}
+
+.auth-buttons .btn-dark {
+    border-radius: 10px;
+    padding: 8px 20px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.auth-buttons .btn-dark:hover {
+    background-color: #a47f5f;
+    color: white;
+}
+
+/* ===== NAVBAR ICONS WITH SVG ===== */
+
+.icon-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.icon-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #000;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.icon-nav-item:hover {
+    color: #a47f5f;
+}
+
+.icon-nav-item svg {
+    width: 24px;
+    height: 24px;
+    stroke: #000;
+    stroke-width: 2;
+    fill: none;
+    transition: stroke 0.3s ease;
+}
+
+.icon-nav-item:hover svg {
+    stroke: #a47f5f;
+}
+
+.login-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #000;
+    transition: color 0.3s ease;
+}
+
+.icon-nav-item:hover .login-text {
+    color: #a47f5f;
+}
+
+/* Profile Dropdown Styles */
+.profile-dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 0.5rem 0;
+    min-width: 200px;
+    display: none;
+    z-index: 1000;
+    margin-top: 0.5rem;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-menu .btn {
+    width: 100%;
+    text-align: center;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin: 0.5rem 1rem;
+    width: calc(100% - 2rem);
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-menu .btn-dark {
+    background-color: #212529;
+    border: none;
+}
+
+.dropdown-menu .btn-dark:hover {
+    background-color: #a47f5f;
+}
+
+/* Search Bar Styles - Magnifying glass LEFT, X button RIGHT */
+.search-container {
+    position: relative;
+    margin-right: 1rem;
+}
+
+#searchForm {
+    position: relative;
+}
+
+.search-input {
+    border: 1px solid #d0d0d0;
+    border-radius: 25px;
+    padding: 8px 40px 8px 40px; /* Space for both icons */
+    width: 220px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #a47f5f;
+    box-shadow: 0 0 0 2px rgba(164, 127, 95, 0.1);
+}
+
+/* Search icon (magnifying glass) - LEFT side */
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: all 0.2s ease;
+}
+
+.search-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke: #888;
+    stroke-width: 2;
+    fill: none;
+    transition: stroke 0.2s ease;
+}
+
+.search-icon:hover svg {
+    stroke: #a47f5f;
+}
+
+/* Clear button (X icon) - RIGHT side */
+.search-clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease;
+}
+
+.search-clear.show {
+    display: flex;
+}
+
+.search-clear svg {
+    width: 14px;
+    height: 14px;
+    stroke: #888;
+    stroke-width: 2.5;
+    fill: none;
+    transition: stroke 0.2s ease;
+}
+
+.search-clear:hover svg {
+    stroke: #e74c3c;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .search-container {
+        width: 100%;
+        margin-bottom: 1rem;
+        margin-right: 0;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+    
+    .navbar-nav {
+        text-align: center;
+        margin: 1rem 0;
+    }
+
+    .auth-buttons {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .icon-nav {
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .dropdown-menu {
+        right: 50%;
+        transform: translateX(50%);
+    }
+}
+
+/* ========================= */
+/* ======== FOOTER ========= */
+/* ========================= */
+
+footer {
+    background-color: #0d0f13;
+    color: #fff;
+}
+
+footer .logo {
+    font-family: serif;
+    font-style: italic;
+    font-weight: 400 !important;
+    font-size: clamp(2rem, 8vw, 6rem);
+    color: #a47f5f;
+}
+
+.footer-heading {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+footer a {
+    font-size: 0.9rem;
+    color: #fff;
+    margin-bottom: 0.2rem;
+    text-decoration: none;
+    display: block;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: #a47f5f !important;
+}
+
+footer .fab {
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.footer-line {
+    all: unset;
+    display: block;
+    border: none;
+    height: 2px;
+    background-color: #fff !important;
+    width: 100%;
+}
+
+.social a {
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+footer .fab:hover {
+    color: #a47f5f;
+}
+
+@media (max-width: 575.98px) {  /* Only for xs screens */
+    .footer .logo {
+        font-size: clamp(1.5rem, 6vw, 2.5rem);  /* Smaller clamp for tiny screens */
+    }
+    
+    .footer a,
+    .footer-heading {
+        font-size: 0.8rem;  /* Shrink link text */
+        line-height: 1.2;   /* Tighter spacing */
+    }
+    
+    .container {  /* Optional: Reduce container padding for more width */
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}

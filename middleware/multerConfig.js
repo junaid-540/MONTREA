@@ -2,6 +2,7 @@ import multer from "multer";
 import cloudinary from "../config/cloudinary.js";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 
+// CloudinaryStorage for ADD operations
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -15,8 +16,8 @@ const storage = new CloudinaryStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max per file
-    files: 30, // Max 30 files
+    fileSize: 5 * 1024 * 1024,
+    files: 30,
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
@@ -27,16 +28,31 @@ const upload = multer({
   },
 });
 
+// Memory storage for EDIT operations
+const memoryStorage = multer.memoryStorage();
+
+export const uploadMemory = multer({
+  storage: memoryStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    files: 3,
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only images allowed"), false);
+    }
+  },
+});
 
 export const multerErrorHandler = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {
-    
     console.error("=== MULTER ERROR ===");
     console.error("Type:", error.code);
     console.error("Message:", error.message);
     console.error("====================");
 
-  
     error.status = 400;
     switch (error.code) {
       case "LIMIT_FILE_SIZE":
@@ -55,7 +71,6 @@ export const multerErrorHandler = (error, req, res, next) => {
     error.message = "Upload signature invalid — please retry.";
   }
 
-  // Pass error to the global error handler for rendering
   next(error);
 };
 

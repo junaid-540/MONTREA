@@ -1,0 +1,72 @@
+<%- include('../partials/admin/header') %>
+
+    <body>
+        <%- include('../partials/admin/sidebar') %>
+            <main class="content-area">
+                <div class="add-product-container">
+                    <h2 class="page-title">Edit Product</h2>
+                    <div class="variants-button-container">
+                        <a href="/admin/products/<%= product._id %>/variants" class="btn btn-manage-variants">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            Manage Variants
+                        </a>
+                    </div>
+                    <form id="productForm" data-product-id="<%= product._id %>">
+
+                        <!-- Product Name -->
+                        <div class="mb-4">
+                            <label class="form-label">Product Name</label>
+                            <input type="text" class="form-control" name="name" value="<%= product.name %>"
+                                placeholder="Enter product name">
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description"
+                                placeholder="Enter product description"><%= product.description %></textarea>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="mb-4">
+                            <label class="form-label">Category</label>
+                            <select class="form-control" name="categoryId">
+                                <option value="">Select category</option>
+                                <% categories.forEach(category=> { %>
+                                    <option value="<%= category._id %>" <%=product.categoryId &&
+                                        product.categoryId.equals(category._id) ? 'selected' : '' %>>
+                                        <%= category.name %>
+                                    </option>
+                                    <% }) %>
+                            </select>
+                        </div>
+
+                        <!-- Highlights -->
+                        <div class="mb-4">
+                            <label class="form-label">Highlights (comma separated)</label>
+                            <input type="text" class="form-control" name="highlights"
+                                value="<%= product.highlights ? product.highlights.join(', ') : '' %>"
+                                placeholder="e.g. Cotton, Slim Fit, Machine Wash">
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="submit-section">
+                            <button type="submit" class="btn btn-save">Save Changes</button>
+                            <button type="button" class="btn btn-cancel" onclick="window.history.back()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+            </div>
+
+            <%- include('../partials/admin/footer') %>
+    </body>
+
+    </html>

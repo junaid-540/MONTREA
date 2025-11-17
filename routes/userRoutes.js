@@ -1,6 +1,6 @@
 import express from 'express'
-import { getHomePage } from '../controller/userControllers/homeController.js';
-import { getSignup , postSignup , postVerifyOtp , getResendOtp , getSignin , postSignin , oauthCallbackController , userLogout} from '../controller/userControllers/authController.js';
+import { getHomePage, getProductDetails, getShopPage } from '../controller/userControllers/homeController.js';
+import { getSignup , postSignup , postVerifyOtp , getResendOtp , getSignin , postSignin , oauthCallbackController , userLogout, loadForgetPassword, postForgetPassword, getVeriyForgotOtp, getResendForgotOtp, postVerifyForgotOtp, LoadResetPassword, resetPassword} from '../controller/userControllers/authController.js';
 import passport from 'passport';
 import { userFinder } from '../middleware/userfinder.js';
 import { preventCache, redirectIfLoggedIn } from '../middleware/preventcache.js';
@@ -31,8 +31,16 @@ router.get('/auth/google/callback',passport.authenticate("google",{
     failureMessage:true,
 }), oauthCallbackController)
 router.get('/logout',userLogout)
+router.get('/forgot-password',preventCache,loadForgetPassword)
+router.post('/forgot-password',preventCache,postForgetPassword);
+router.get('/verify-forgot-otp',preventCache,getVeriyForgotOtp)
+router.post('/verify-forgot-otp',preventCache,postVerifyForgotOtp);
+router.get('/resend-forgot-otp',preventCache,getResendForgotOtp);
+router.get('/reset-password',preventCache,LoadResetPassword)
+router.post('/reset-password',preventCache,resetPassword);
 
 
-
-
+// shop page //
+router.get('/shop',getShopPage)
+router.get('/product/:id',getProductDetails)
 export default router

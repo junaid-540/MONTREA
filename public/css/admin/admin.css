@@ -6,6 +6,7 @@
     --footer-bg: #f8f9fa;
     --brand-color: #a47f5f;
     --sidebar-width: 250px;
+    --footer-height: 60px;
 }
 
 body {
@@ -94,7 +95,7 @@ body {
     position: fixed;
     top: 70px; /* Below header */
     left: 0;
-    bottom: 60px; /* Above footer */
+    bottom: var(--footer-height); /* Above footer */
     overflow-y: auto;
     transition: transform 0.3s ease;
     z-index: 1000;
@@ -155,12 +156,13 @@ body {
     flex: 1;
     margin-left: var(--sidebar-width); /* Space for fixed sidebar */
     padding: 2rem;
+    padding-bottom: calc(var(--footer-height) + 2rem); /* CRITICAL FIX: Add space for footer + extra padding */
     background-color: #939393;
-    min-height: calc(100vh - 130px); /* viewport - header - footer */
+    min-height: calc(100vh - 70px); /* Full viewport minus header */
     overflow-y: auto;
 }
 
-/* Footer - Fixed at bottom */
+
 .footer {
     background-color: var(--footer-bg);
     text-align: center;
@@ -172,7 +174,7 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: var(--footer-height);
     z-index: 1001;
 }
 
@@ -239,8 +241,8 @@ body {
     .content-area {
         margin-left: 0;
         padding: 1rem;
+        padding-bottom: calc(var(--footer-height) + 1rem); /* Extra space for footer on mobile */
         width: 100%;
-        padding-bottom: 80px; /* Extra space for footer on mobile */
     }
 
     .nav-button:hover {

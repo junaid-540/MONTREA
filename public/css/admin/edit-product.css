@@ -1,0 +1,185 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+}
+
+/* Container */
+.add-product-container {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Form Elements */
+.form-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 15px;
+  display: block;
+}
+
+.form-control {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 12px 15px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.form-control:focus {
+  border-color: #b8956a;
+  box-shadow: 0 0 0 0.2rem rgba(184, 149, 106, 0.25);
+  outline: none;
+}
+
+textarea.form-control {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.mb-3,
+.mb-4 {
+  margin-bottom: 20px;
+}
+
+/* Buttons */
+.btn-save {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.btn-save:hover {
+  background-color: #a47f5f;
+  color: #fff;
+}
+
+.btn-cancel {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.btn-cancel:hover {
+  background-color: #a47f5f;
+}
+
+/* Submit Section */
+.submit-section {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+/* Inline validation styles */
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.05rem rgba(220, 53, 69, 0.15);
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 6px;
+}
+
+
+
+/* Variants Button Container */
+.variants-button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 25px;
+}
+
+/* Manage Variants Button */
+.btn-manage-variants {
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-manage-variants:hover {
+  background-color: #a47f5f;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(184, 149, 106, 0.3);
+}
+
+.btn-manage-variants svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .variants-button-container {
+    justify-content: center;
+  }
+
+  .btn-manage-variants {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .add-product-container {
+    padding: 25px 20px;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .btn-save,
+  .btn-cancel {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}

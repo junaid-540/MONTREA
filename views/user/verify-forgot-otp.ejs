@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify-Otp - MONTRÉA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="/public/css/user/verify-forgot-otp.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    
+</head>
+
+<body class="d-flex align-items-center justify-content-center vh-100">
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="spinner-border text-dark" role="status"></div>
+    </div>
+
+    <div class="container">
+        <div class="row shadow-lg rounded-4 overflow-hidden">
+
+            <!-- Left side - Image -->
+            <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center left-bg">
+                <img src="/public/images/brand_logo-new.png" alt="MONTRÉA Logo" class="img-fluid p-5">
+            </div>
+
+            <!-- Right side - Confirmation Code Form -->
+            <div class="col-lg-6 col-md-12 bg-white p-5 d-flex flex-column justify-content-center position-relative">
+                <div class="form-container">
+                    <h5 class="brand-small">MONTRÉA</h5>
+                    <p class="confirmation-subtitle">
+                        "Enter the confirmation code to verify your identity and proceed securely!"
+                    </p>
+
+                    <h2 class="confirmation-title">Enter The Confirmation Code</h2>
+
+                    <form id="verifyForgotOtpForm">
+                        <div class="mb-3">
+                            <label for="otp" class="form-label">Confirmation Code</label>
+                            <input type="text" class="form-control" id="otp" name="confirmationCode" maxlength="6" autocomplete="off"
+                                placeholder="Enter code">
+                            <div id="codeFeedback" class="invalid-feedback">Please enter the confirmation code.</div>
+                        </div>
+
+                        <!-- Timer Above the Button -->
+                        <p class="timer-text text-end mt-2">
+                            <span id="timer">Remaining: 01:00s</span>
+                        </p>
+
+                        <button type="submit" class="btn btn-dark w-100 recover-btn mt-2">Recover Account</button>
+                    </form>
+
+                    <!-- Resend Link Below Button -->
+                    <p class="resend-link text-center mt-3">
+                        Didn’t receive the Confirmation Code?
+                        <a href="#" id="resendLink" class="disabled-link">Resend Now</a>
+                    </p>
+                </div>
+
+                <div class="text-center mt-4 fw-bold brand-footer">MONTRÉA</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+        const errorMessage = "<%= typeof errorMessage !== 'undefined' && errorMessage ? errorMessage : '' %>";
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/public/js/user/verify-forgot-otp.js"></script>
+</body>
+
+</html>

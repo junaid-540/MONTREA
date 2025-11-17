@@ -1,163 +1,177 @@
-<!DOCTYPE html>
-<html lang="en">
+<%- include('../partials/user/header') %>
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MONTRÉA - Landing Page</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="/public/css/user/index.css" />
+    <body>
+        <!-- Navbar -->
+        <%- include('../partials/user/navbar') %>
 
-</head>
-
-<body>
-
-    <!-- Navbar -->
-    
-    <%- include('../partials/user/navbar') %>
-
-    <!-- Hero Banner -->
-    <section class="pt-5 mt-5">
-        <div class="container">
-            <div class="row align-items-center hero-grid gx-md-2 gy-4">
-
-                <div class="col-md-4 d-flex justify-content-center">
-                    <img src="/public/images/hero-left.png" class="img-fluid left" alt="Left Image">
-                </div>
-
-                <div class="col-md-4 hero-center d-flex flex-column align-items-center justify-content-center">
-                    <div class="hero-top mb-3">
-                        <img src="/public/images/hero-top.png" class="img-fluid top" alt="Top Image">
+            <!-- Hero Carousel -->
+            <section class="hero-carousel">
+                <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0"
+                            class="active"></button>
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
                     </div>
-
-                    <h2 class="display-5 fw-bold text-center hero-t ">New Arrivals<br />Just<br />DROPPED</h2>
-                    <a href="#shop" class="btn btn-dark mt-2">SHOP THE VIBE</a>
-
-                    <div class="hero-bottom mt-3">
-                        <img src="/public/images/hero-bottom.png" class="img-fluid bottom" alt="Bottom Image">
-                    </div>
-                </div>
-
-                <div class="col-md-4 d-flex justify-content-center">
-                    <img src="/public/images/hero-right.png" class="img-fluid right" alt="Right Image">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <% if (user) { %>
-    <!-- Banner/Carousel (Only shown when user is logged in) -->
-    <section class="banner-section py-5">
-        <div class="container">
-            <div id="promoBanner" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-indicators">
-                    <button type="button" data-bs-target="#promoBanner" data-bs-slide-to="0" class="active"></button>
-                    <button type="button" data-bs-target="#promoBanner" data-bs-slide-to="1"></button>
-                    <button type="button" data-bs-target="#promoBanner" data-bs-slide-to="2"></button>
-                </div>
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <div class="banner-slide" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <div class="banner-content">
-                                <h3>SEASON SALE</h3>
-                                <h2>UP TO 50% OFF</h2>
-                                <p>On Selected Items</p>
-                                <a href="#shop" class="btn btn-light">Shop Now</a>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img src="/public/images/slide-01.jpg" class="d-block w-100" alt="Women Collection">
+                            <div class="carousel-caption">
+                                <h5 class="carousel-title">Women Collection 2025</h5>
+                                <h2 class="carousel-heading">NEW SEASON</h2>
+                                <a href="/shop?category=WOMEN" class="btn btn-carousel">Shop Now</a>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="/public/images/slide-02.jpg" class="d-block w-100" alt="Men New-Season">
+                            <div class="carousel-caption">
+                                <h5 class="carousel-title">Men’s Essentials 2025</h5>
+                                <h2 class="carousel-heading">Classic Fits</h2>
+                                <a href="/shop?category=MEN" class="btn btn-carousel">Shop Now</a>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="/public/images/slide-03.jpg" class="d-block w-100" alt="Men Collection">
+                            <div class="carousel-caption">
+                                <h5 class="carousel-title">Fresh Finds</h5>
+                                <h2 class="carousel-heading">New arrivals</h2>
+                                <a href="/shop?sort=newest" class="btn btn-carousel">Shop Now</a>
                             </div>
                         </div>
                     </div>
-                    <div class="carousel-item">
-                        <div class="banner-slide" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <div class="banner-content">
-                                <h3>NEW COLLECTION</h3>
-                                <h2>SPRING ESSENTIALS</h2>
-                                <p>Fresh Styles Just Arrived</p>
-                                <a href="#shop" class="btn btn-light">Explore</a>
-                            </div>
-                        </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Category Section -->
+            <section class="category-section py-5">
+                <div class="container">
+                    <div class="text-center mb-5">
+                        <h3 class="section-subtitle">EXPLORE</h3>
+                        <h2 class="section-title">Shop by Category</h2>
+                        <div class="title-underline"></div>
                     </div>
-                    <div class="carousel-item">
-                        <div class="banner-slide" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                            <div class="banner-content">
-                                <h3>FREE SHIPPING</h3>
-                                <h2>ON ORDERS OVER ₹999</h2>
-                                <p>Limited Time Offer</p>
-                                <a href="#shop" class="btn btn-light">Get Started</a>
+                    <div class="row g-4">
+                        <% categories.slice(0, 3).forEach(category=> { %>
+                            <div class="col-md-4 col-sm-6">
+                                <div class="category-card">
+                                    <div class="category-image">
+                                        <img src="<%= category.image %>" alt="<%= category.name %>">
+                                        <div class="category-overlay">
+                                            <h3 class="category-name">
+                                                <%= category.name %>
+                                            </h3>
+                                            <a href="/shop?category=<%= category.name %>" class="btn-category">Shop
+                                                Now</a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            <% }) %>
+                    </div>
+                </div>
+            </section>
+
+            <!-- New Arrivals Section -->
+            <section id="new-arrivals" class="new-arrivals-section py-5 bg-light">
+                <div class="container">
+                    <div class="text-center mb-5">
+                        <h3 class="section-subtitle">DISCOVER</h3>
+                        <h2 class="section-title">New Arrivals</h2>
+                        <div class="title-underline"></div>
+                    </div>
+                    <div class="row g-4">
+                        <% newArrivals.forEach(product=> { %>
+                            <div class="col-lg-3 col-md-6 col-sm-6">
+                                <div class="product-card">
+                                    <div class="product-image">
+                                        <img src="<%= product.image %>" alt="<%= product.name %>">
+                                        <div class="product-badge">New</div>
+                                        <div class="product-overlay">
+                                            <a href="/product/<%= product._id %>" class="btn-view">Quick View</a>
+                                        </div>
+                                    </div>
+                                    <div class="product-info">
+                                        <h5 class="product-name">
+                                            <%= product.name %>
+                                        </h5>
+                                        <p class="product-price">₹<%= product.price %>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <% }) %>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Promotional Banner -->
+            <section class="promo-banner">
+                <div class="promo-image"
+                    style="background-image: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&h=500&fit=crop');">
+                    <div class="promo-overlay">
+                        <div class="container">
+                            <!-- <div class="promo-content">
+                        <h5 class="promo-subtitle">Limited Edition</h5>
+                        <h2 class="promo-title">Exclusive Collection</h2>
+                        <p class="promo-text">Get your hands on our limited edition pieces before they're gone</p>
+                        <a href="/products" class="btn btn-promo">Explore Collection</a>
+                    </div> -->
                         </div>
                     </div>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#promoBanner" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#promoBanner" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
-            </div>
-        </div>
-    </section>
-    <% } %>
+            </section>
 
-    <!-- Category Section -->
-    <section class="text-center py-5">
-  <div class="container categories">
-    <h3 class="mb-4 c-head">EXPLORE</h3>
-    <h2 class="fw-bold mb-5 c-head2">WEAR YOUR IDENTITY</h2>
-    <hr>
-    <div class="row justify-content-center">
-      <% categories.forEach(category => { %>
-        <div class="col-md-3 col-6 mb-4">
-          <img src="<%= category.image %>" class="category-img rounded-circle" alt="<%= category.name %>">
-          <div class="category-title"><%= category.name %></div>
-        </div>
-      <% }) %>
-    </div>
-  </div>
-</section>
-
-
-
-    <!-- Featured Products Section -->
-    <section id="shop" class="py-5">
-        <div class="container">
-            <h3 class="mb-4 p-head text-center">EXPLORE</h3>
-            <h2 class="text-center fw-bold mb-5 p-head2">FEATURED PRODUCTS</h2>
-            <hr class="featured-hr">
-            <div class="row g-4">
-                <% products.forEach(product=>{ %>
-                    <div class="col-md-4">
-                        <div class="card shadow-sm-h-100 border-0">
-                            <img src="<%=product.image %>" class="card-img-top" alt="<%= product.name %>">
-                            <div class="card-body text-center">
-                                <h5 class="card-title">
-                                    <%= product.name %>
-                                </h5>
-                                <p class="card-text">
-                                    <%= product.price %>
-                                </p>
-                            </div>
-                        </div>
+            <!-- Featured Products Section -->
+            <section id="shop" class="featured-section py-5">
+                <div class="container">
+                    <div class="text-center mb-5">
+                        <h3 class="section-subtitle">TRENDING</h3>
+                        <h2 class="section-title">Featured Products</h2>
+                        <div class="title-underline"></div>
                     </div>
-                    <% }) %>
-            </div>
-        </div>
-    </section>
+                    <div class="row g-4">
 
-    <!-- Footer -->
-    
-    <%- include('../partials/user/footer') %>
+                        <% if (featuredProducts && featuredProducts.length> 0) { %>
+                            <% featuredProducts.forEach(product=> { %>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="product-card">
+                                        <div class="product-image">
+                                            <img src="<%= product.image %>" alt="<%= product.name %>">
+                                            <div class="product-overlay">
+                                                <a href="/product/<%= product._id %>" class="btn-view">Quick View</a>
+                                            </div>
+                                        </div>
+                                        <div class="product-info">
+                                            <h5 class="product-name">
+                                                <%= product.name %>
+                                            </h5>
+                                            <p class="product-price">₹<%= product.price %>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% }) %>
+                                    <% } else { %>
+                                        <p>No featured products available yet.</p> <!-- Fallback message -->
+                                        <% } %>
+                    </div>
+                </div>
+            </section>
 
-    <script>
-     const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/public/js/user/index.js"></script>
-</body>
-
-</html>
+            <!-- Footer -->
+            <script>
+                const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+                const errorMessage = "<%= typeof errorMessage !== 'undefined' && errorMessage ? errorMessage : '' %>";
+            </script>
+            <%- include('../partials/user/footer') %>
+    </body>

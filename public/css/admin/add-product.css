@@ -81,7 +81,19 @@ textarea.form-control {
   color: #fff;
 }
 
-.btn-cancel,
+.btn-cancel{
+  background-color: #000;
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
 .btn-secondary {
   background-color: #6c757d;
   color: #fff;
@@ -95,7 +107,10 @@ textarea.form-control {
   margin-top: 10px;
 }
 
-.btn-cancel:hover,
+.btn-cancel:hover{
+  background-color: #a47f5f;
+}
+
 .btn-secondary:hover {
   background-color: #5a6268;
 }

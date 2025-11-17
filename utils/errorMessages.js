@@ -76,7 +76,7 @@ const errorMessages = {
 
     PRODUCT_NAME_REQUIRED: "Product name is required",
     PRODUCT_NAME_MIN: "Product name must be at least 3 characters",
-    PRODUCT_NAME_MAX: "Product name cannot exceed 50 characters",
+    PRODUCT_NAME_MAX: "Product name cannot exceed 100 characters",
     PRODUCT_NAME_PATTERN: "Product name can only contain letters, numbers, spaces, and hyphens",
 
     PRODUCT_DESCRIPTION_REQUIRED: "Description is required",
@@ -84,7 +84,7 @@ const errorMessages = {
     PRODUCT_DESCRIPTION_MAX: "Description cannot exceed 2000 characters",
 
     PRODUCT_CATEGORY_REQUIRED: "Please select a category",
-    PRODUCT_BRAND_REQUIRED: "Brand name is required",
+    // PRODUCT_BRAND_REQUIRED: "Brand name is required",
 
     PRODUCT_PRICE_REQUIRED: "Price is required",
     PRODUCT_PRICE_MIN: "Price must be at least 1",
@@ -99,6 +99,8 @@ const errorMessages = {
 
     PRODUCT_VARIANTS_ARRAY: "Variants must be a valid array",
     PRODUCT_VARIANTS_MIN: "At least one variant is required",
+
+    VARIANT_NOT_FOUND: "Variant Not Found",
 
     // Color
     VARIANT_COLOR_REQUIRED: "Variant color is required.",

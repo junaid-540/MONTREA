@@ -1,35 +1,78 @@
-async function toggleStatus(productId) {
-      try {
-        const res = await fetch(`/admin/products/toggle/${productId}`, { method: 'PATCH' });
-        if (res.ok) window.location.reload();
-      } catch (error) {
-        console.error('Error toggling status:', error);
-      }
-    }
+document.addEventListener("DOMContentLoaded", () => {
 
+  const listButtons = document.querySelectorAll(".btn-list");
+  const unlistButtons = document.querySelectorAll(".btn-unlist");
 
+  const handleToggle = (buttons, action) => {
+    buttons.forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const productId = btn.dataset.id;
+        const productName = btn.dataset.name || "this product";
 
-    document.querySelectorAll('.toggle-status').forEach(toggle => {
-    toggle.addEventListener('change', async (e) => {
-      const productId = e.target.getAttribute('data-id');
-      const newStatus = e.target.checked;
+        if (!productId) return console.error("Product ID missing!");
 
-      try {
-        const response = await fetch(`/admin/products/toggle-status/${productId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isListed: newStatus })
+        const result = await Swal.fire({
+          title: `Are you sure you want to ${action} ${productName}?`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Yes",
+          cancelButtonText: "Cancel",
         });
 
-        const data = await response.json();
-        if (data.success) {
-          e.target.nextElementSibling.textContent = newStatus ? 'Active' : 'Inactive';
-        } else {
-          alert('Failed to update status');
+        if (!result.isConfirmed) return;
+
+        try {
+          // Send request to toggle
+          const response = await axios.patch(`/admin/products/toggle/${productId}`);
+          const { isListed } = response.data.data;
+          const message = response.data.message;
+
+          // Update the row UI
+          const row = btn.closest("tr");
+          const statusCell = row.querySelector("td:nth-child(7) span"); // adjust if your status column changes
+          const listBtn = row.querySelector(".btn-list");
+          const unlistBtn = row.querySelector(".btn-unlist");
+
+          // Update badge
+          statusCell.textContent = isListed ? "Listed" : "Unlisted";
+          statusCell.className = isListed
+            ? "badge badge-listed"
+            : "badge badge-unlisted";
+
+          // Toggle buttons visibility
+          if (isListed) {
+            listBtn.classList.add("hidden");
+            unlistBtn.classList.remove("hidden");
+          } else {
+            listBtn.classList.remove("hidden");
+            unlistBtn.classList.add("hidden");
+          }
+
+          // Toast message
+          Toastify({
+            text: message,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            close: true,
+            style: {
+              background: isListed
+                ? "linear-gradient(90deg,#43e97b 0%,#38f9d7 100%)"
+                : "linear-gradient(90deg,#fa709a 0%,#fee140 100%)",
+              color: "#fff",
+              borderRadius: "8px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            },
+          }).showToast();
+
+        } catch (err) {
+          console.error("Error toggling product:", err);
+          Swal.fire("Error", "Something went wrong. Please try again.", "error");
         }
-      } catch (err) {
-        console.error(err);
-        alert('Error updating status');
-      }
+      });
     });
-  });
+  };
+
+  handleToggle(listButtons, "list");
+  handleToggle(unlistButtons, "unlist");
+});

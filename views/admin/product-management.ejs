@@ -77,6 +77,7 @@
                                                 <td>
                                                     <%= (currentPage - 1) * pageSize + index + 1 %>
                                                 </td>
+
                                                 <td>
                                                     <% if (product.variants?.length &&
                                                         product.variants[0].images?.[0]?.url) { %>
@@ -94,34 +95,42 @@
                                                 <td>
                                                     <%= product.categoryName || 'N/A' %>
                                                 </td>
-
                                                 <td>
                                                     <%= product.totalStock || 0 %>
                                                 </td>
 
                                                 <td>
                                                     <a href="/admin/products/<%= product._id %>/variants"
-                                                        class="btn btn-outline-dark btn-sm">Manage (<%=
-                                                            product.variantCount || 0 %>)</a>
+                                                        class="btn btn-outline-dark btn-sm manage">
+                                                        Manage (<%= product.variantCount || 0 %>)
+                                                    </a>
                                                 </td>
 
+                                                <!-- Status Badge -->
                                                 <td>
-                                                    <div class="form-check form-switch">
-                                                        <input class="form-check-input toggle-status" type="checkbox"
-                                                            role="switch" data-id="<%= product._id %>"
-                                                            <%=product.isListed ? 'checked' : '' %>>
-                                                        <label class="form-check-label">
-                                                            <%= product.isListed ? 'Active' : 'Inactive' %>
-                                                        </label>
-                                                    </div>
+                                                    <% if (product.isListed) { %>
+                                                        <span class="badge badge-listed">Listed</span>
+                                                        <% } else { %>
+                                                            <span class="badge badge-unlisted">Unlisted</span>
+                                                            <% } %>
                                                 </td>
 
-
+                                                <!-- Actions -->
                                                 <td>
                                                     <a href="/admin/products/edit/<%= product._id %>"
                                                         class="btn btn-sm btn-edit">Edit</a>
-                                                    <a href="/admin/products/delete/<%= product._id %>"
-                                                        class="btn btn-sm btn-delete">Delete</a>
+
+                                                    <button
+                                                        class="btn btn-sm btn-list <%= product.isListed ? 'hidden' : '' %>"
+                                                        data-id="<%= product._id %>">
+                                                        List
+                                                    </button>
+
+                                                    <button
+                                                        class="btn btn-sm btn-Unlist <%= product.isListed ? '' : 'hidden' %>"
+                                                        data-id="<%= product._id %>">
+                                                        Unlist
+                                                    </button>
                                                 </td>
                                             </tr>
                                             <% }) %>

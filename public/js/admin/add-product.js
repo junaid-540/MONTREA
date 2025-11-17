@@ -91,6 +91,19 @@ document.addEventListener('DOMContentLoaded', function () {
       el.addEventListener('focus', () => hideError(el));
     }
   });
+
+  // ADD FOCUS LISTENERS FOR VARIANT MODAL FIELDS (FIX FOR THE ISSUE)
+  const variantColor = document.getElementById('variantColor');
+  const variantSize = document.getElementById('variantSize');
+  const variantPrice = document.getElementById('variantPrice');
+  const variantDiscountPrice = document.getElementById('variantDiscountPrice');
+  const variantStock = document.getElementById('variantStock');
+  [variantColor, variantSize, variantPrice, variantDiscountPrice, variantStock].forEach(el => {
+    if (el) {
+      el.addEventListener('focus', () => hideError(el));
+    }
+  });
+
   getFormElements();  // Initial check
 });
 
@@ -160,7 +173,7 @@ function validateVariantStock(value) {
   return null;
 }
 
-/* Existing cropper + modal logic kept intact */
+/* File input handling with FLEXIBLE CROPPER */
 function setupFileInputs() {
   document.addEventListener('change', function (e) {
     if (e.target.matches('input[type="file"]')) {
@@ -176,17 +189,25 @@ function setupFileInputs() {
           currentUploadArea = input.closest('.image-upload');
           const cropImg = document.getElementById('cropImage');
           if (cropImg) cropImg.src = ev.target.result;
-          // show crop modal
+          
+          // Show crop modal
           if (cropModal) cropModal.style.display = 'block';
+          
           setTimeout(() => {
-            if (currentCropper) { currentCropper.destroy(); currentCropper = null; }
+            if (currentCropper) { 
+              currentCropper.destroy(); 
+              currentCropper = null; 
+            }
             if (cropImg) {
+              // FLEXIBLE ASPECT RATIO - allows any width/height
               currentCropper = new Cropper(cropImg, {
-                aspectRatio: 2 / 3,
+                aspectRatio: NaN, // Free aspect ratio
                 viewMode: 1,
                 guides: true,
                 background: false,
-                autoCropArea: 0.8
+                autoCropArea: 0.9,
+                minCropBoxWidth: 200,
+                minCropBoxHeight: 200
               });
             }
           }, 80);
@@ -196,6 +217,7 @@ function setupFileInputs() {
     }
   });
 }
+
 function setupDeleteButtons() {
   document.addEventListener('click', function (e) {
     if (e.target.closest('.delete-image-btn')) {
@@ -218,6 +240,7 @@ function setupDeleteButtons() {
     }
   });
 }
+
 function setupDragAndDrop() {
   document.addEventListener('dragover', function (e) {
     if (e.target.closest('.image-upload')) {
@@ -251,36 +274,62 @@ function setupDragAndDrop() {
     }
   });
 }
-/* Crop modal handlers */
+
+/* UPDATED Crop modal with flexible canvas sizing */
 function setupCropModal() {
   const closeBtnCrop = document.querySelector('#cropModal .close');
   const cancelBtn = document.getElementById('cancelCrop');
   const applyBtn = document.getElementById('applyCrop');
+  
   if (closeBtnCrop) closeBtnCrop.onclick = () => closeCropper();
   if (cancelBtn) cancelBtn.onclick = () => closeCropper();
+  
   if (applyBtn) {
     applyBtn.onclick = () => {
       if (currentCropper && currentUploadArea) {
+        // Get the cropped area dimensions
+        const cropData = currentCropper.getData();
+        
+        
+        const maxWidth = 1200;
+        const maxHeight = 1600;
+        
+        let canvasWidth = Math.round(cropData.width);
+        let canvasHeight = Math.round(cropData.height);
+        
+        // Scale down proportionally if needed
+        if (canvasWidth > maxWidth || canvasHeight > maxHeight) {
+          const ratio = Math.min(maxWidth / canvasWidth, maxHeight / canvasHeight);
+          canvasWidth = Math.round(canvasWidth * ratio);
+          canvasHeight = Math.round(canvasHeight * ratio);
+        }
+        
         const canvas = currentCropper.getCroppedCanvas({
-          width: 800,
-          height: 1200,
+          width: canvasWidth,
+          height: canvasHeight,
           fillColor: '#fff',
           imageSmoothingEnabled: true,
           imageSmoothingQuality: 'high'
         });
-        const croppedImageData = canvas.toDataURL('image/jpeg');
+        
+        const croppedImageData = canvas.toDataURL('image/jpeg', 0.9);
+        
         const previewImg = currentUploadArea.querySelector('.image-preview');
         if (previewImg) previewImg.src = croppedImageData;
+        
         const hiddenInput = currentUploadArea.querySelector('.cropped-image-data');
         if (hiddenInput) hiddenInput.value = croppedImageData;
-        currentUploadArea.querySelector('.image-preview-container').classList.remove('hidden');
-        currentUploadArea.querySelector('.upload-icon').classList.add('hidden');
-        currentUploadArea.querySelector('.upload-text').classList.add('hidden');
+        
+        currentUploadArea.querySelector('.image-preview-container')?.classList.remove('hidden');
+        currentUploadArea.querySelector('.upload-icon')?.classList.add('hidden');
+        currentUploadArea.querySelector('.upload-text')?.classList.add('hidden');
+        
         closeCropper();
-        toastSuccess('Image cropped');
+        toastSuccess('Image cropped successfully');
       }
     };
   }
+  
   if (cropModal) {
     cropModal.onclick = function (event) {
       if (event.target === cropModal) {
@@ -289,6 +338,7 @@ function setupCropModal() {
     };
   }
 }
+
 function closeCropper() {
   if (cropModal) cropModal.style.display = 'none';
   if (currentCropper) {
@@ -299,7 +349,7 @@ function closeCropper() {
   if (modal) modal.style.display = 'flex';
 }
 
-/* Variant modal handling (open/close/save) */
+// Variant modal handlers for open , close , save 
 function setupModalHandlers() {
   if (openBtn) {
     openBtn.onclick = (e) => {
@@ -425,22 +475,22 @@ function saveVariant() {
       toastError('Exactly 3 images are required for this variant.');
       isValid = false;
     }
-    if (!isValid) return;
-    // collect cropped images (filter valid base64 only)
-    const croppedImages = Array.from(croppedInputs)
-      .map(input => input.value)
-      .filter(dataUrl => dataUrl && dataUrl.length > 10);
-    const variant = {
-      color,
-      size,
-      price,
-      discountedPrice,
-      stock,
-      croppedImages
-    };
-    variants.push(variant);
-    renderVariants();
   }
+  if (!isValid) return;
+  // collect cropped images (filter valid base64 only)
+  const croppedImages = Array.from(variantImagesContainer.querySelectorAll('.cropped-image-data'))
+    .map(input => input.value)
+    .filter(dataUrl => dataUrl && dataUrl.length > 10);
+  const variant = {
+    color,
+    size,
+    price,
+    discountedPrice,
+    stock,
+    croppedImages
+  };
+  variants.push(variant);
+  renderVariants();
   closeVariantModal();
   if (isValid) toastSuccess('Variant added');
 }
@@ -560,11 +610,11 @@ function setupFormSubmission() {
       submitBtn.disabled = true;
       submitBtn.classList.add('loading');
     }
-    // --- Native Fetch POST ---
+    
     try {
       const response = await fetch('/admin/products/add', {
         method: 'POST',
-        body: formData,  // No headers—let browser set multipart
+        body: formData,  
       });
       const data = await response.json();
       if (response.ok) {
@@ -600,7 +650,7 @@ function dataURLtoBlob(dataurl) {
   return new Blob([u8arr], { type: mime });
 }
 
-/* INIT */
+
 document.addEventListener('DOMContentLoaded', function () {
   setupFileInputs();
   setupDeleteButtons();

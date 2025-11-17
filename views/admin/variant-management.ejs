@@ -1,0 +1,126 @@
+<html>
+<%- include('../partials/admin/header') %>
+
+  <body>
+    <%- include('../partials/admin/sidebar') %>
+
+      <!-- Main Content Area -->
+      <main class="content-area">
+        <div class="variants-container">
+          <!-- Header -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="variants-title">
+              Variants -
+              <%= product && (product.name || product.productName || product.title) ? (product.name ||
+                product.productName || product.title) : "Product" %>
+            </h2>
+            <div>
+              <% if (product && product._id) { %>
+                <a href="/admin/products/edit/<%= product._id %>" class="btn btn-dark btn-sm me-2">Edit Product</a>
+                <a href="/admin/products/<%= product._id %>/variants/add"
+                  class="btn btn-dark btn-sm add-variant-btn">Add Variant</a>
+                <% } else { %>
+                  <a href="#" class="btn btn-dark btn-sm me-2">Edit Product</a>
+                  <a href="#" class="btn btn-dark btn-sm add-variant-btn">Add Variant</a>
+                  <% } %>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="table-responsive">
+            <table class="table variants-table">
+              <thead>
+                <tr>
+                  <th>Color</th>
+                  <th>Size</th>
+                  <th>Price</th>
+                  <th>Discounted Price</th>
+                  <th>Stock</th>
+                  <th>Images</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% if (variants && variants.length> 0) { %>
+                  <% variants.forEach(variant=> { %>
+                    <tr>
+                      <td>
+                        <%= variant.color %>
+                      </td>
+                      <td>
+                        <%= variant.size %>
+                      </td>
+                      <td>₹<%= variant.price %>
+                      </td>
+                      <td>
+                        <% if (variant.discountedPrice) { %>
+                          ₹<%= variant.discountedPrice %>
+                            <% } else { %>
+                              -
+                              <% } %>
+                      </td>
+                      <td>
+                        <%= variant.stock %>
+                      </td>
+
+                      <!-- Show up to 3 images -->
+                      <td>
+                        <div class="d-flex">
+                          <% if (variant.images && variant.images.length> 0) { %>
+                            <% variant.images.slice(0, 3).forEach(img=> {
+                              const imgUrl = (typeof img === 'string') ? img : (img.url || img.path || img.public_url ||
+                              '');
+                              %>
+                              <% if (imgUrl) { %>
+                                <img src="<%= imgUrl %>" alt="Variant Image" class="variant-img">
+                                <% } %>
+                                  <% }) %>
+                                    <% } else { %>
+                                      <span>No Image</span>
+                                      <% } %>
+                        </div>
+                      </td>
+
+                      <!-- Listed/Unlisted -->
+                      <td>
+                        <% if (variant.isListed) { %>
+                          <span class="badge badge-listed">Listed</span>
+                          <% } else { %>
+                            <span class="badge badge-unlisted">Unlisted</span>
+                            <% } %>
+                      </td>
+
+                      <td>
+                        <a href="/admin/products/variants/edit/<%= variant._id %>" class="btn btn-sm btn-edit">Edit</a>
+
+                        <button class="btn btn-sm btn-list <%= variant.isListed ? 'hidden' : '' %>"
+                          data-id="<%= variant._id %>" data-color="<%= variant.color %>"
+                          data-size="<%= variant.size %>">
+                          List
+                        </button>
+
+                        <button class="btn btn-sm btn-Unlist <%= variant.isListed ? '' : 'hidden' %>"
+                          data-id="<%= variant._id %>" data-color="<%= variant.color %>"
+                          data-size="<%= variant.size %>">
+                          Unlist
+                        </button>
+                      </td>
+                    </tr>
+                    <% }) %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="8" class="text-center text-muted">No variants found for this product</td>
+                        </tr>
+                        <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+      </div>
+      <%- include('../partials/admin/footer') %>
+  </body>
+
+</html>

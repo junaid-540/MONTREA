@@ -1,0 +1,104 @@
+<%- include('../partials/admin/header') %>
+
+<body>
+    <%- include('../partials/admin/sidebar') %>
+
+    <main class="content-area">
+        <div class="add-product-container">
+            <h2 class="page-title">Add Variant</h2>
+
+            <form id="addVariantForm" enctype="multipart/form-data">
+                <input type="hidden" name="productId" value="<%= productId %>">
+
+                <div class="mb-3">
+                    <label class="form-label">Color</label>
+                    <input type="text" class="form-control" name="color" placeholder="e.g. Black, Blue">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Size</label>
+                    <select class="form-control" name="size">
+                        <option value="">Select size</option>
+                        <option>S</option>
+                        <option>M</option>
+                        <option>L</option>
+                        <option>XL</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Price (₹)</label>
+                    <input type="number" class="form-control" name="price" placeholder="0.00">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Discount Price (₹)</label>
+                    <input type="number" class="form-control" name="discountedPrice" placeholder="0.00">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Stock</label>
+                    <input type="number" class="form-control" name="stock" placeholder="0">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Product Images (3 images)</label>
+                    <div class="variant-images" id="variantImagesContainer">
+                        <% for (let i=0; i < 3; i++) { %>
+                            <div class="image-upload" data-image="<%= i %>">
+                                <div class="upload-icon"><i class="fas fa-image"></i></div>
+                                <div class="upload-text">Image <%= i + 1 %></div>
+                                
+                                <!-- Hidden preview container -->
+                                <div class="image-preview-container hidden">
+                                    <img class="image-preview" src="/placeholder.svg" alt="Preview">
+                                    <button type="button" class="delete-image-btn" aria-label="Delete image">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Hidden file input -->
+                                <input type="file" name="images" accept="image/*" style="display: none;" id="variantImage-<%= i %>">
+                                
+                                <!-- Hidden input to store cropped base64 -->
+                                <input type="hidden" class="cropped-image-data">
+                                
+                                <!-- Browse button -->
+                                <button type="button" class="upload-btn" onclick="document.getElementById('variantImage-<%= i %>').click()">
+                                    BROWSE IMAGE
+                                </button>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="submit-section">
+                    <button type="submit" class="btn btn-add">Save Variant</button>
+                    <button type="button" class="btn btn-cancel" onclick="window.history.back()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+    <!-- Crop Modal -->
+    <div id="cropModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Crop Image</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="crop-container">
+                    <img id="cropImage" src="/placeholder.svg" alt="Image to crop">
+                </div>
+                <div class="crop-actions">
+                    <button type="button" id="cancelCrop" class="btn btn-cancel">Cancel</button>
+                    <button type="button" id="applyCrop" class="btn btn-add">Apply Crop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/admin/footer') %>
+</body>
+</html>

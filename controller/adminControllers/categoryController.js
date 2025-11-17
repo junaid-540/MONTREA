@@ -16,20 +16,7 @@ export const getCategories = async (req,res,next) =>{
                 limit:3,
             });
 
-            // if(!result.data.length){
-            //     return sendResponse(res,{
-            //         success:false,
-            //         message:errorMessages.NO_DATA_FOUND,
-            //         statusCode:statusCodes.NOT_FOUND,
-            //     });
-            // }
-
-            // return sendResponse(res,{
-            //     success:true,
-            //     message:errorMessages.SUCCESS,
-            //     statusCode:statusCodes.OK,
-            //     data:result,
-            // });
+            
 
             let pageSize = 3;
 

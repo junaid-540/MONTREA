@@ -31,19 +31,23 @@ const productVariantSchema = new mongoose.Schema({
         default: 0,
         min: 0,
     },
-    SKU: {
-        type: String,
-        required: false,
-        sparse: true,
-        unique: true,
-        trim: true,
-    },
+    // SKU: {
+    //     type: String,
+    //     required: false,
+    //     sparse: true,
+    //     unique: true,
+    //     trim: true,
+    // },
     images: [
         {
             url: { type: String, required: true },
             public_id: { type: String, required: true },
         }
     ],
+    isListed: {
+        type: Boolean,
+        default: true
+    },
 }, { timestamps: true });
 
 const ProductVariant = mongoose.model("ProductVariant", productVariantSchema);
