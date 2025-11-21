@@ -191,11 +191,28 @@ export const getResendOtp = async (req, res, next) => {
 
 
 export const getSignin = (req, res) => {
-    const resetPasswordSuccess = req.session.resetSuccessMessage ||  null;
+    console.log("=== DEBUG: Raw req.query ===", req.query);
+    console.log("=== DEBUG: req.query.success ===", req.query.success);
+    console.log("=== DEBUG: req.query.newEmail ===", req.query.newEmail);
+
+    const resetPasswordSuccess = req.session.resetSuccessMessage || null;
+    const successMessage = req.session.successMessage || null;
     req.session.resetSuccessMessage = null;
-    
-    res.render('user/signin',{resetPasswordSuccess})
-}
+    req.session.successMessage = null;
+
+    let querySuccess = null;
+    if (req.query.success === 'email_updated') {  // ← This condition might fail
+        querySuccess = `Email updated successfully! Please log in with your new email: ${req.query.newEmail || 'the updated one'}`;
+    }
+
+    if (req.query.success === 'password_reset') {  // ← This condition might fail
+        querySuccess = 'Password reset successfully! Please sign in with your new password.';
+    }
+
+    console.log("=== DEBUG: Final querySuccess ===", querySuccess);  // ← ADD THIS
+
+    res.render('user/signin', { resetPasswordSuccess, successMessage, querySuccess });
+};
 
 export const postSignin = async (req, res, next) => {
     try {
@@ -264,6 +281,8 @@ export const oauthCallbackController = async (req, res) => {
 export const userLogout = (req, res, next) => {
     try {
 
+        req.session.successMessage = "You have logged out successfully!"
+
         if (req.isAuthenticated && req.isAuthenticated()) {
             req.logout(err => {
                 if (err) return next(err)
@@ -276,6 +295,10 @@ export const userLogout = (req, res, next) => {
         res.set('Pragma', 'no-cache');
         res.set('Expires', '0');
 
+        req.flash('success', 'You have logged out successfully!')
+        console.log(req.flash())
+        console.log(req.flash()[0])
+
         return res.redirect('/')
     } catch (err) {
         console.error("User Logout Error : ", err)
@@ -285,8 +308,8 @@ export const userLogout = (req, res, next) => {
 
 export const loadForgetPassword = async (req, res, next) => {
     try {
-        res.render('user/forgot-password',{
-            Title:"Forgot Password",
+        res.render('user/forgot-password', {
+            Title: "Forgot Password",
             pageCss: "/public/css/user/forgot-password.css",
         })
     } catch (err) {
@@ -345,7 +368,11 @@ export const getVeriyForgotOtp = async (req, res, next) => {
         if (!email) {
             return res.redirect('/forgot-password')
         }
-        res.render('user/verify-forgot-otp')
+
+        const isLoggedIn = !!req.session.userId;
+        const pageType = isLoggedIn ? 'password-reset' : 'forgot';
+
+        res.render('user/verify-forgot-otp', { pageType, email })
     } catch (err) {
         console.error("Error loading verify forgot OTP page:", err)
         next(err)
@@ -438,7 +465,8 @@ export const getResendForgotOtp = async (req, res, next) => {
 export const LoadResetPassword = async (req, res, next) => {
     try {
         if (!req.session.forgotPasswordOtpVerified) {
-            return res.redirect('/forgot-password');
+            const redirectPath = req.session.userId ? '/change-password' : '/forgot-password';
+            return res.redirect(redirectPath);
         }
         res.render('user/reset-password');
     } catch (error) {
@@ -447,55 +475,82 @@ export const LoadResetPassword = async (req, res, next) => {
     }
 }
 
-export const resetPassword = async (req, res,next) => {
-  try {
-    const { newPassword, confirmPassword } = req.body;
-    console.log(" New Password Received:", newPassword);
-    console.log(" Confirm Password Received:", confirmPassword);
-    const email = req.session.forgotPasswordEmail;
+export const resetPassword = async (req, res, next) => {
+    try {
+        const { newPassword, confirmPassword } = req.body;
+        console.log("New Password Received:", newPassword);
+        console.log("Confirm Password Received:", confirmPassword);
 
-    if(!email){
-        return sendResponse(res,{
-            success: false,
-            statusCode: statusCodes.BAD_REQUEST,
-            message: "Session expired. Please restart the forgot password process."
-        });
+        const email = req.session.forgotPasswordEmail;
+        const isLoggedIn = !!req.session.userId;
+
+        if (!email) {
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: "Session expired. Please restart the forgot password process."
+            });
+        }
+
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,50}$/;
+        if (!passwordRegex.test(newPassword)) {
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: "Password must include letters and numbers only, min 6 characters."
+            })
+        }
+
+        if (newPassword !== confirmPassword) {
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: errorMessages.CONFIRM_PASSWORD_MISMATCH
+            })
+        }
+
+        if (isLoggedIn) {
+            const user = await User.findOne({ email });
+            const isSamePassword = await bcrypt.compare(newPassword, user.password);
+            if (isSamePassword) {
+                return sendResponse(res, {
+                    success: false,
+                    statusCode: statusCodes.BAD_REQUEST,
+                    message: "New password must be different from the old password."
+                });
+            }
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await User.updateOne({ email }, { $set: { password: hashedPassword } });
+
+        req.session.forgotPasswordEmail = null;
+        req.session.forgotPasswordOtpVerified = null;
+
+        if (isLoggedIn) {
+            req.session.destroy((err) => {
+                if (err) console.error("Session destroy error:", err);
+            });
+
+            return sendResponse(res, {
+                success: true,
+                statusCode: statusCodes.OK,
+                message: "Password reset successfully! Please sign in with your new password.",
+                data: { redirect: "/signin?success=password_reset" }
+            });
+        } else {
+            req.session.resetSuccessMessage = "Your password has been reset successfully. Please sign in.";
+
+            return sendResponse(res, {
+                success: true,
+                statusCode: statusCodes.OK,
+                message: "Password reset successfully!",
+                data: { redirect: "/signin" }
+            });
+        }
+
+    } catch (err) {
+        console.error("Error in resetPassword:", err);
+        next(err);
     }
-
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,50}$/;
-    if(!passwordRegex.test(newPassword)) {
-        return sendResponse(res,{
-            success: false,
-            statusCode: statusCodes.BAD_REQUEST,
-            message: "Password must include letters and numbers only, min 6 characters."
-        })
-    }
-
-    if(newPassword !== confirmPassword){
-        return sendResponse(res,{
-            success: false,
-            statusCode: statusCodes.BAD_REQUEST,
-            message: errorMessages.CONFIRM_PASSWORD_MISMATCH
-        })
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await User.updateOne({ email }, { $set: { password: hashedPassword } });
-
-    
-    req.session.forgotPasswordEmail = null;
-    req.session.forgotPasswordOtpVerified = null;
-    req.session.resetSuccessMessage ="Your password has been reset successfully. Please sign in.";
-
-    return sendResponse(res,{
-        success:true,
-        statusCode: statusCodes.OK,
-        message: "Password reset successfully!",
-        data: { redirect: "/signin" }
-    })
-
-  } catch (err) {
-    console.error("Error in resetPassword:", err);
-   next(err)
-  }
 };

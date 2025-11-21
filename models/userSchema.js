@@ -47,6 +47,12 @@ const userSchema = new mongoose.Schema(
           default: "active",
         },
 
+        profileImage:{
+            type: String,
+           default: 'https://res.cloudinary.com/denu4amwx/image/upload/v1763464812/User_icon_ua556r.jpg',
+           trim: true,
+        },
+
         isVerified: {
             type: Boolean,
             default : false,

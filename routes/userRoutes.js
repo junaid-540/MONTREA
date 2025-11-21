@@ -1,10 +1,15 @@
 import express from 'express'
-import { getHomePage, getProductDetails, getShopPage } from '../controller/userControllers/homeController.js';
-import { getSignup , postSignup , postVerifyOtp , getResendOtp , getSignin , postSignin , oauthCallbackController , userLogout, loadForgetPassword, postForgetPassword, getVeriyForgotOtp, getResendForgotOtp, postVerifyForgotOtp, LoadResetPassword, resetPassword} from '../controller/userControllers/authController.js';
+import { getHomePage, getProductDetails, getShopPage } from '../controller/userControllers/home.controller.js';
+import { getSignup , postSignup , postVerifyOtp , getResendOtp , getSignin , postSignin , oauthCallbackController , userLogout, loadForgetPassword, postForgetPassword, getVeriyForgotOtp, getResendForgotOtp, postVerifyForgotOtp, LoadResetPassword, resetPassword} from '../controller/userControllers/auth.controller.js';
 import passport from 'passport';
 import { userFinder } from '../middleware/userfinder.js';
 import { preventCache, redirectIfLoggedIn } from '../middleware/preventcache.js';
 import { checkBlockedUser } from '../middleware/userBlockCheck.js';
+import { getChangePassword, getEditProfile, getPasswordReset, getProfile, getResendEmailChangeOtp, getVerifyEmailChange, postChangePassword, postVerifyEmailChange, updateProfile } from '../controller/userControllers/profile.Controller.js';
+import { checkSession } from '../middleware/checkSession.js';
+import upload from '../middleware/multerConfig.js';
+import validateRequest from '../middleware/validateRequest.js';
+import { editProfileValidation } from '../validations/userValidations.js';
 
 
 const router = express.Router()
@@ -40,7 +45,24 @@ router.get('/reset-password',preventCache,LoadResetPassword)
 router.post('/reset-password',preventCache,resetPassword);
 
 
-// shop page //
+
+
+// shop routes //
 router.get('/shop',getShopPage)
 router.get('/product/:id',getProductDetails)
+
+
+
+
+// profile routes //
+router.get('/profile',checkSession,getProfile)
+router.get('/edit-profile',checkSession,getEditProfile)
+router.post('/edit-profile',checkSession,upload.single("profileImage"),validateRequest(editProfileValidation),updateProfile)
+router.get('/verify-email-change',checkSession,getVerifyEmailChange);
+router.post('/verify-email-change',checkSession,postVerifyEmailChange);
+router.get('/resend-email-change-otp',checkSession,getResendEmailChangeOtp);
+router.get('/change-password',checkSession,getChangePassword);
+router.post('/change-password',checkSession,postChangePassword);
+router.get('/profile/forgot-current-password',checkSession,getPasswordReset)
+
 export default router

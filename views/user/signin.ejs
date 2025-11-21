@@ -13,6 +13,15 @@
 
 <body class="d-flex align-items-center justify-content-center vh-100">
 
+    <nav aria-label="breadcrumb" class="breadcrumb-nav">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="/" class="breadcrumb-back">← Go back</a>
+        </li>
+    </ol>
+    </nav>
+    
+
     <div class="container">
         <div class="row shadow-lg rounded-4 overflow-hidden">
 
@@ -68,6 +77,8 @@
         const resetPasswordSuccess = "<%= typeof resetPasswordSuccess !== 'undefined' && resetPasswordSuccess ? resetPasswordSuccess : '' %>";
         const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
         const errorMessage = "<%= typeof errorMessage !== 'undefined' && errorMessage ? errorMessage : '' %>";
+        const querySuccess = "<%= typeof querySuccess !== 'undefined' && querySuccess ? querySuccess : '' %>";
+        window.querySuccess = querySuccess
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

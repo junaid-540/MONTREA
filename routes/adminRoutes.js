@@ -1,13 +1,13 @@
 import express from 'express'
-import { getLoginPage, postLogin , adminLogout} from '../controller/adminControllers/authController.js';
-import { getDashboard } from '../controller/adminControllers/dashboardController.js';
-import { getCustomersPage, toggleBlockUser } from '../controller/adminControllers/customersController.js';
+import { getLoginPage, postLogin , adminLogout} from '../controller/adminControllers/auth.controller.js';
+import { getDashboard } from '../controller/adminControllers/dashboard.controller.js';
+import { getCustomersPage, toggleBlockUser } from '../controller/adminControllers/customer.controller.js';
 import { adminAuth } from '../middleware/adminAuth.js';
-import { getCategories , addCategory , editCategory , toggleCategoryStatus, getAddCategoryPage , getEitCategoryPage} from '../controller/adminControllers/categoryController.js';
+import { getCategories , addCategory , editCategory , toggleCategoryStatus, getAddCategoryPage , getEitCategoryPage} from '../controller/adminControllers/category.controller.js';
 import validateRequest from '../middleware/validateRequest.js';
 import { addCategoryValidation , addProductValidation, addVariantValidation, editCategoryValidation, editProductValidation, editVariantValidation} from '../validations/adminValidation.js';
-import { getProducts , getAddProductPage, addProduct, getEditProductPage, editProduct, toggleProductStatus} from '../controller/adminControllers/productController.js';
-import { addVariant, getProductVariants , toggleVariantStatus ,editVariant, getAddVariant, getEditVariant } from '../controller/adminControllers/productVariantController.js';
+import { getProducts , getAddProductPage, addProduct, getEditProductPage, editProduct, toggleProductStatus} from '../controller/adminControllers/product.controller.js';
+import { addVariant, getProductVariants , toggleVariantStatus ,editVariant, getAddVariant, getEditVariant } from '../controller/adminControllers/variant.controller.js';
 import upload from '../middleware/multerConfig.js';
 // import { validateVariantImages } from '../middleware/validateVariantImages.js';
 

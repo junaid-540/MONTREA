@@ -168,3 +168,34 @@ body {
         margin-bottom: 0.5rem;
     }
 }
+
+
+/* Breadcrumb container positioning */
+.breadcrumb-nav {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+}
+
+/* Remove default Bootstrap breadcrumb divider */
+.breadcrumb {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+/* Style for the "Go back" link */
+.breadcrumb-back {
+    color: #333;
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.breadcrumb-back:hover {
+    text-decoration: underline;
+    color: #a47f5f;
+}

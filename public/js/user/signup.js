@@ -50,7 +50,7 @@ function validateEmail(email) {
 }
 
 function validatePhone(phone) {
-    const phoneRegex = /^[0-9]{10}$/;
+    const phoneRegex = /^[6-9][0-9]{9}$/;
     if (!phone.trim()) return 'Phone number is required';
     if (!phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) return 'Please enter a valid 10-digit phone number';
     return null;

@@ -1,0 +1,127 @@
+<%- include('../partials/user/header') %>
+
+<body>
+    <%- include('../partials/user/navbar') %>
+
+    <div class="container py-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 mb-4 mb-lg-0">
+                <div class="user-header">
+                    <img src="<%= user.profileImage %>" alt="Profile" class="profile-pic" style="object-fit: cover;">
+                    <span class="ms-2"><%= user.name ? user.name[0].toUpperCase() + user.name.slice(1).toLowerCase() : 'User' %></span>
+                </div>
+                <div class="sidebar-menu">
+                    <a href="/profile" class="menu-item <%= activePage === 'profile' ? 'active' : '' %>">
+                        <i class="fas fa-user"></i><span>Profile</span>
+                    </a>
+                    <a href="/orders" class="menu-item <%= activePage === 'order' ? 'active' : '' %>">
+                        <i class="fas fa-box"></i><span>My Orders</span>
+                    </a>
+                    <a href="/wallet" class="menu-item <%= activePage === 'wallet' ? 'active' : '' %>">
+                        <i class="fas fa-wallet"></i><span>Wallet</span>
+                    </a>
+                    <a href="/address" class="menu-item <%= activePage === 'address' ? 'active' : '' %>">
+                        <i class="fas fa-map-marker-alt"></i><span>Address</span>
+                    </a>
+                    <a href="/refer" class="menu-item <%= activePage === 'refer' ? 'active' : '' %>">
+                        <i class="fas fa-gift"></i><span>Refer and Earn</span>
+                    </a>
+                    <a href="/logout" class="menu-item">
+                        <i class="fas fa-sign-out-alt"></i><span>Log-Out</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <div class="profile-card">
+                    <h2 class="profile-title">Edit Profile</h2>
+
+                    <!-- Profile Picture with Hover Overlay -->
+                    <div class="profile-pic-container mb-4">
+                        <img src="<%= user.profileImage || 'https://res.cloudinary.com/denu4amwx/image/upload/v1763464812/User_icon_ua556r.jpg' %>"
+                             alt="Profile"
+                             id="profileImagePreview"
+                             class="profile-pic rounded-circle">
+                        <div class="image-upload-overlay">
+                            <label for="profileImageInput">
+                                <i class="fas fa-camera"></i> Change
+                            </label>
+                            <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+
+                    <form id="editProfileForm" enctype="multipart/form-data">
+                        <div class="profile-info">
+                            <div class="row mb-4">
+                                <label class="col-sm-3 col-form-label form-label">Name:</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" name="name" id="name" value="<%= user.name || '' %>">
+                                    <small class="text-danger" id="nameError"></small>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <label class="col-sm-3 col-form-label form-label">Email:</label>
+                                <div class="col-sm-9">
+                                <% if (isGoogleUser) { %>
+                                        <input type="email" class="form-control" id="email" name="email" value="<%= user.email || '' %>" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
+                                        <!-- <small class="text-muted">Email managed by Google - cannot be changed.</small> -->
+                                    <% } else { %>
+                                        <input type="email" class="form-control" name="email" id="email" value="<%= user.email || '' %>">
+                                        <small class="text-danger" id="emailError"></small>
+                                    <% } %>
+                                </div>
+                                <!-- <div class="col-sm-9">
+                                    <input type="email" class="form-control" name="email" id="email" value="<%= user.email || '' %>">
+                                    <small class="text-danger" id="emailError"></small>
+                                </div> -->
+                            </div>
+                            <div class="row mb-4">
+                                <label class="col-sm-3 col-form-label form-label">Phone:</label>
+                                <div class="col-sm-9">
+                                    <input type="tel" class="form-control" name="phone" id="phone" value="<%= user.phone || '' %>" maxlength="10">
+                                    <small class="text-danger" id="phoneError"></small>
+                                </div>
+                            </div>
+
+                            <div class="row mt-5">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <button type="submit" class="btn-edit" id="saveBtn">Save Changes</button>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="/profile" class="btn-change-password">Cancel</a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="cropper-modal" id="cropperModal">
+        <div class="cropper-container-wrapper">
+            <h5 style="margin: 0 0 15px 0; color: #212529; font-weight: 600;">Crop Your Profile Picture</h5>
+            <div class="cropper-img-wrapper">
+                <img id="imageToCrop" class="cropper-image">
+            </div>
+            <small class="text-muted d-block mb-3">
+                <i class="fas fa-info-circle"></i> Drag to move • Scroll to zoom • Drag corners to resize
+            </small>
+            <div class="cropper-buttons">
+                <button class="cancel-crop-button" id="cancelCropButton">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="crop-button" id="cropButton">
+                    <i class="fas fa-check"></i> Apply Crop
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <span id="successMsg" style="display:none;"><%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %></span>
+    <span id="errorMsg" style="display:none;"><%= typeof errorMessage !== 'undefined' && errorMessage ? errorMessage : '' %></span>
+
+    <%- include('../partials/user/footer') %>

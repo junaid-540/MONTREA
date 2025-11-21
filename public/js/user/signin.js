@@ -100,6 +100,9 @@ form.addEventListener('submit', (e) => {
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    const querySuccess = window.querySuccess
+console.log("data from ejs",window.querySuccess)
+
   if(successMessage){
     Swal.fire({
       icon: 'success',
@@ -120,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
+
   if (resetPasswordSuccess) {
     Toastify({
         text: resetPasswordSuccess,
@@ -135,6 +140,23 @@ document.addEventListener('DOMContentLoaded', () => {
         stopOnFocus: true,
     }).showToast();
 }
+
+    if(querySuccess){
+        Toastify({
+            text: querySuccess,
+            duration: 3000,
+            gravity: "top",
+            position: 'right',
+            close:true,
+            style:{
+              background: "linear-gradient(to right, #00b09b, #96c93d)",
+              color: "#fff",
+              borderRadius: "8px"
+            },
+            stopOnFocus: true,
+        }).showToast();
+    }
+
 
   // Smooth scroll (optional)
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {

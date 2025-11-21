@@ -1,50 +1,63 @@
+// middleware/multerConfig.js
 import multer from "multer";
-import cloudinary from "../config/cloudinary.js";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
 
-// CloudinaryStorage for ADD operations
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: {
-    folder: "montrea_products",
-    allowed_formats: ["jpg", "jpeg", "png", "webp"],
-    timestamp: Math.floor(Date.now() / 1000).toString(),
-    resource_type: "image",
+  params: (req, file) => {
+    let folder = "others"; 
+
+    // Detect route and set folder accordingly
+    const url = req.originalUrl || req.url;
+
+    if (url.includes("/products") || url.includes("/variants")) {
+      folder = "montrea_products";
+    } 
+    else if (url.includes("/profile") || url.includes("/edit-profile")) {
+      folder = "profile";
+    }
+
+    return {
+      folder,
+      allowed_formats: ["jpg", "jpeg", "png", "webp"],
+
+      public_id: url.includes("/profile") 
+        ? `user_${req.session.userId || "unknown"}_${Date.now()}` 
+        : undefined,
+      transformation: url.includes("/profile")
+        ? [{ width: 500, height: 500, crop: "limit" }] 
+        : undefined,
+    };
   },
 });
 
 const upload = multer({
   storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024,
-    files: 30,
-  },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only images allowed"), false);
-    }
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only images allowed"), false);
   },
 });
 
 // Memory storage for EDIT operations
-const memoryStorage = multer.memoryStorage();
+// const memoryStorage = multer.memoryStorage();
 
-export const uploadMemory = multer({
-  storage: memoryStorage,
-  limits: {
-    fileSize: 5 * 1024 * 1024,
-    files: 3,
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only images allowed"), false);
-    }
-  },
-});
+// export const uploadMemory = multer({
+//   storage: memoryStorage,
+//   limits: {
+//     fileSize: 5 * 1024 * 1024,
+//     files: 3,
+//   },
+//   fileFilter: (req, file, cb) => {
+//     if (file.mimetype.startsWith("image/")) {
+//       cb(null, true);
+//     } else {
+//       cb(new Error("Only images allowed"), false);
+//     }
+//   },
+// });
 
 export const multerErrorHandler = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {

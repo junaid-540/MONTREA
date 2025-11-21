@@ -5,7 +5,8 @@ import statusCodes from "../../utils/statusCodes.js"
 import errorMessages from "../../utils/errorMessages.js"
 import { getPaginateData } from "../../utils/helpers.js"
 import Category from "../../models/categorySchema.js"
-import cloudinary from "../../config/cloudinary.js"
+// import cloudinary from "../../config/cloudinary.js"
+import { cleanupCloudinaryImages } from "../../utils/cloudinaryHelper.js"
 
 
 export const getProducts = async (req, res, next) => {
@@ -91,17 +92,17 @@ export const getAddProductPage = async (req, res, next) => {
 }
 
 
-const cleanupCloudinaryImages = async (publicIds) => {
-  if (!publicIds || publicIds.length === 0) return;
-  try {
-    console.log(`Cloudinary cleanup: Deleting ${publicIds.length} images.`);
-    const deletionPromises = publicIds.map(id => cloudinary.uploader.destroy(id));
-    await Promise.all(deletionPromises);
-    console.log("Cloudinary cleanup successful.");
-  } catch (err) {
-    console.error("Cloudinary cleanup failed:", err);
-  }
-};
+// const cleanupCloudinaryImages = async (publicIds) => {
+//   if (!publicIds || publicIds.length === 0) return;
+//   try {
+//     console.log(`Cloudinary cleanup: Deleting ${publicIds.length} images.`);
+//     const deletionPromises = publicIds.map(id => cloudinary.uploader.destroy(id));
+//     await Promise.all(deletionPromises);
+//     console.log("Cloudinary cleanup successful.");
+//   } catch (err) {
+//     console.error("Cloudinary cleanup failed:", err);
+//   }
+// };
 
 
 export const addProduct = async (req, res, next) => {

@@ -15,7 +15,7 @@ import './config/oauth.js'
 import passport from 'passport';
 import nocache from 'nocache';
 import { userFinder } from './middleware/userfinder.js';
-
+import flash from 'connect-flash'
 
 
 dotenv.config()
@@ -30,7 +30,7 @@ app.use(session({
     resave:false,
     saveUninitialized:false,
     cookie:{
-        maxAge:1000*60*60,
+        maxAge:1000*60*60*24,
         httpOnly:true,
     },
     store:MongoStore.create({
@@ -41,6 +41,8 @@ app.use(session({
 
 app.use(passport.initialize())
 app.use(passport.session())
+
+app.use(flash())
 
 
 app.use(nocache())
@@ -79,6 +81,7 @@ app.use(multerErrorHandler)
 app.use(notFoundHandler)
 app.use(globalErrorHandler)
 
+app
 
 
 app.listen(port,()=>{

@@ -22,7 +22,7 @@ export const signupValidation = Joi.object({
     }),
 
     phone:Joi.string()
-    .pattern(/^[0-9]{10}$/)
+    .pattern(/^[6-9][0-9]{9}$/)
     .required()
     .messages({
         'string.empty':errorMessages.PHONE_REQUIRED,
@@ -47,8 +47,6 @@ export const signupValidation = Joi.object({
 });
 
 
-
-
 export const signinValidation = Joi.object({
     email: Joi.string()
     .email()
@@ -65,4 +63,35 @@ export const signinValidation = Joi.object({
         'string.empty':errorMessages.PASSWORD_REQUIRED,
         'string.pattern.base':errorMessages.PASSWORD_INVALID,
     }),
+});
+
+
+export const editProfileValidation = Joi.object({
+    name: Joi.string()
+        .trim()
+        .min(2)
+        .max(30)
+        .pattern(/^[A-za-z\s]+$/i)
+        .required()
+        .messages({
+            'string.empty': errorMessages.NAME_REQUIRED,
+            'string.min': 'Name must be at least 2 characters long',
+            'string.max': 'Name must not exceed 30 characters',
+            'string.pattern.base': errorMessages.NAME_INVALID
+        }),
+    
+    email: Joi.string()
+        .required()
+        .messages({
+            'string.empty': errorMessages.EMAIL_REQUIRED,
+            'string.email': errorMessages.EMAIL_INVALID,
+        }),
+
+    phone: Joi.string()
+        .pattern(/^[6-9][0-9]{9}$/)
+        .required()
+        .messages({
+            'string.empty': errorMessages.PHONE_REQUIRED,
+            'string.pattern.base': errorMessages.PHONE_INVALID,
+     }),
 });

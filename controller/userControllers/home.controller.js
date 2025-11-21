@@ -78,8 +78,11 @@ export const getHomePage = async (req, res, next) => {
       category: product.categoryId?.name || 'Uncategorized',
     }));
 
-    const successMessage = req.session.successMessage || null;
+    const successMessage =  req.flash('success')[0] || req.session.successMessage || null;
+    
     req.session.successMessage = null;
+
+    
 
     res.render('user/index', {
       newArrivals,
@@ -180,15 +183,6 @@ export const getShopPage = async (req, res, next) => {
     const allColors = await ProductVariant.distinct('color', { isListed: true });
     const allSizes = await ProductVariant.distinct('size', { isListed: true });
 
-
-    if (category) {
-      const cats = Array.isArray(category) ? category : category.split(',');
-      const categoryDocs = await Category.find({ name: { $in: cats.map(c => new RegExp(`^${c}$`, 'i')) } }).lean();
-      req.session.categoryPath = categoryDocs.map(c => ({ name: c.name }));
-    } else {
-      req.session.categoryPath = null;
-    }
-
     res.render("user/shop", {
       products: populatedProducts,
       Title: "Shop",
@@ -218,107 +212,43 @@ export const getShopPage = async (req, res, next) => {
 export const getProductDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const product = await Product.findById(id)
-      .populate([
-        { path: 'variants', match: { isListed: true } },
-        { path: 'categoryId', select: 'name parentCategory' },
-      ])
-      .lean();
+    const product = await Product.findById(id).populate([
+      { path: 'variants', match: { isListed: true } },
+      { path: 'categoryId', select: 'name' },
+    ]);
 
     if (!product || !product.isListed) {
-      return res.status(404).render('user/404', { Title: "Product Not Found", user: res.locals.user || null });
-    }
-
-    let breadcrumb = [
-      { name: 'Home', url: '/' }, { name: 'Shop', url: '/shop' }
-    ];
-
-    if (req.session.categoryPath && req.session.categoryPath.length > 0) {
-      req.session.categoryPath.forEach(cat => {
-        breadcrumb.push({
-          name: cat.name,
-          url: `/shop?category=${cat.name.toLowerCase()}`
-        });
+      return res.status(404).render('user/404', {
+        Title: "Product Not Found",
+        // pageCss: "/public/css/user/404.css",
+        user: res.locals.user || null
       });
     }
 
-    else if (req.headers.referer && req.headers.referer.includes('/shop')) {
-      const url = new URL(req.headers.referer);
-      const categoryParam = url.searchParams.get('category');
-      if (categoryParam) {
-        const cats = categoryParam.split(',');
-        const mainCat = cats[cats.length - 1];
-        const catDoc = await Category.findOne({ name: { $regex: new RegExp(`^${mainCat}$`, 'i') } });
-        if (catDoc) {
-          breadcrumb.push({ name: catDoc.name, url: req.headers.referer });
-        }
-      }
-    }
-
-    else if (product.categoryId) {
-      const category = product.categoryId;
-
-
-      if (category.parentCategory) {
-        const parent = await Category.findById(category.parentCategory).select('name').lean();
-        if (parent) {
-          breadcrumb.push(
-            { name: parent.name, url: `/shop?category=${parent.name}` },
-            { name: category.name, url: `/shop?category=${category.name}` }
-          );
-        } else {
-          breadcrumb.push({ name: category.name, url: `/shop?category=${category.name}` });
-        }
-      } else {
-        breadcrumb.push({ name: category.name, url: `/shop?category=${category.name}` });
-      }
-    }
-
-
-    breadcrumb.push({
-      name: product.name,
-      url: null
-    });
-
-    const urlParams = new URLSearchParams(req.query);
-    const selectedColor = urlParams.get('color') || (product.variants[0]?.color);
-    if (selectedColor) {
-      const lastCrumb = breadcrumb[breadcrumb.length - 1];
-      lastCrumb.name = `${product.name} (${selectedColor.charAt(0).toUpperCase() + selectedColor.slice(1)})`;
-    }
-
-
-    const availableColors = [...new Set(product.variants.map(v => v.color))];
-    const availableSizes = [...new Set(product.variants.map(v => v.size))];
+    const availableColors = [...new Set(product.variants.map(variant => variant.color))];
+    const availableSizes = [...new Set(product.variants.map(variant => variant.size))]
 
     const relatedProducts = await Product.find({
       categoryId: product.categoryId._id,
       _id: { $ne: id },
       isListed: true,
-    })
-      .sort({ createdAt: -1 })
-      .limit(4)
-      .populate('categoryId', 'name')
-      .lean();
+    }).sort({ createdAt: -1 }).limit(4).populate('categoryId', 'name').lean()
 
-    const defaultVariant = product.variants[0] || null;
+    const defaultVariant = product.variants[0] || null
 
     res.render('user/product-details', {
       product,
-      Title: `${product.name} - Details`,
+      Title: `${product.name} - Deatails`,
       pageCss: "/public/css/user/product-details.css",
       pageJs: "/public/js/user/product-details.js",
       user: res.locals.user || null,
       availableColors,
       availableSizes,
       relatedProducts,
-      defaultVariant,
-      breadcrumb,
-      currentColor: selectedColor || availableColors[0]
+      defaultVariant
     });
-
   } catch (err) {
     console.error('Error loading product details:', err);
     next(err);
   }
-};
+}
