@@ -1,81 +1,91 @@
-
-
-// pagination + search // 
-
-
-
-
-export const getPaginateData = async (Model,req,options = {} ) =>{
+// pagination + search (flexible: simple find() by default, optional aggregation with lookup)
+export const getPaginateData = async (Model, req, options = {}) => {
     try {
-        
         const {
             searchFields = [],
             filters = {},
-            sort = { createdAt: -1},
+            sort = { createdAt: -1 },
             limit = 6,
-        } = options
+            // New: Optional lookup for joins (e.g., for products)
+            lookup = null,  // e.g., { from: 'categories', local: 'categoryId', foreign: '_id', as: 'category', searchOn: 'category.name' }
+        } = options;
 
-        const page  = parseInt(req.query.page) || 1;
-        const skip = (page - 1) * limit
+        const page = parseInt(req.query.page) || 1;
+        const skip = (page - 1) * limit;
         const search = req.query.search ? req.query.search.trim() : "";
 
-        // const searchQuery = search ? {
-        //     $or : searchFields.map((field)=>({[field] : {$regex: search , $options: "i"},})),} : {};
-
-        const searchCondtions = [];
-        if(search){
-            searchFields.forEach((field)=>{
-                searchCondtions.push({[field]: {$regex: search, $options: "i"}});
+        // Build search conditions (base + optional related field)
+        let searchConditions = [];
+        if (search) {
+            searchFields.forEach((field) => {
+                searchConditions.push({ [field]: { $regex: search, $options: "i" } });
             });
-            searchCondtions.push({"category.name": {$regex: search, $options: "i"}});
-        };
+            // If lookup provided and searchOn specified, add related search
+            if (lookup && lookup.searchOn) {
+                searchConditions.push({ [lookup.searchOn]: { $regex: search, $options: "i" } });
+            }
+        }
 
+        let data, totalDocuments;
 
-        const pipeline = [
-            {
-                $lookup: {
-                    from: "categories",
-                    localField: "categoryId",
-                    foreignField: "_id",
-                    as: "category",
+        if (lookup) {
+            // Aggregation mode: For models with relations (e.g., products)
+            const pipeline = [
+                {
+                    $lookup: {
+                        from: lookup.from,
+                        localField: lookup.local,
+                        foreignField: lookup.foreign,
+                        as: lookup.as,
+                    },
                 },
-            },
-            {$unwind: "$category"},
-            {
-                $match: {
-                    ...filters,
-                    ...(search? { $or: searchCondtions } : {}),
+                { $unwind: `$${lookup.as}` },  // Unwind only if array (assumes 1:1)
+                {
+                    $match: {
+                        ...filters,
+                        ...(search ? { $or: searchConditions } : {}),
+                    },
                 },
-            },
-            { $sort: sort },
-            { $skip: skip },
-            { $limit: limit }, 
-        ]
+                { $sort: sort },
+                { $skip: skip },
+                { $limit: limit },
+            ];
 
-        // const finalQuery = {...filters,...searchQuery};
-        const data = await Model.aggregate(pipeline);
-        const countPipeline = [
-            {
-                $lookup: {
-                    from: "categories",
-                    localField: "categoryId",
-                    foreignField: "_id",
-                    as: "category",
-                },
-            },
-            {$unwind: "$category"},
-            {
-                $match:{
-                    ...filters,
-                    ...(search? { $or: searchCondtions } : {}),
-                },
-            },
-            { $count: "total" },
-        ]
+            data = await Model.aggregate(pipeline);
 
-        const countResult = await Model.aggregate(countPipeline);
-        const totalDocuments = countResult[0]?.total || 0
-        const totalPages = Math.ceil(totalDocuments/limit);
+            // Count pipeline (separate to avoid double-counting)
+            const countPipeline = [
+                {
+                    $lookup: {
+                        from: lookup.from,
+                        localField: lookup.local,
+                        foreignField: lookup.foreign,
+                        as: lookup.as,
+                    },
+                },
+                { $unwind: `$${lookup.as}` },
+                {
+                    $match: {
+                        ...filters,
+                        ...(search ? { $or: searchConditions } : {}),
+                    },
+                },
+                { $count: "total" },
+            ];
+
+            const countResult = await Model.aggregate(countPipeline);
+            totalDocuments = countResult[0]?.total || 0;
+        } else {
+            // Simple mode: Old find() behavior (for admin/users/categories)
+            const finalQuery = {
+                ...filters,
+                ...(search ? { $or: searchConditions } : {}),
+            };
+            totalDocuments = await Model.countDocuments(finalQuery);
+            data = await Model.find(finalQuery).sort(sort).skip(skip).limit(limit);
+        }
+
+        const totalPages = Math.ceil(totalDocuments / limit);
 
         return {
             data,
@@ -83,12 +93,8 @@ export const getPaginateData = async (Model,req,options = {} ) =>{
             currentPage: page,
             search,
         };
-
     } catch (error) {
         console.error("Error in getPaginateData:", error);
-        throw error
+        throw error;
     }
-}
-
-
-
+};

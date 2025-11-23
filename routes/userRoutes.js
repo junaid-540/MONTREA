@@ -9,7 +9,8 @@ import { getChangePassword, getEditProfile, getPasswordReset, getProfile, getRes
 import { checkSession } from '../middleware/checkSession.js';
 import upload from '../middleware/multerConfig.js';
 import validateRequest from '../middleware/validateRequest.js';
-import { editProfileValidation } from '../validations/userValidations.js';
+import { addAddressValidation, editProfileValidation } from '../validations/userValidations.js';
+import { deleteAddress, getAddAddress, getAddressPage, getEditAddress, postAddAddress, postEditAddress, setDefaultAddress } from '../controller/userControllers/address.controller.js';
 
 
 const router = express.Router()
@@ -64,5 +65,18 @@ router.get('/resend-email-change-otp',checkSession,getResendEmailChangeOtp);
 router.get('/change-password',checkSession,getChangePassword);
 router.post('/change-password',checkSession,postChangePassword);
 router.get('/profile/forgot-current-password',checkSession,getPasswordReset)
+
+
+
+
+// address routes //
+
+router.get('/address',checkSession,getAddressPage)
+router.get('/add-address',checkSession,getAddAddress)
+router.post('/add-address',checkSession,validateRequest(addAddressValidation),postAddAddress)
+router.get('/edit-address/:id',checkSession,getEditAddress);
+router.post('/edit-address/:id',checkSession,validateRequest(addAddressValidation),postEditAddress);
+router.delete('/delete-address/:id',checkSession,deleteAddress);
+router.post('/set-default-address/:id',checkSession,setDefaultAddress)
 
 export default router

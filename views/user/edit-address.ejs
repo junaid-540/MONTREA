@@ -1,0 +1,143 @@
+<%- include('../partials/user/header') %>
+<body>
+    <%- include('../partials/user/navbar') %>
+    
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include('../partials/user/sidebar') %>
+
+            <!-- Edit Address Form -->
+            <div class="col-lg-9 col-md-8">
+                <div class="main-content">
+                    <h2 class="page-title">EDIT ADDRESS</h2>
+
+                    <form id="editAddressForm">
+                        <div class="mb-4">
+                            <label class="form-label">Address Type</label>
+                            <div class="address-type-selector">
+                                <div class="address-type-btn <%= address.addressType === 'Home' ? 'active' : '' %>" onclick="selectAddressType(this, 'Home')">
+                                    <i class="fas fa-home"></i>
+                                    <div>Home</div>
+                                </div>
+                                <div class="address-type-btn <%= address.addressType === 'Work' ? 'active' : '' %>" onclick="selectAddressType(this, 'Work')">
+                                    <i class="fas fa-briefcase"></i>
+                                    <div>Work</div>
+                                </div>
+                                <div class="address-type-btn <%= address.addressType === 'Other' ? 'active' : '' %>" onclick="selectAddressType(this, 'Other')">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <div>Other</div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="addressType" id="addressType" value="<%= address.addressType %>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label">Full Name <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Enter your full name" value="<%= address.fullName %>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number <span class="required">*</span></label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter 10-digit mobile number" pattern="[6-9][0-9]{9}" value="<%= address.phone %>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="alternatePhone" class="form-label">Alternate Phone (Optional)</label>
+                            <input type="tel" class="form-control" id="alternatePhone" name="alternatePhone" placeholder="Enter alternate 10-digit number" pattern="[6-9][0-9]{9}" value="<%= address.alternatePhone || '' %>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="addressLine1" class="form-label">Address Line 1 <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="addressLine1" name="addressLine1" placeholder="House No., Building Name, Street" value="<%= address.addressLine1 %>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="addressLine2" class="form-label">Address Line 2 (Optional)</label>
+                            <input type="text" class="form-control" id="addressLine2" name="addressLine2" placeholder="Apartment, Locality, Landmark" value="<%= address.addressLine2 || '' %>">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="city" class="form-label">City <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="city" name="city" placeholder="Enter city" value="<%= address.city %>">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="state" class="form-label">State <span class="required">*</span></label>
+                                <select class="form-select" id="state" name="state">
+                                    <option value="">Select State</option>
+                                    <option value="Kerala" <%= address.state === 'Kerala' ? 'selected' : '' %>>Kerala</option>
+                                    <option value="Tamil Nadu" <%= address.state === 'Tamil Nadu' ? 'selected' : '' %>>Tamil Nadu</option>
+                                    <option value="Karnataka" <%= address.state === 'Karnataka' ? 'selected' : '' %>>Karnataka</option>
+                                    <option value="Maharashtra" <%= address.state === 'Maharashtra' ? 'selected' : '' %>>Maharashtra</option>
+                                    <option value="Delhi" <%= address.state === 'Delhi' ? 'selected' : '' %>>Delhi</option>
+                                    <option value="Gujarat" <%= address.state === 'Gujarat' ? 'selected' : '' %>>Gujarat</option>
+                                    <option value="Rajasthan" <%= address.state === 'Rajasthan' ? 'selected' : '' %>>Rajasthan</option>
+                                    <option value="Uttar Pradesh" <%= address.state === 'Uttar Pradesh' ? 'selected' : '' %>>Uttar Pradesh</option>
+                                    <option value="West Bengal" <%= address.state === 'West Bengal' ? 'selected' : '' %>>West Bengal</option>
+                                    <option value="Punjab" <%= address.state === 'Punjab' ? 'selected' : '' %>>Punjab</option>
+                                    <option value="Haryana" <%= address.state === 'Haryana' ? 'selected' : '' %>>Haryana</option>
+                                    <option value="Telangana" <%= address.state === 'Telangana' ? 'selected' : '' %>>Telangana</option>
+                                    <option value="Andhra Pradesh" <%= address.state === 'Andhra Pradesh' ? 'selected' : '' %>>Andhra Pradesh</option>
+                                    <option value="Madhya Pradesh" <%= address.state === 'Madhya Pradesh' ? 'selected' : '' %>>Madhya Pradesh</option>
+                                    <option value="Bihar" <%= address.state === 'Bihar' ? 'selected' : '' %>>Bihar</option>
+                                    <option value="Assam" <%= address.state === 'Assam' ? 'selected' : '' %>>Assam</option>
+                                    <option value="Odisha" <%= address.state === 'Odisha' ? 'selected' : '' %>>Odisha</option>
+                                    <option value="Jharkhand" <%= address.state === 'Jharkhand' ? 'selected' : '' %>>Jharkhand</option>
+                                    <option value="Chhattisgarh" <%= address.state === 'Chhattisgarh' ? 'selected' : '' %>>Chhattisgarh</option>
+                                    <option value="Goa" <%= address.state === 'Goa' ? 'selected' : '' %>>Goa</option>
+                                    <option value="Himachal Pradesh" <%= address.state === 'Himachal Pradesh' ? 'selected' : '' %>>Himachal Pradesh</option>
+                                    <option value="Uttarakhand" <%= address.state === 'Uttarakhand' ? 'selected' : '' %>>Uttarakhand</option>
+                                    <option value="Jammu and Kashmir" <%= address.state === 'Jammu and Kashmir' ? 'selected' : '' %>>Jammu and Kashmir</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="pincode" class="form-label">Pincode <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Enter 6-digit pincode" pattern="[1-9][0-9]{5}" value="<%= address.pincode %>">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="country" class="form-label">Country <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="country" name="country" value="<%= address.country %>" readonly>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isDefault" name="isDefault" <%= address.isDefault ? 'checked' : '' %>>
+                                <label class="form-check-label" for="isDefault">
+                                    Set as default address
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <button type="submit" class="btn-submit">
+                                    <i class="fas fa-save me-2"></i>Update Address
+                                </button>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <a href="/address" class="btn-cancel"> 
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.successMessage = "<%= typeof successMessage !== 'undefined' ? successMessage : '' %>";
+        window.errorMessage = "<%= typeof errorMessage !== 'undefined' ? errorMessage : '' %>";
+        window.addressId = "<%= address._id %>";
+    </script>
+
+<%- include('../partials/user/footer') %>
+</body>
+</html>

@@ -7,38 +7,8 @@
     <div class="container py-4">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-lg-3 mb-4 mb-lg-0">
-                <div class="user-header">
-                    <img src="<%= user.profileImage %>" alt="Profile" class="profile-pic" style="object-fit: cover;">
-                    <span class="ms-2"><%= user.name[0].toUpperCase()+user.name.slice(1).toLowerCase() || 'User' %></span>
-                </div>
-                <div class="sidebar-menu">
-                    <a href="/profile" class="menu-item <%= activePage === 'profile' ? 'active' : '' %>">
-                        <i class="fas fa-user"></i>
-                        <span>Profile</span>
-                    </a>
-                    <a href="/orders" class="menu-item <%= activePage === 'order' ? 'active' : '' %>">
-                        <i class="fas fa-box"></i>
-                        <span>My Orders</span>
-                    </a>
-                    <a href="/wallet" class="menu-item <%= activePage === 'order' ? 'active' : '' %>">
-                        <i class="fas fa-wallet"></i>
-                        <span>Wallet</span>
-                    </a>
-                    <a href="/address" class="menu-item <%= activePage === 'order' ? 'active' : '' %>">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>Address</span>
-                    </a>
-                    <a href="/refer" class="menu-item <%= activePage === 'order' ? 'active' : '' %>">
-                        <i class="fas fa-gift"></i>
-                        <span>Refer and Earn</span>
-                    </a>
-                    <a href="/logout" class="menu-item">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Log-Out</span>
-                    </a>
-                </div>
-            </div>
+            
+             <%- include('../partials/user/sidebar') %>
 
             <!-- Profile Form -->
             <div class="col-lg-9">
@@ -101,5 +71,3 @@
     <span id="successMsg" style="display:none;"><%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %></span>
     <span id="errorMsg" style="display:none;"><%= typeof errorMessage !== 'undefined' && errorMessage ? errorMessage : '' %></span>
     <%- include('../partials/user/footer') %>
-</body>
-</html>

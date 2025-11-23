@@ -134,6 +134,49 @@ const errorMessages = {
 
 
 
+    // Address Validation Messages
+    ADDRESS_TYPE_REQUIRED: "Address type is required",
+    ADDRESS_TYPE_INVALID: "Address type must be Home, Work, or Other",
+    
+    ADDRESS_FULLNAME_REQUIRED: "Full name is required",
+    ADDRESS_FULLNAME_MIN: "Full name must be at least 3 characters",
+    ADDRESS_FULLNAME_MAX: "Full name must not exceed 50 characters",
+    ADDRESS_FULLNAME_PATTERN: "Full name can only contain letters and spaces",
+    
+    ADDRESS_PHONE_REQUIRED: "Phone number is required",
+    ADDRESS_PHONE_INVALID: "Phone number must be a valid 10-digit Indian mobile number starting with 6-9",
+    
+    ADDRESS_ALTERNATE_PHONE_INVALID: "Alternate phone must be a valid 10-digit Indian mobile number starting with 6-9",
+    
+    ADDRESS_LINE1_REQUIRED: "Address Line 1 is required",
+    ADDRESS_LINE1_MIN: "Address Line 1 must be at least 5 characters",
+    ADDRESS_LINE1_MAX: "Address Line 1 must not exceed 100 characters",
+    
+    ADDRESS_LINE2_MAX: "Address Line 2 must not exceed 100 characters",
+    
+    ADDRESS_CITY_REQUIRED: "City is required",
+    ADDRESS_CITY_MIN: "City must be at least 2 characters",
+    ADDRESS_CITY_MAX: "City must not exceed 50 characters",
+    ADDRESS_CITY_PATTERN: "City can only contain letters and spaces",
+    
+    ADDRESS_STATE_REQUIRED: "State is required",
+    
+    ADDRESS_PINCODE_REQUIRED: "Pincode is required",
+    ADDRESS_PINCODE_INVALID: "Pincode must be a valid 6-digit Indian pincode",
+    
+    ADDRESS_COUNTRY_REQUIRED: "Country is required",
+    
+    // Address Success Messages
+    ADDRESS_ADDED_SUCCESS: "Address added successfully",
+    ADDRESS_UPDATED_SUCCESS: "Address updated successfully",
+    ADDRESS_DELETED_SUCCESS: "Address deleted successfully",
+    ADDRESS_NOT_FOUND: "Address not found",
+    ADDRESS_SET_DEFAULT_SUCCESS: "Default address updated successfully",
+    ADDRESS_ALREADY_DEFAULT: "This address is already set as default",
+
+
+
+
     // Common success & info messages
     SUCCESS: "Operation completed successfully.",
     UPDATED_SUCCESS: "Record updated successfully.",

@@ -1,0 +1,142 @@
+<%- include('../partials/user/header') %>
+<body>
+    <%- include('../partials/user/navbar') %>
+    
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include('../partials/user/sidebar') %>
+
+            <!-- Add Address Form -->
+            <div class="col-lg-9 col-md-8">
+                <div class="main-content">
+                    <h2 class="page-title">ADD NEW ADDRESS</h2>
+
+                    <form id="addAddressForm">
+                        <div class="mb-4">
+                            <label class="form-label">Address Type</label>
+                            <div class="address-type-selector">
+                                <div class="address-type-btn active" onclick="selectAddressType(this, 'Home')">
+                                    <i class="fas fa-home"></i>
+                                    <div>Home</div>
+                                </div>
+                                <div class="address-type-btn" onclick="selectAddressType(this, 'Work')">
+                                    <i class="fas fa-briefcase"></i>
+                                    <div>Work</div>
+                                </div>
+                                <div class="address-type-btn" onclick="selectAddressType(this, 'Other')">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <div>Other</div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="addressType" id="addressType" value="Home">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label">Full Name <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="fullName" name="fullName" placeholder="Enter your full name" >
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number <span class="required">*</span></label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter 10-digit mobile number" pattern="[6-9][0-9]{9}" >
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="alternatePhone" class="form-label">Alternate Phone (Optional)</label>
+                            <input type="tel" class="form-control" id="alternatePhone" name="alternatePhone" placeholder="Enter alternate 10-digit number" pattern="[6-9][0-9]{9}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="addressLine1" class="form-label">Address Line 1 <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="addressLine1" name="addressLine1" placeholder="House No., Building Name, Street" >
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="addressLine2" class="form-label">Address Line 2 (Optional)</label>
+                            <input type="text" class="form-control" id="addressLine2" name="addressLine2" placeholder="Apartment, Locality, Landmark">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="city" class="form-label">City <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="city" name="city" placeholder="Enter city" >
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="state" class="form-label">State <span class="required">*</span></label>
+                                <select class="form-select" id="state" name="state" >
+                                    <option value="">Select State</option>
+                                    <option value="Kerala">Kerala</option>
+                                    <option value="Tamil Nadu">Tamil Nadu</option>
+                                    <option value="Karnataka">Karnataka</option>
+                                    <option value="Maharashtra">Maharashtra</option>
+                                    <option value="Delhi">Delhi</option>
+                                    <option value="Gujarat">Gujarat</option>
+                                    <option value="Rajasthan">Rajasthan</option>
+                                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                    <option value="West Bengal">West Bengal</option>
+                                    <option value="Punjab">Punjab</option>
+                                    <option value="Haryana">Haryana</option>
+                                    <option value="Telangana">Telangana</option>
+                                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                    <option value="Bihar">Bihar</option>
+                                    <option value="Assam">Assam</option>
+                                    <option value="Odisha">Odisha</option>
+                                    <option value="Jharkhand">Jharkhand</option>
+                                    <option value="Chhattisgarh">Chhattisgarh</option>
+                                    <option value="Goa">Goa</option>
+                                    <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                    <option value="Uttarakhand">Uttarakhand</option>
+                                    <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="pincode" class="form-label">Pincode <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Enter 6-digit pincode" pattern="[1-9][0-9]{5}" >
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="country" class="form-label">Country <span class="required">*</span></label>
+                                <input type="text" class="form-control" id="country" name="country" value="India" readonly>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isDefault" name="isDefault">
+                                <label class="form-check-label" for="isDefault">
+                                    Set as default address
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <button type="submit" class="btn-submit">
+                                    <i class="fas fa-save me-2"></i>Save Address
+                                </button>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <a href="/address" class="btn-cancel"> 
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    window.successMessage = "<%= typeof successMessage !== 'undefined' ? successMessage : '' %>";
+    window.errorMessage = "<%= typeof errorMessage !== 'undefined' ? errorMessage : '' %>";
+</script>
+
+<%- include('../partials/user/footer') %>
+</body>
+</html>

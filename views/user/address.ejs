@@ -1,0 +1,88 @@
+<%- include('../partials/user/header') %>
+<body>
+    <%- include('../partials/user/navbar') %>
+    
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="row">
+            <!-- Sidebar -->
+            <%- include('../partials/user/sidebar') %>
+
+            <!-- Address Management -->
+            <div class="col-lg-9 col-md-8">
+                <div class="main-content">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+                        <h2 class="page-title mb-0">MANAGE ADDRESS</h2>
+                        <a href="/add-address" class="add-address-btn">Add New Address</a>
+                    </div>
+
+                    <% if (addresses && addresses.length > 0) { %>
+                        <!-- Display Addresses -->
+                        <% addresses.forEach(address => { %>
+                            <div class="address-card">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="address-name"><%= address.fullName.toUpperCase() %> 
+                                            <span class="address-type">
+                                                <% if (address.addressType === 'Home') { %>
+                                                    <i class="fas fa-home"></i>
+                                                <% } else if (address.addressType === 'Work') { %>
+                                                    <i class="fas fa-briefcase"></i>
+                                                <% } else { %>
+                                                    <i class="fas fa-map-marker-alt"></i>
+                                                <% } %>
+                                                <%= address.addressType %>
+                                            </span>
+                                        </div>
+                                        <div class="address-details">
+                                            <%= address.addressLine1 %><br>
+                                            <% if (address.addressLine2) { %>
+                                                <%= address.addressLine2 %><br>
+                                            <% } %>
+                                            <%= address.city %>, <%= address.state %><br>
+                                            PIN <%= address.pincode %><br>
+                                            <%= address.country %>
+                                            <br>Phone: <%= address.phone %>
+                                            <% if (address.alternatePhone) { %>
+                                                , <%= address.alternatePhone %>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mt-3 mt-md-0">
+                                        <div class="address-actions justify-content-md-end">
+                                            <button class="btn-action btn-edit" data-id="<%= address._id %>">Edit</button>
+                                            <button class="btn-action btn-delete" data-id="<%= address._id %>">Delete</button>
+                                            <% if (address.isDefault) { %>
+                                                <button class="btn-action btn-default active" data-id="<%= address._id %>">Default</button>
+                                            <% } else { %>
+                                                <button class="btn-action btn-default" data-id="<%= address._id %>">Set Default</button>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <!-- Empty State -->
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <h3 class="empty-state-title">No Address Found</h3>
+                            <p class="empty-state-text">You haven't added any addresses yet. Add your first address to make checkout faster and easier.</p>
+                            <a href="/add-address" class="btn-primary-action">Add Your First Address</a>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.successMessage = "<%= typeof successMessage !== 'undefined' ? successMessage : '' %>";
+        window.errorMessage = "<%= typeof errorMessage !== 'undefined' ? errorMessage : '' %>";
+    </script>
+
+<%- include('../partials/user/footer') %>
+</body>
+</html>
