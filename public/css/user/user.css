@@ -55,6 +55,25 @@
     color: white;
 }
 
+
+/* Prevent all scrollbar padding issues */
+body.modal-open {
+    padding-right: 0 !important;
+    overflow: auto;
+}
+
+.modal-open .navbar,
+.modal-open .navbar-fixed-top,
+.modal-open .navbar-fixed-bottom {
+    padding-right: 0 !important;
+}
+
+/* Also fix for sticky elements */
+.modal-open [style*="position: sticky"],
+.modal-open [style*="position:sticky"] {
+    padding-right: 0 !important;
+}
+
 /* ===== NAVBAR ICONS WITH SVG ===== */
 
 .icon-nav {
@@ -236,6 +255,26 @@
 
 .search-clear:hover svg {
     stroke: #e74c3c;
+}
+
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #dc3545;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 /* Responsive adjustments */

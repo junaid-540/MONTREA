@@ -11,6 +11,9 @@ import upload from '../middleware/multerConfig.js';
 import validateRequest from '../middleware/validateRequest.js';
 import { addAddressValidation, editProfileValidation } from '../validations/userValidations.js';
 import { deleteAddress, getAddAddress, getAddressPage, getEditAddress, postAddAddress, postEditAddress, setDefaultAddress } from '../controller/userControllers/address.controller.js';
+import { getCartPage ,clearInvalidItems, addToCart, checkVariantInCart, updateCartQuantity, removeFromCart } from '../controller/userControllers/cart.controller.js';
+import { getCheckoutPage, getAddress, addAddress as addCheckoutAddress, editAddress as editCheckoutAddress, deleteAddress as deleteCheckoutAddress, continueToPayment, } from '../controller/userControllers/checkout.controller.js';
+import { getOrderSuccessPage, getPaymentPage, placeOrder } from '../controller/userControllers/payment.controller.js';
 
 
 const router = express.Router()
@@ -18,8 +21,8 @@ const router = express.Router()
 
 router.use(userFinder)
 router.use(checkBlockedUser)
-//authentication//
 
+//authentication//
 router.get("/", getHomePage);
 router.get('/signup',preventCache,redirectIfLoggedIn,getSignup)
 router.post('/signup',postSignup)
@@ -46,13 +49,9 @@ router.get('/reset-password',preventCache,LoadResetPassword)
 router.post('/reset-password',preventCache,resetPassword);
 
 
-
-
 // shop routes //
 router.get('/shop',getShopPage)
 router.get('/product/:id',getProductDetails)
-
-
 
 
 // profile routes //
@@ -67,10 +66,7 @@ router.post('/change-password',checkSession,postChangePassword);
 router.get('/profile/forgot-current-password',checkSession,getPasswordReset)
 
 
-
-
 // address routes //
-
 router.get('/address',checkSession,getAddressPage)
 router.get('/add-address',checkSession,getAddAddress)
 router.post('/add-address',checkSession,validateRequest(addAddressValidation),postAddAddress)
@@ -78,5 +74,31 @@ router.get('/edit-address/:id',checkSession,getEditAddress);
 router.post('/edit-address/:id',checkSession,validateRequest(addAddressValidation),postEditAddress);
 router.delete('/delete-address/:id',checkSession,deleteAddress);
 router.post('/set-default-address/:id',checkSession,setDefaultAddress)
+
+
+// cart routes //
+router.get('/cart',checkSession,getCartPage);
+router.post('/cart/add',checkSession,addToCart)
+router.get('/cart/check/:variantId',checkVariantInCart)
+router.post('/cart/clear-invalid',checkSession,clearInvalidItems)
+router.post('/cart/update',checkSession,updateCartQuantity)
+router.post('/cart/remove',checkSession,removeFromCart)
+
+
+// checkout routes //
+router.get('/checkout',checkSession,getCheckoutPage);
+router.get('/checkout/get-address/:id',checkSession,getAddress);
+router.post('/checkout/add-address',checkSession,validateRequest(addAddressValidation),addCheckoutAddress);
+router.post('/checkout/edit-address/:id',checkSession,validateRequest(addAddressValidation),editCheckoutAddress);
+router.delete('/checkout/delete-address/:id',checkSession,deleteCheckoutAddress);
+router.post('/checkout/continue-to-payment',checkSession,continueToPayment)
+
+// payment Routes //
+
+router.get('/payment',checkSession,getPaymentPage)
+router.post('/payment/place-order',checkSession,placeOrder)
+
+
+router.get('/order-success/:orderId',checkSession,getOrderSuccessPage)
 
 export default router

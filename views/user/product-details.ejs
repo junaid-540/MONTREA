@@ -125,7 +125,7 @@
                                                                 <% } %>
                                         </div>
 
-                                        <!-- Action Buttons -->
+                                        
                                         <div class="d-flex gap-2 mb-3">
                                             <button class="btn-add-cart" id="addToCartBtn" <%=defaultVariant &&
                                                 defaultVariant.stock===0 ? 'disabled' : '' %>>
@@ -137,7 +137,6 @@
                                             </button>
                                         </div>
 
-                                        <!-- Tabs Section (Description & Reviews) - Moved Here -->
                                         <div class="tab-section-inline mt-4">
                                             <ul class="nav nav-tabs" id="productTabs" role="tablist">
                                                 <li class="nav-item" role="presentation">
@@ -276,7 +275,7 @@
             </div>
 
             <script>
-                window.variants = <% - JSON.stringify(product.variants || []) %>;
+                window.variants = <%- JSON.stringify(product.variants || []) %>;
                 window.productId = "<%= product._id %>";
             </script>
 

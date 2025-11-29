@@ -1,0 +1,173 @@
+<%- include('../partials/user/header') %>
+
+<body>
+    <%- include('../partials/user/navbar') %>
+
+    <!-- Main Content -->
+    <div class="payment-container">
+        <a href="/checkout" class="back-btn">
+            <i class="fas fa-arrow-left me-2"></i> Back to Checkout
+        </a>
+
+        <div class="content-wrapper">
+            <!-- Left Column -->
+            <div>
+                <!-- Delivery Address -->
+                <div class="delivery-address-card">
+                    <div class="address-header">
+                        <h3><i class="fas fa-map-marker-alt me-2" style="color: var(--accent-gold);"></i>Delivering To</h3>
+                    </div>
+                    <% if (shippingAddress) { %>
+                        <div class="address-content">
+                            <span class="address-tag"><%= shippingAddress.addressType %></span>
+                            <p style="font-weight: 600; color: var(--primary-black); margin-bottom: 5px;">
+                                <%= shippingAddress.fullName %>
+                            </p>
+                            <p><%= shippingAddress.phone %></p>
+                            <p>
+                                <%= shippingAddress.addressLine1 %><%= shippingAddress.addressLine2 ? ', ' + shippingAddress.addressLine2 : '' %>,<br>
+                                <%= shippingAddress.city %>, <%= shippingAddress.state %> - <%= shippingAddress.pincode %>
+                            </p>
+                        </div>
+                    <% } else { %>
+                        <div class="alert alert-danger">
+                            No delivery address selected. Please go back to checkout.
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="payment-wrapper">
+                    <h2 class="section-title">Select Payment Method</h2>
+
+                    <!-- Cash on Delivery -->
+                    <label class="payment-method active">
+                        <input type="radio" name="payment_method" value="cod" checked>
+                        <span class="radio-indicator"></span>
+                        <i class="fas fa-money-bill-wave payment-icon" style="color: #28a745;"></i>
+                        <div class="payment-details">
+                            <h4>Cash on Delivery</h4>
+                            <p>Pay with cash when your order arrives</p>
+                        </div>
+                    </label>
+
+                    <!-- Razorpay -->
+                    <label class="payment-method disabled">
+                        <input type="radio" name="payment_method" value="razorpay" disabled>
+                        <span class="radio-indicator"></span>
+                        <i class="fas fa-credit-card payment-icon" style="color: #3395FF;"></i>
+                        <div class="payment-details">
+                            <h4>Razorpay</h4>
+                            <p>Pay securely via Razorpay gateway</p>
+                        </div>
+                        <span class="coming-soon-badge">Coming Soon</span>
+                    </label>
+
+                    <!-- Wallet -->
+                    <label class="payment-method disabled">
+                        <input type="radio" name="payment_method" value="wallet" disabled>
+                        <span class="radio-indicator"></span>
+                        <i class="fas fa-wallet payment-icon" style="color: #ff6b6b;"></i>
+                        <div class="payment-details">
+                            <h4>Wallets</h4>
+                            <p>Use your digital wallet</p>
+                        </div>
+                        <span class="coming-soon-badge">Coming Soon</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Right Column - Order Summary -->
+            <div class="summary-wrapper">
+                <h4 class="section-title" style="font-size: 1.2rem; margin-bottom: 20px;">Order Summary</h4>
+
+                <!-- Products -->
+                <% if (cart.items && cart.items.length > 0) { %>
+                    <% cart.items.forEach(item => { %>
+                        <div class="product-item">
+                            <img src="<%= item.productImage %>" 
+                                 alt="<%= item.productName %>" 
+                                 class="product-img"
+                                 onerror="this.src='https://via.placeholder.com/60x88/f5f5f5/ccc?text=Product'">
+                            <div class="product-details">
+                                <div class="product-name"><%= item.productName %></div>
+                                <div class="product-meta">
+                                    <%= item.size %> / <%= item.color %> | Qty: <%= item.quantity %>
+                                </div>
+                                <div class="price-wrapper">
+                                    <% if (item.discountedPriceAtTime > 0 && item.discountedPriceAtTime < item.priceAtTime) { %>
+                                        <span class="original-price">₹<%= item.priceAtTime.toFixed(2) %></span>
+                                        <span class="discounted-price">₹<%= (item.discountedPriceAtTime * item.quantity).toFixed(2) %></span>
+                                    <% } else { %>
+                                        <span class="discounted-price">₹<%= (item.priceAtTime * item.quantity).toFixed(2) %></span>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } %>
+
+                <!-- Price Breakdown -->
+                <div style="margin-top: 20px;">
+                    <div class="summary-row">
+                        <span>Subtotal (<%= cart.itemsCount %> items)</span>
+                        <span>₹<%= subtotal.toFixed(2) %></span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery Charges</span>
+                        <span style="<%= shippingCharge === 0 ? 'color: #28a745; font-weight: 600;' : '' %>">
+                            <%= shippingCharge === 0 ? 'Free' : '₹' + shippingCharge.toFixed(2) %>
+                        </span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (GST 18%)</span>
+                        <span>₹<%= tax.toFixed(2) %></span>
+                    </div>
+
+                    <div class="summary-row total">
+                        <span>Total Amount</span>
+                        <span>₹<%= totalAmount.toFixed(2) %></span>
+                    </div>
+                </div>
+
+                <button class="btn-place-order" id="placeOrderBtn">
+                    Place Order
+                </button>
+
+                <div class="security-badge">
+                    <i class="fas fa-lock"></i>
+                    <span>Secure Payment</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/user/footer') %>
+    <script>
+        const messages = <%- JSON.stringify(messages || []) %>;
+        messages.forEach(msg => {
+            let bgColor, duration = 3000;
+            switch (msg.type) {
+                case 'error':
+                    bgColor = "linear-gradient(to right, #ff6b6b, #ee5a24)";
+                    break;
+                case 'success':
+                    bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
+                    break;
+                case 'warning':
+                    bgColor = "linear-gradient(to right, #ffa726, #ff7043)";
+                    duration = 4000;  
+                    break;
+                default:
+                    bgColor = "linear-gradient(to right, #2196f3, #21cbf3)";
+            }
+            Toastify({
+                text: msg.text,
+                duration: duration,
+                gravity: "top",
+                position: "right",
+                backgroundColor: bgColor,
+                stopOnFocus: true,
+            }).showToast();
+        });
+    </script>

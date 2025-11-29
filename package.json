@@ -27,6 +27,7 @@
     "mongoose": "^8.18.1",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
+    "nanoid": "^5.1.6",
     "nocache": "^4.0.0",
     "nodemailer": "^7.0.7",
     "passport": "^0.7.0",

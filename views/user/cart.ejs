@@ -1,0 +1,218 @@
+<%- include('../partials/user/header') %>
+<body>
+    <%- include('../partials/user/navbar') %>
+    <main>
+        <% if (cart.items && cart.items.length === 0) { %>
+            <section class="empty-state">
+                <svg class="bag-icon" viewBox="0 0 100 100">
+                    <path d="M20 30 Q20 20 30 20 H70 Q80 20 80 30 V70 Q80 80 70 80 H30 Q20 80 20 70 Z M40 50 L40 60 M60 50 L60 60" stroke="#f59e0b" stroke-width="4" fill="none"/>
+                </svg>
+                <h2>Your shopping bag is empty</h2>
+                <p>Start filling up your bag!</p>
+                <a href="/wishlist" class="btn btn-wishlist">Add items from wishlist</a>
+                <a href="/shop" class="btn btn-secondary">Continue shopping</a>
+            </section>
+        <% } else { %>
+            <!-- Cart with Items -->
+            <section class="populated">
+                <div class="items-list">
+                    <h2>Your Cart</h2>
+                    
+                    <!-- Warning Banner for Invalid Items -->
+                    <% if (hasInvalidItems) { %>
+                        <div class="alert alert-warning">
+                            <div class="alert-content">
+                                <div>
+                                    <strong>⚠️ Some items are no longer available</strong>
+                                    <p>These items cannot be purchased. Please remove them to proceed.</p>
+                                </div>
+                                <button class="btn-clear-invalid" onclick="clearInvalidItems()">
+                                    Clear Invalid Items
+                                </button>
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <!-- Cart Items -->
+                    <% if (cart.items && cart.items.length > 0) { %>
+                        <% cart.items.forEach((item, index) => { %>
+                            <% 
+                                let displayPrice, originalPrice, saveAmount;
+                                if (!item.isInvalid) {
+                                    displayPrice = item.discountedPriceAtTime > 0 ? item.discountedPriceAtTime : item.priceAtTime;
+                                    originalPrice = item.discountedPriceAtTime > 0 ? item.priceAtTime : null;
+                                    saveAmount = originalPrice ? (originalPrice - displayPrice) : 0;
+                                }
+                                const maxQty = Math.min(5, item.currentStock);
+                            %>
+                            <div class="item <%= item.isInvalid ? 'item-invalid' : '' %> <%= item.isOutOfStock ? 'item-out-of-stock' : '' %>" 
+                                 data-variant-id="<%= item.productVariantId %>"
+                                 data-invalid="<%= item.isInvalid %>">
+                                
+                                <!-- Product Image -->
+                                <img src="<%= item.productImage %>" 
+                                     alt="<%= item.productName %>"
+                                     class="item-image"
+                                     onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
+                                
+                                <div class="item-content">
+                                    <div class="item-details">
+                                        <h3><%= item.productName %></h3>
+                                        <div class="variant-info">
+                                            Variant: <%= item.size || 'N/A' %> / <%= item.color || 'N/A' %>
+                                        </div>
+                                        
+                                        <% if (!item.isInvalid) { %>
+                                            <div class="item-price">
+                                                <div class="price">₹<%= displayPrice.toFixed(2) %></div>
+                                                <% if (originalPrice) { %>
+                                                    <span class="old-price">₹<%= originalPrice.toFixed(2) %></span>
+                                                <% } %>
+                                            </div>
+                                        <% } %>
+                                        
+                                        <!-- Status Badges -->
+                                        <% if (item.isInvalid) { %>
+                                            <div class="badge badge-invalid">❌ <%= item.invalidReason %></div>
+                                        <% } else if (item.isOutOfStock) { %>
+                                            <div class="badge badge-out-of-stock">❌ Out of Stock</div>
+                                        <% } else if (item.currentStock < 5) { %>
+                                            <div class="badge badge-low-stock">📦 Only <%= item.currentStock %> left in stock</div>
+                                        <% } %>
+                                        
+                                        <!-- Save Amount -->
+                                        <% if (!item.isInvalid && !item.isOutOfStock && saveAmount > 0) { %>
+                                            <div class="save">You save ₹<%= saveAmount.toFixed(2) %> each</div>
+                                        <% } %>
+                                    </div>
+                                    
+                                    <div class="item-right">
+                                        <% if (!item.isInvalid && !item.isOutOfStock) { %>
+                                            <div class="item-quantity">
+                                                <span class="quantity-label">Quantity</span>
+                                                <form class="qty-form">
+                                                    <input type="hidden" name="productVariantId" value="<%= item.productVariantId %>">
+                                                    <div class="qty-controls">
+                                                        <button type="button" 
+                                                                class="qty-btn qty-decrease" 
+                                                                data-variant-id="<%= item.productVariantId %>"
+                                                                <%= item.quantity <= 1 ? 'disabled' : '' %>>
+                                                            −
+                                                        </button>
+                                                        <input type="number" 
+                                                               name="quantity" 
+                                                               value="<%= item.quantity %>" 
+                                                               min="1" 
+                                                               max="<%= maxQty %>" 
+                                                               class="qty" 
+                                                               readonly>
+                                                        <button type="button" 
+                                                                class="qty-btn qty-increase" 
+                                                                data-variant-id="<%= item.productVariantId %>"
+                                                                data-max="<%= maxQty %>"
+                                                                <%= item.quantity >= maxQty ? 'disabled' : '' %>>
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        <% } %>
+                                        
+                                        <div class="item-remove">
+                                            <form method="POST" action="/cart/remove" class="remove-form">
+                                                <input type="hidden" name="productVariantId" value="<%= item.productVariantId %>">
+                                                <button type="submit" class="btn-remove">
+                                                    Remove
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p>No items in cart.</p>
+                    <% } %>
+                </div>
+
+                <!-- Order Summary Sidebar -->
+                <aside class="summary">
+                    <h3>Order Summary</h3>
+                    
+                    <div class="summary-row">
+                        <span>Subtotal (<%= cart.itemsCount %> items):</span>
+                        <span>₹<%= cart.subtotal.toFixed(2) %></span>
+                    </div>
+                    
+                    <% if (hasInvalidItems) { %>
+                        <div class="summary-row invalid-items-note">
+                            <span><%= cart.totalItems - cart.itemsCount %> unavailable items</span>
+                            <span>Not included</span>
+                        </div>
+                    <% } %>
+                    
+                    <div class="summary-row">
+                        <span>Shipping:</span>
+                        <span>Calculated at checkout</span>
+                    </div>
+                    
+                    <div class="summary-divider"></div>
+                    
+                    <div class="summary-row summary-total">
+                        <span>Total:</span>
+                        <span>₹<%= cart.subtotal.toFixed(2) %></span>
+                    </div>
+                    
+                    <p class="note">Taxes and shipping calculated at checkout</p>
+                    
+                    <!-- Checkout Button -->
+                    <% if (cart.itemsCount > 0) { %>
+                        <% if (canCheckout) { %>
+                            <a href="/checkout" class="btn btn-primary checkout-btn">
+                                Checkout
+                            </a>
+                        <% } else { %>
+                            <button class="btn btn-primary checkout-btn" disabled>
+                                Cannot Proceed
+                            </button>
+                            <p class="checkout-blocked-msg">
+                                Remove unavailable or out-of-stock items to continue
+                            </p>
+                        <% } %>
+                    <% } %>
+                    
+                    <a href="/shop" class="continue-shopping">← Continue Shopping</a>
+                </aside>
+            </section>
+        <% } %>
+    </main>
+
+    <%- include('../partials/user/footer') %>
+    <script>
+        const messages = <%- JSON.stringify(messages || []) %>;
+        messages.forEach(msg => {
+            let bgColor, duration = 3000;
+            switch (msg.type) {
+                case 'error':
+                    bgColor = "linear-gradient(to right, #ff6b6b, #ee5a24)";
+                    break;
+                case 'success':
+                    bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
+                    break;
+                case 'warning':
+                    bgColor = "linear-gradient(to right, #ffa726, #ff7043)";
+                    duration = 4000;  
+                    break;
+                default:
+                    bgColor = "linear-gradient(to right, #2196f3, #21cbf3)";
+            }
+            Toastify({
+                text: msg.text,
+                duration: duration,
+                gravity: "top",
+                position: "right",
+                backgroundColor: bgColor,
+                stopOnFocus: true,
+            }).showToast();
+        });
+    </script>

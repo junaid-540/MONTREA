@@ -1,0 +1,98 @@
+<%- include('../partials/user/header') %>
+
+<body>
+    <%- include('../partials/user/navbar') %>
+
+    <div class="success-container">
+        <div class="success-card">
+            <!-- Success Icon -->
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+
+            <!-- Success Message -->
+            <h1 class="success-title">Order Placed Successfully!</h1>
+            <p class="success-subtitle">
+                Thank you for your purchase! Your order has been received and is being processed.
+                We'll send you a confirmation email shortly.
+            </p>
+
+            <!-- Order Details -->
+            <div class="order-details">
+                <div class="order-id">
+                    <strong>Order ID:</strong> <span><%= order.orderId %></span>
+                </div>
+                
+                <div class="order-info">
+                    <div class="info-item">
+                        <div class="info-label">Order Date</div>
+                        <div class="info-value">
+                            <%= new Date(order.placedAt).toLocaleDateString('en-IN', { 
+                                day: 'numeric', 
+                                month: 'short', 
+                                year: 'numeric' 
+                            }) %>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Total Amount</div>
+                        <div class="info-value">₹<%= order.totalAmount.toFixed(2) %></div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Payment Method</div>
+                        <div class="info-value"><%= order.paymentMethod %></div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Expected Delivery</div>
+                        <div class="info-value">
+                            <%= new Date(order.expectedDelivery).toLocaleDateString('en-IN', { 
+                                day: 'numeric', 
+                                month: 'short', 
+                                year: 'numeric' 
+                            }) %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Illustration -->
+            <div class="success-illustration">
+                <img src="https://cdnjs.cloudflare.com/ajax/libs/undraw/2.0.0/illustrations/order-confirmed.svg" 
+                     alt="Order Success Illustration"
+                     onerror="this.style.display='none'">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a href="/orders/<%= order.orderId %>" class="btn-action btn-primary">
+                    <i class="fas fa-receipt"></i>
+                    View Order Details
+                </a>
+                <a href="/shop" class="btn-action btn-secondary">
+                    <i class="fas fa-shopping-bag"></i>
+                    Continue Shopping
+                </a>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="additional-info">
+                <p class="info-text">
+                    <i class="fas fa-info-circle"></i>
+                    You can track your order status from your orders page
+                </p>
+                <p class="info-text">
+                    <i class="fas fa-envelope"></i>
+                    An order confirmation email has been sent to your registered email address
+                </p>
+                <p class="info-text">
+                    <i class="fas fa-headset"></i>
+                    Need help? Contact our customer support at support@montrea.com
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/user/footer') %>

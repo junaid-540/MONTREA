@@ -1,0 +1,351 @@
+<%- include('../partials/user/header') %>
+
+    <body>
+        <%- include('../partials/user/navbar') %>
+
+            <div class="checkout-container">
+
+                <a href="/cart" class="back-btn">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Cart
+                </a>
+
+                <div class="row g-5">
+                    <div class="col-lg-7">
+                        <div class="address-wrapper">
+                            <h2 class="section-title">Select Delivery Address</h2>
+
+                            <% if (addresses && addresses.length> 0) { %>
+                                <% addresses.forEach((address, index)=> { %>
+                                    <div class="mb-3">
+                                        <label class="address-card-label">
+                                            <input type="radio" name="shipping_address" class="address-radio d-none"
+                                                value="<%= address._id %>" data-address-id="<%= address._id %>"
+                                                <%=address.isDefault ? 'checked' : '' %>>
+                                            <div class="address-card">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="radio-indicator"></span>
+                                                        <h5 class="m-0 fw-bold">
+                                                            <%= address.fullName %>
+                                                        </h5>
+                                                        <span class="address-tag ms-3">
+                                                            <%= address.addressType %>
+                                                        </span>
+                                                        <% if (address.isDefault) { %>
+                                                            <span class="badge bg-success ms-2">Default</span>
+                                                            <% } %>
+                                                    </div>
+                                                    <div class="d-flex gap-3">
+                                                        <button class="btn-action btn-edit-address"
+                                                            data-address-id="<%= address._id %>" type="button"
+                                                            title="Edit Address">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button class="btn-action btn-delete-address"
+                                                            data-address-id="<%= address._id %>" type="button"
+                                                            title="Delete Address">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="ps-4 ms-2">
+                                                    <p class="text-secondary mb-1">
+                                                        <%= address.phone %>
+                                                    </p>
+                                                    <p class="text-secondary mb-0">
+                                                        <%= address.addressLine1 %>
+                                                            <%= address.addressLine2 ? ', ' + address.addressLine2 : ''
+                                                                %>,<br>
+                                                                <%= address.city %>, <%= address.state %> - <%=
+                                                                            address.pincode %>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                No saved addresses found. Please add a new address to continue.
+                                            </div>
+                                            <% } %>
+
+                                                <button type="button" class="btn-add-new" id="btnAddNewAddress">
+                                                    <i class="fas fa-plus me-2"></i> Add a new address
+                                                </button>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <div class="summary-wrapper">
+                            <h4 class="section-title fs-5 mb-4">Order Summary</h4>
+
+                            <% if (cart.items && cart.items.length> 0) { %>
+                                <% cart.items.forEach(item=> { %>
+                                    <div class="product-item">
+                                        <img src="<%= item.productImage %>" alt="<%= item.productName %>"
+                                            class="product-img"
+                                            onerror="this.src='https://via.placeholder.com/70x85/eee/ccc?text=No+Image'">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="fw-medium">
+                                                    <%= item.productName %>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-end">
+                                                <small class="text-muted">
+                                                    <%= item.size %> / <%= item.color %> | Qty: <%= item.quantity %>
+                                                </small>
+
+                                                <div class="price-wrapper text-end">
+                                                    <% if (item.discountedPriceAtTime> 0 && item.discountedPriceAtTime <
+                                                            item.priceAtTime) { %>
+                                                            <span class="text-muted original-price me-2">
+                                                                ₹<%= item.priceAtTime.toFixed(2) %>
+                                                            </span>
+                                                            <span class="fw-bold discounted-price">
+                                                                ₹<%= item.discountedPriceAtTime.toFixed(2) %>
+                                                            </span>
+                                                            <% } else { %>
+                                                                <span class="fw-bold">
+                                                                    ₹<%= item.priceAtTime.toFixed(2) %>
+                                                                </span>
+                                                                <% } %>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }); %>
+                                        <% } %>
+
+                                            <!-- Price Calculation -->
+                                            <div class="mt-4">
+                                                <div class="summary-row">
+                                                    <span>Subtotal (<%= cart.itemsCount %> items)</span>
+                                                    <span>₹<%= cart.subtotal.toFixed(2) %></span>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <span>Delivery Charges</span>
+                                                    <span class="text-success">
+                                                        <%= shippingCharge===0 ? 'Free' : '₹' +
+                                                            shippingCharge.toFixed(2) %>
+                                                    </span>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <span>Tax (GST 18%)</span>
+                                                    <span>₹<%= tax.toFixed(2) %></span>
+                                                </div>
+
+                                                <!-- Coupon (Future Implementation) -->
+                                                <div class="coupon-group">
+                                                    <input type="text" placeholder="Gift card or discount code"
+                                                        id="couponCode" disabled>
+                                                    <button disabled>Apply</button>
+                                                </div>
+                                                <button class="view-coupon-btn" disabled>
+                                                    View available coupons (Coming Soon)
+                                                </button>
+
+                                                <div class="summary-row total">
+                                                    <span>Total</span>
+                                                    <span class="fs-4">₹<%= totalAmount.toFixed(2) %></span>
+                                                </div>
+                                            </div>
+
+                                            <button class="btn-continue mt-4" id="btnContinueToPayment">
+                                                Continue to Payment
+                                            </button>
+
+                                            <div class="security-badge">
+                                                <i class="fas fa-lock"></i>
+                                                <span>Secure Checkout</span>
+                                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add/Edit Address Modal -->
+            <div class="modal fade" id="addressModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addressModalTitle">Add New Address</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addressForm">
+                                <input type="hidden" id="addressId" name="addressId">
+
+                                <div class="mb-4">
+                                    <label class="form-label">Address Type <span class="required">*</span></label>
+                                    <div class="address-type-selector">
+                                        <div class="address-type-btn active" onclick="selectAddressType(this, 'Home')">
+                                            <i class="fas fa-home"></i>
+                                            <div>Home</div>
+                                        </div>
+                                        <div class="address-type-btn" onclick="selectAddressType(this, 'Work')">
+                                            <i class="fas fa-briefcase"></i>
+                                            <div>Work</div>
+                                        </div>
+                                        <div class="address-type-btn" onclick="selectAddressType(this, 'Other')">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <div>Other</div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="addressType" id="addressType" value="Home">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="fullName" class="form-label">Full Name <span
+                                            class="required">*</span></label>
+                                    <input type="text" class="form-control" id="fullName" name="fullName"
+                                        placeholder="Enter your full name">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number <span
+                                            class="required">*</span></label>
+                                    <input type="tel" class="form-control" id="phone" name="phone"
+                                        placeholder="Enter 10-digit mobile number" pattern="[6-9][0-9]{9}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="alternatePhone" class="form-label">Alternate Phone (Optional)</label>
+                                    <input type="tel" class="form-control" id="alternatePhone" name="alternatePhone"
+                                        placeholder="Enter alternate 10-digit number" pattern="[6-9][0-9]{9}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="addressLine1" class="form-label">Address Line 1 <span
+                                            class="required">*</span></label>
+                                    <input type="text" class="form-control" id="addressLine1" name="addressLine1"
+                                        placeholder="House No., Building Name, Street">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="addressLine2" class="form-label">Address Line 2 (Optional)</label>
+                                    <input type="text" class="form-control" id="addressLine2" name="addressLine2"
+                                        placeholder="Apartment, Locality, Landmark">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="city" class="form-label">City <span
+                                                class="required">*</span></label>
+                                        <input type="text" class="form-control" id="city" name="city"
+                                            placeholder="Enter city">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="state" class="form-label">State <span
+                                                class="required">*</span></label>
+                                        <select class="form-select" id="state" name="state">
+                                            <option value="">Select State</option>
+                                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                                            <option value="Assam">Assam</option>
+                                            <option value="Bihar">Bihar</option>
+                                            <option value="Chhattisgarh">Chhattisgarh</option>
+                                            <option value="Goa">Goa</option>
+                                            <option value="Gujarat">Gujarat</option>
+                                            <option value="Haryana">Haryana</option>
+                                            <option value="Himachal Pradesh">Himachal Pradesh</option>
+                                            <option value="Jharkhand">Jharkhand</option>
+                                            <option value="Karnataka">Karnataka</option>
+                                            <option value="Kerala">Kerala</option>
+                                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                            <option value="Maharashtra">Maharashtra</option>
+                                            <option value="Manipur">Manipur</option>
+                                            <option value="Meghalaya">Meghalaya</option>
+                                            <option value="Mizoram">Mizoram</option>
+                                            <option value="Nagaland">Nagaland</option>
+                                            <option value="Odisha">Odisha</option>
+                                            <option value="Punjab">Punjab</option>
+                                            <option value="Rajasthan">Rajasthan</option>
+                                            <option value="Sikkim">Sikkim</option>
+                                            <option value="Tamil Nadu">Tamil Nadu</option>
+                                            <option value="Telangana">Telangana</option>
+                                            <option value="Tripura">Tripura</option>
+                                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                            <option value="Uttarakhand">Uttarakhand</option>
+                                            <option value="West Bengal">West Bengal</option>
+                                            <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands
+                                            </option>
+                                            <option value="Chandigarh">Chandigarh</option>
+                                            <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar
+                                                Haveli and Daman and Diu</option>
+                                            <option value="Delhi">Delhi</option>
+                                            <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                                            <option value="Ladakh">Ladakh</option>
+                                            <option value="Lakshadweep">Lakshadweep</option>
+                                            <option value="Puducherry">Puducherry</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="pincode" class="form-label">Pincode <span
+                                                class="required">*</span></label>
+                                        <input type="text" class="form-control" id="pincode" name="pincode"
+                                            placeholder="Enter 6-digit pincode" pattern="[1-9][0-9]{5}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="country" class="form-label">Country <span
+                                                class="required">*</span></label>
+                                        <input type="text" class="form-control" id="country" name="country"
+                                            value="India" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="isDefault" name="isDefault">
+                                        <label class="form-check-label" for="isDefault">
+                                            Set as default address
+                                        </label>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" id="btnSaveAddress">
+                                <i class="fas fa-save me-2"></i>Save Address
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <%- include('../partials/user/footer') %>
+            <script>
+        const messages = <%- JSON.stringify(messages || []) %>;
+        messages.forEach(msg => {
+            let bgColor, duration = 3000;
+            switch (msg.type) {
+                case 'error':
+                    bgColor = "linear-gradient(to right, #ff6b6b, #ee5a24)";
+                    break;
+                case 'success':
+                    bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
+                    break;
+                case 'warning':
+                    bgColor = "linear-gradient(to right, #ffa726, #ff7043)";
+                    duration = 4000;  
+                    break;
+                default:
+                    bgColor = "linear-gradient(to right, #2196f3, #21cbf3)";
+            }
+            Toastify({
+                text: msg.text,
+                duration: duration,
+                gravity: "top",
+                position: "right",
+                backgroundColor: bgColor,
+                stopOnFocus: true,
+            }).showToast();
+        });
+    </script>
