@@ -1,0 +1,339 @@
+<%- include('../partials/admin/header') %>
+
+<body>
+    <%- include('../partials/admin/sidebar') %>
+
+    <main class="content-area">
+        <div class="order-details-container">
+            <!-- Order Header -->
+            <div class="order-header-card">
+                <div class="header-content">
+                    <div>
+                        <h1 class="page-title">Order Management</h1>
+                        <p class="order-id-display">Order ID: <span><%= order.orderId %></span></p>
+                    </div>
+                    <span class="status-badge status-<%= order.orderStatus.toLowerCase().replace(/\s+/g, '-') %>">
+                        <%= order.orderStatus %>
+                    </span>
+                </div>
+
+                <div class="order-info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Customer</div>
+                        <div class="info-value"><%= order.userId?.name || 'N/A' %></div>
+                        <div class="info-sub"><%= order.userId?.email || '' %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Order Date</div>
+                        <div class="info-value">
+                            <%= new Date(order.placedAt).toLocaleDateString('en-IN', { 
+                                day: 'numeric', 
+                                month: 'short', 
+                                year: 'numeric'
+                            }) %>
+                        </div>
+                        <div class="info-sub">
+                            <%= new Date(order.placedAt).toLocaleTimeString('en-IN', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            }) %>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Payment</div>
+                        <div class="info-value"><%= order.paymentMethod %></div>
+                        <div class="info-sub payment-<%= order.paymentStatus.toLowerCase() %>">
+                            <%= order.paymentStatus %>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Total Amount</div>
+                        <div class="info-value total-amount">₹<%= order.totalAmount.toFixed(2) %></div>
+                        <div class="info-sub"><%= order.items.length %> item(s)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column - Order Items -->
+                <div class="col-lg-8">
+                    <div class="section-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-box me-2"></i>
+                            Order Items Management
+                        </h2>
+
+                        <!-- Order Tracking Stepper -->
+                        <div class="order-tracking">
+                            <h3 class="tracking-title">Order Progress</h3>
+                            <%if(!order.orderStatus.includes('Cancelled')) { %>
+                            <div class="tracking-steps">
+                                <div class="step <%= order.orderStatus === 'Placed' ? 'active' : (['Processing', 'Shipped', 'Out for Delivery', 'Delivered'].includes(order.orderStatus) ? 'completed' : '') %>">
+                                    <div class="step-circle">1</div>
+                                    <div class="step-label">Placed</div>
+                                </div>
+                                <div class="step <%= order.orderStatus === 'Processing' ? 'active' : (['Shipped', 'Out for Delivery', 'Delivered'].includes(order.orderStatus) ? 'completed' : '') %>">
+                                    <div class="step-circle">2</div>
+                                    <div class="step-label">Processing</div>
+                                </div>
+                                <div class="step <%= order.orderStatus === 'Shipped' ? 'active' : (['Out for Delivery', 'Delivered'].includes(order.orderStatus) ? 'completed' : '') %>">
+                                    <div class="step-circle">3</div>
+                                    <div class="step-label">Shipped</div>
+                                </div>
+                                <div class="step <%= order.orderStatus === 'Out for Delivery' ? 'active' : (order.orderStatus === 'Delivered' ? 'completed' : '') %>">
+                                    <div class="step-circle">4</div>
+                                    <div class="step-label">Out for Delivery</div>
+                                </div>
+                                <div class="step <%= order.orderStatus === 'Delivered' ? 'active' : '' %>">
+                                    <div class="step-circle">5</div>
+                                    <div class="step-label">Delivered</div>
+                                </div>
+                            </div>
+                          <% } else { %>  
+                            <div class="tracking-steps">
+                                <div class="step <%= order.orderStatus === 'Placed' ? 'active' : (['Processing', 'Shipped', 'Out for Delivery', 'Delivered'].includes(order.orderStatus) ? 'completed' : '') %>">
+                                    <div class="step-circle">1</div>
+                                    <div class="step-label">Placed</div>
+                                </div>
+                                <div class="step <%= order.orderStatus === 'Processing' ? 'active' : (['Shipped', 'Out for Delivery', 'Delivered'].includes(order.orderStatus) ? 'completed' : '') %>">
+                                    <div class="step-circle">2</div>
+                                    <div class="step-label">Processing</div>
+                                </div>
+                                <div class="step <%= order.orderStatus === 'Shipped' ? 'active' : (['Out for Delivery', 'Delivered'].includes(order.orderStatus) ? 'completed' : '') %>">
+                                    <div class="step-circle">3</div>
+                                    <div class="step-label">Shipped</div>
+                                </div>
+                                <div class="step <%= order.orderStatus === 'Out for Delivery' ? 'active' : (order.orderStatus === 'Delivered' ? 'completed' : '') %>">
+                                    <div class="step-circle">4</div>
+                                    <div class="step-label">Out for Delivery</div>
+                                </div>
+                                <div class="step <%= order.orderStatus === 'Delivered' ? 'active' : '' %>">
+                                    <div class="step-circle">5</div>
+                                    <div class="step-label">Delivered</div>
+                                </div>
+                            </div>
+                                <div class="cancelled-track">
+                                    <i class="fas fa-ban"></i> Order <%= order.orderStatus %>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <% order.items.forEach((item, index) => { %>
+                            <div class="order-item-card" data-item-id="<%= item._id %>">
+                                <div class="item-header">
+                                    <span class="item-number">#<%= index + 1 %></span>
+                                    <span class="item-status-badge status-<%= item.itemStatus.toLowerCase().replace(/\s+/g, '-') %>">
+                                        <%= item.itemStatus %>
+                                    </span>
+                                </div>
+
+                                <div class="item-content">
+                                    <img src="<%= item.image %>" 
+                                        alt="<%= item.name %>"
+                                        class="item-image"
+                                        onerror="this.src='https://via.placeholder.com/100x100/eee/ccc?text=No+Image'">
+                                    
+                                    <div class="item-info">
+                                        <h3 class="item-name"><%= item.name %></h3>
+                                        <p class="item-specs">
+                                            <span><i class="fas fa-palette"></i> <%= item.color %></span>
+                                            <span><i class="fas fa-ruler"></i> <%= item.size %></span>
+                                            <span><i class="fas fa-shopping-cart"></i> Qty: <%= item.quantity %></span>
+                                        </p>
+                                        
+                                        <div class="item-pricing">
+                                            <span class="price-label">Unit Price:</span>
+                                            <span class="current-price">₹<%= item.discountedPriceAtPurchase || item.priceAtPurchase %></span>
+                                            <% if (item.discountedPriceAtPurchase && item.discountedPriceAtPurchase < item.priceAtPurchase) { %>
+                                                <span class="original-price">₹<%= item.priceAtPurchase %></span>
+                                            <% } %>
+                                        </div>
+
+                                        <div class="item-total">
+                                            <span class="price-label">Item Total:</span>
+                                            <span class="total-price">₹<%= item.itemTotal.toFixed(2) %></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Status Management (Progressive + Hide Terminal) -->
+                                <% 
+                                
+                                const normalStatuses = ['Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered'];
+                                const statusIndex = { 'Placed': 0, 'Processing': 1, 'Shipped': 2, 'Out for Delivery': 3, 'Delivered': 4 };
+                                let availableStatuses = [];
+                                const isTerminal = ['Delivered', 'Cancelled'].includes(item.itemStatus);
+                                if (isTerminal) {
+                                    availableStatuses = [item.itemStatus]; // Just current for badge consistency
+                                } else {
+                                    const currentIndex = statusIndex[item.itemStatus] || 0;
+                                    availableStatuses = normalStatuses.slice(currentIndex);
+                                    if (['Placed', 'Processing'].includes(item.itemStatus)) {
+                                        availableStatuses.push('Cancelled'); 
+                                    }
+                                }
+                                %>
+                                <% if (!isTerminal) { %>
+                                <div class="status-management">
+                                    <label class="status-label">Update Item Status:</label>
+                                    <div class="status-controls">
+                                        <select class="form-select status-select" data-item-id="<%= item._id %>">
+                                            <% availableStatuses.forEach(s => { %>
+                                                <option value="<%= s %>" <%= item.itemStatus === s ? 'selected' : '' %>><%= s %></option>
+                                            <% }) %>
+                                        </select>
+                                        <button class="btn btn-sm btn-primary update-status-btn" 
+                                                data-item-id="<%= item._id %>">
+                                            <i class="fas fa-check me-1"></i> Update
+                                        </button>
+                                    </div>
+                                </div>
+                                <% } %>
+
+                                <!-- Cancellation Info -->
+                                <% if (item.itemStatus === 'Cancelled' && item.cancelReason) { %>
+                                    <div class="status-info cancel-info">
+                                        <i class="fas fa-ban me-2"></i>
+                                        <strong>Cancelled:</strong> <%= item.cancelReason %>
+                                        <% if (item.cancelledAt) { %>
+                                            | <%= new Date(item.cancelledAt).toLocaleDateString('en-IN') %>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="section-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            Shipping Address
+                        </h2>
+                        <div class="address-content">
+                            <p class="address-name"><%= order.shippingAddress.fullName %></p>
+                            <p class="address-line"><%= order.shippingAddress.addressLine1 %></p>
+                            <% if (order.shippingAddress.addressLine2) { %>
+                                <p class="address-line"><%= order.shippingAddress.addressLine2 %></p>
+                            <% } %>
+                            <p class="address-line">
+                                <%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> - <%= order.shippingAddress.pincode %>
+                            </p>
+                            <p class="address-line"><%= order.shippingAddress.country %></p>
+                            <div class="address-contact">
+                                <span><i class="fas fa-phone me-2"></i><%= order.shippingAddress.phone %></span>
+                                <% if (order.shippingAddress.alternatePhone) { %>
+                                    <span><i class="fas fa-phone-alt me-2"></i><%= order.shippingAddress.alternatePhone %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Summary -->
+                <div class="col-lg-4">
+                    <!-- Payment Info -->
+                    <div class="section-card summary-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Payment Details
+                        </h2>
+                        <div class="payment-info">
+                            <div class="info-row">
+                                <span>Method</span>
+                                <span class="fw-bold"><%= order.paymentMethod %></span>
+                            </div>
+                            <div class="info-row">
+                                <span>Status</span>
+                                <span class="badge payment-badge-<%= order.paymentStatus.toLowerCase() %>">
+                                    <%= order.paymentStatus %>
+                                </span>
+                            </div>
+                            <% if (order.razorpayPaymentId) { %>
+                                <div class="info-row">
+                                    <span>Payment ID</span>
+                                    <span class="text-muted small"><%= order.razorpayPaymentId %></span>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="section-card summary-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-receipt me-2"></i>
+                            Price Breakdown
+                        </h2>
+                        <div class="price-breakdown">
+                            <div class="price-row">
+                                <span>Subtotal</span>
+                                <span>₹<%= order.subtotal.toFixed(2) %></span>
+                            </div>
+                            <% if (order.discount > 0) { %>
+                                <div class="price-row discount-row">
+                                    <span>Discount</span>
+                                    <span>-₹<%= order.discount.toFixed(2) %></span>
+                                </div>
+                            <% } %>
+                            <div class="price-row">
+                                <span>Tax (GST)</span>
+                                <span>₹<%= order.tax.toFixed(2) %></span>
+                            </div>
+                            <div class="price-row">
+                                <span>Shipping</span>
+                                <span class="<%= order.shippingCharge === 0 ? 'text-success' : '' %>">
+                                    <%= order.shippingCharge === 0 ? 'FREE' : '₹' + order.shippingCharge.toFixed(2) %>
+                                </span>
+                            </div>
+                            <div class="price-row total-row">
+                                <span>Total Amount</span>
+                                <span>₹<%= order.totalAmount.toFixed(2) %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../partials/admin/footer') %>
+
+    <!-- Toast Messages -->
+    <script>
+        // const messages = <%- JSON.stringify(messages || []) %>;
+        // messages.forEach(msg => {
+        //     let bgColor;
+        //     switch (msg.type) {
+        //         case 'error':
+        //             bgColor = "linear-gradient(to right, #ff6b6b, #ee5a24)";
+        //             break;
+        //         case 'success':
+        //             bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
+        //             break;
+        //         default:
+        //             bgColor = "linear-gradient(to right, #2196f3, #21cbf3)";
+        //     }
+        //     Toastify({
+        //         text: msg.text,
+        //         duration: 3000,
+        //         gravity: "top",
+        //         position: "right",
+        //         backgroundColor: bgColor,
+        //         stopOnFocus: true,
+        //     }).showToast();
+        // });
+
+        document.addEventListener('DOMContentLoaded', () => {
+        const messages = <%- JSON.stringify(messages || []) %>;
+        
+        setTimeout(() => {
+            if (typeof window.showOrderToast === 'function') {
+                messages.forEach(msg => {
+                    window.showOrderToast(msg.text, msg.type);
+                });
+            }
+        }, 100);
+    });
+    </script>
+</body>
+</html>

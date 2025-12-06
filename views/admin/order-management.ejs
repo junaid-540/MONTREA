@@ -1,0 +1,187 @@
+<html>
+<%- include('../partials/admin/header') %>
+
+<body>
+    <%- include('../partials/admin/sidebar') %>
+
+    <main class="content-area">
+        <div class="products-container">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h2 class="products-title">Orders</h2>
+                    <p class="products-subtitle">Manage & track all customer orders</p>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="d-flex justify-content-end align-items-center mb-4">
+                <form method="GET" action="/admin/order" class="d-flex gap-2">
+                    <input type="text" class="form-control border-start-0" name="search"
+                        placeholder="Search by Order ID, Name, Phone..." value="<%= search || '' %>">
+
+                    <button type="submit" class="btn btn-outline-dark btn-sm search">Search</button>
+                    <button type="button" class="btn btn-outline-dark btn-sm clear"
+                        onclick="window.location.href='/admin/order'">Clear</button>
+
+                    <!-- Status Filter Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-dark btn-sm dropdown-toggle filter" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Status
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/admin/order<%= search ? '?search=' + encodeURIComponent(search) : '' %>">All Status</a></li>
+                            <% ['Placed','Processing','Shipped','Out for Delivery','Delivered','Cancelled','Partially Cancelled','Partially Delivered'].forEach(s => { %>
+                                <li><a class="dropdown-item" href="/admin/order?status=<%= s %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"><%= s %></a></li>
+                            <% }) %>
+                        </ul>
+                    </div>
+
+                    <!-- Payment Filter -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-dark btn-sm dropdown-toggle filter" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Payment
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/admin/order<%= search ? '?search=' + encodeURIComponent(search) : '' %>">All Payment</a></li>
+                            <% ['Pending','Paid','Failed','Refunded'].forEach(p => { %>
+                                <li><a class="dropdown-item" href="/admin/order?payment=<%= p %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"><%= p %></a></li>
+                            <% }) %>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table products-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date & Time</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (orders.length === 0) { %>
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">No orders found</td>
+                            </tr>
+                        <% } else { %>
+                            <% orders.forEach(order => { %>
+                                <% 
+                                    
+                                    const statusBadgeClass = 
+                                        order.orderStatus === 'Placed' ? 'badge-placed' :
+                                        order.orderStatus === 'Processing' ? 'badge-processing' :
+                                        order.orderStatus === 'Shipped' ? 'badge-shipped' :
+                                        order.orderStatus === 'Out for Delivery' ? 'badge-out-for-delivery' :
+                                        order.orderStatus === 'Delivered' ? 'badge-delivered' :
+                                        order.orderStatus === 'Cancelled' ? 'badge-cancelled' :
+                                        order.orderStatus === 'Partially Cancelled' ? 'badge-partially-cancelled' :
+                                        order.orderStatus === 'Partially Delivered' ? 'badge-partially-delivered' : '';
+                                    
+                                    
+                                    const paymentBadgeClass = 
+                                        order.paymentStatus === 'Paid' ? 'badge-paid' :
+                                        order.paymentStatus === 'Pending' ? 'badge-pending' :
+                                        order.paymentStatus === 'Failed' ? 'badge-failed' : 'badge-refunded';
+                                %>
+                                <tr>
+                                    <td data-label="Order ID"><strong><%= order.orderId %></strong></td>
+                                    <td data-label="Customer">
+                                        <div><strong><%= order.user?.name || 'N/A' %></strong></div>
+                                        <small class="text-muted"><%= order.user?.email || '' %></small>
+                                    </td>
+                                    <td data-label="Date">
+                                        <%= new Date(order.placedAt).toLocaleDateString('en-IN') %><br>
+                                        <small class="text-muted"><%= new Date(order.placedAt).toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit'}) %></small>
+                                    </td>
+                                    <td data-label="Items"><%= order.items.length %> item(s)</td>
+                                    <td data-label="Total"><strong>₹<%= order.totalAmount.toFixed(2) %></strong></td>
+                                    <td data-label="Payment">
+                                        <span class="badge <%= paymentBadgeClass %>"><%= order.paymentStatus %></span>
+                                    </td>
+                                    <td data-label="Status">
+                                        <span class="badge <%= statusBadgeClass %>"><%= order.orderStatus %></span>
+                                    </td>
+                                    <td data-label="Action">
+                                        <a href="/admin/order/<%= order.orderId %>" class="btn btn-sm manage">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Order pagination" class="mt-4">
+                <div class="d-flex justify-content-end">
+                    <ul class="pagination mb-0">
+                        <% if(currentPage > 1) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= currentPage - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= status ? '&status=' + status : '' %><%= payment ? '&payment=' + payment : '' %>">&lt;</a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled"><a class="page-link" href="#">&lt;</a></li>
+                        <% } %>
+
+                        <% for(let i = 1; i <= totalPages; i++) { %>
+                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= status ? '&status=' + status : '' %><%= payment ? '&payment=' + payment : '' %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                        <% } %>
+
+                        <% if(currentPage < totalPages) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= currentPage + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= status ? '&status=' + status : '' %><%= payment ? '&payment=' + payment : '' %>">&gt;</a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled"><a class="page-link" href="#">&gt;</a></li>
+                        <% } %>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </main>
+</div>
+   
+    <%- include('../partials/admin/footer') %>
+
+    <script>
+        const messages = <%- JSON.stringify(messages || []) %>;
+        messages.forEach(msg => {
+            let bgColor;
+            switch (msg.type) {
+                case 'error':
+                    bgColor = "linear-gradient(to right, #ff6b6b, #ee5a24)";
+                    break;
+                case 'success':
+                    bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
+                    break;
+                default:
+                    bgColor = "linear-gradient(to right, #2196f3, #21cbf3)";
+            }
+            Toastify({
+                text: msg.text,
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: bgColor,
+                stopOnFocus: true,
+            }).showToast();
+        });
+    </script>
+</body>
+</html>

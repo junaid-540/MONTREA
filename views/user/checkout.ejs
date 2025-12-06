@@ -1,6 +1,6 @@
 <%- include('../partials/user/header') %>
 
-    <body>
+    <body >
         <%- include('../partials/user/navbar') %>
 
             <div class="checkout-container">
@@ -19,8 +19,7 @@
                                     <div class="mb-3">
                                         <label class="address-card-label">
                                             <input type="radio" name="shipping_address" class="address-radio d-none"
-                                                value="<%= address._id %>" data-address-id="<%= address._id %>"
-                                                <%=address.isDefault ? 'checked' : '' %>>
+                                                value="<%= address._id %>" data-address-id="<%= address._id %>">
                                             <div class="address-card">
                                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                                     <div class="d-flex align-items-center">
@@ -31,21 +30,9 @@
                                                         <span class="address-tag ms-3">
                                                             <%= address.addressType %>
                                                         </span>
-                                                        <% if (address.isDefault) { %>
+                                                        <!-- <% if (address.isDefault) { %>
                                                             <span class="badge bg-success ms-2">Default</span>
-                                                            <% } %>
-                                                    </div>
-                                                    <div class="d-flex gap-3">
-                                                        <button class="btn-action btn-edit-address"
-                                                            data-address-id="<%= address._id %>" type="button"
-                                                            title="Edit Address">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button class="btn-action btn-delete-address"
-                                                            data-address-id="<%= address._id %>" type="button"
-                                                            title="Delete Address">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
+                                                            <% } %> -->
                                                     </div>
                                                 </div>
                                                 <div class="ps-4 ms-2">
@@ -123,7 +110,7 @@
                                             <!-- Price Calculation -->
                                             <div class="mt-4">
                                                 <div class="summary-row">
-                                                    <span>Subtotal (<%= cart.itemsCount %> items)</span>
+                                                    <span>Subtotal</span>
                                                     <span>₹<%= cart.subtotal.toFixed(2) %></span>
                                                 </div>
                                                 <div class="summary-row">
@@ -167,7 +154,7 @@
                 </div>
             </div>
 
-            <!-- Add/Edit Address Modal -->
+            <!-- Add Address Modal -->
             <div class="modal fade" id="addressModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
                     <div class="modal-content">
@@ -177,7 +164,6 @@
                         </div>
                         <div class="modal-body">
                             <form id="addressForm">
-                                <input type="hidden" id="addressId" name="addressId">
 
                                 <div class="mb-4">
                                     <label class="form-label">Address Type <span class="required">*</span></label>

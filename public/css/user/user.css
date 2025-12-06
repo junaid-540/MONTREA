@@ -1,6 +1,23 @@
-/* ========================= */
-/* ======= NAVBAR ========= */
-/* ========================= */
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    /* display: flex; */
+    /* flex-direction: column; */
+    margin: 0;
+}
+
+main {
+    flex: 1 0 auto; /* or flex-grow: 1 */
+}
+
+footer {
+    flex-shrink: 0;
+    margin-top: auto; /* extra safety */
+}
+
 
 .navbar {
     background-color: #f3f3f3;
@@ -310,9 +327,7 @@ body.modal-open {
     }
 }
 
-/* ========================= */
-/* ======== FOOTER ========= */
-/* ========================= */
+
 
 footer {
     background-color: #0d0f13;
@@ -369,18 +384,18 @@ footer .fab:hover {
     color: #a47f5f;
 }
 
-@media (max-width: 575.98px) {  /* Only for xs screens */
+@media (max-width: 575.98px) {  
     .footer .logo {
         font-size: clamp(1.5rem, 6vw, 2.5rem);  /* Smaller clamp for tiny screens */
     }
     
     .footer a,
     .footer-heading {
-        font-size: 0.8rem;  /* Shrink link text */
-        line-height: 1.2;   /* Tighter spacing */
+        font-size: 0.8rem;  
+        line-height: 1.2;   
     }
     
-    .container {  /* Optional: Reduce container padding for more width */
+    .container {  
         padding-left: 0.5rem;
         padding-right: 0.5rem;
     }

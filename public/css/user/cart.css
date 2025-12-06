@@ -11,7 +11,7 @@ body {
 main {
     max-width: 1200px;
     margin: 40px auto;
-    padding: 0 20px;
+    padding: 50px 20px;
 }
 
 /* Empty State */
@@ -481,21 +481,28 @@ main {
 }
 
 .btn-secondary {
-    background-color: #6c757d;
-    color: white;
+    background-color: white;
+    color: rgb(0, 0, 0);
+    transition: all 0.3s ease;
+    border: 1px solid black;
 }
 
 .btn-secondary:hover {
-    background-color: #545b62;
+    background-color: #000000 ;
+    color: #ffffff;
+    transform: translateY(-3px);
 }
 
 .btn-wishlist {
     background-color: #f59e0b;
     color: white;
+    transition: all 0.3s ease;
 }
 
 .btn-wishlist:hover {
     background-color: #d97706;
+    color: white;
+     transform: translateY(-3px);
 }
 
 /* Responsive */

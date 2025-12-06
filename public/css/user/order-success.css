@@ -103,6 +103,7 @@ body {
     padding: 25px;
     margin: 30px 0;
     border-left: 4px solid var(--accent-gold);
+    border-right: 4px solid var(--accent-gold);
 }
 
 .order-id {
@@ -184,12 +185,13 @@ body {
 }
 
 .btn-primary {
-    background: var(--primary-black);
-    color: #fff;
+    background: #fff;
+    color: var(--primary-black);
+     border: 2px solid var(--primary-black);
 }
 
 .btn-primary:hover {
-    background: var(--accent-gold);
+    background: var(--primary-black);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     color: #fff;

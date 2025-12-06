@@ -191,14 +191,16 @@ export const getResendOtp = async (req, res, next) => {
 
 
 export const getSignin = (req, res) => {
-    console.log("=== DEBUG: Raw req.query ===", req.query);
-    console.log("=== DEBUG: req.query.success ===", req.query.success);
-    console.log("=== DEBUG: req.query.newEmail ===", req.query.newEmail);
 
     const resetPasswordSuccess = req.session.resetSuccessMessage || null;
     const successMessage = req.session.successMessage || null;
     req.session.resetSuccessMessage = null;
     req.session.successMessage = null;
+
+    let error = null;
+    if(req.query.error === 'blocked'){
+        error = 'Your account has been blocked by the admin. Please contact support.';
+    }
 
     let querySuccess = null;
     if (req.query.success === 'email_updated') {  // ← This condition might fail
@@ -209,9 +211,7 @@ export const getSignin = (req, res) => {
         querySuccess = 'Password reset successfully! Please sign in with your new password.';
     }
 
-    console.log("=== DEBUG: Final querySuccess ===", querySuccess);  // ← ADD THIS
-
-    res.render('user/signin', { resetPasswordSuccess, successMessage, querySuccess });
+    res.render('user/signin', { resetPasswordSuccess, successMessage, querySuccess ,error });
 };
 
 export const postSignin = async (req, res, next) => {
@@ -234,7 +234,7 @@ export const postSignin = async (req, res, next) => {
         }
 
         if (user.status === 'blocked') {
-            return res.render('user/signin', { error: "Your account has been blocked by admin." })
+            return res.render('user/signin', { error: 'Your account has been blocked by the admin. Please contact support.' })
         }
 
         const isMatch = await bcrypt.compare(password, user.password);

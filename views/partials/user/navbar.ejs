@@ -23,10 +23,10 @@
             
             <div class="icon-nav">
                 <% if (user && (typeof is404 === 'undefined' || !is404)) { %>
-                    <!-- Search Bar: Magnifying glass LEFT, X button RIGHT -->
+                    
                     <div class="search-container">
                         <form id="searchForm">
-                            <!-- Search icon (magnifying glass) on LEFT -->
+                            
                             <span class="search-icon" aria-label="Search">
                                 <svg viewBox="0 0 24 24">
                                     <circle cx="11" cy="11" r="8" />
@@ -34,7 +34,7 @@
                                 </svg>
                             </span>
                             <input type="text" class="search-input" id="searchQuery" placeholder="Search">
-                            <!-- Clear button (X icon) on RIGHT -->
+                            
                             <button type="button" class="search-clear" id="clearSearch" aria-label="Clear search">
                                 <svg viewBox="0 0 24 24">
                                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -45,7 +45,7 @@
                     </div>
                 <% } %>
 
-                <!-- Profile Dropdown with SVG Icon -->
+                
                 <div class="profile-dropdown">
                     <button class="icon-nav-item" id="profileDropdown" aria-label="User account">
                         <svg viewBox="0 0 24 24">
@@ -60,25 +60,25 @@
                     </button>
                     <div class="dropdown-menu" id="dropdownMenu">
                         <% if (user) { %>
-                            <!-- Logged in menu -->
+                            
                             <a href="/profile" class="btn btn-dark">PROFILE</a>
                             <a href="/logout" class="btn btn-dark">LOGOUT</a>
                         <% } else { %>
-                            <!-- Not logged in menu -->
+                           
                             <a href="/signup" class="btn btn-dark">SIGN UP</a>
                             <a href="/signin" class="btn btn-dark">SIGN IN</a>
                         <% } %>
                     </div>
                 </div>
 
-                <!-- Wishlist Icon with SVG -->
+               
                 <a href="/wishlist" class="icon-nav-item" aria-label="Favorites">
                     <svg viewBox="0 0 24 24">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
                 </a>
 
-                <!-- Shopping Cart Icon with SVG -->
+                
                 <a href="/cart" class="icon-nav-item" aria-label="Shopping cart">
                     <svg viewBox="0 0 24 24">
                         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />

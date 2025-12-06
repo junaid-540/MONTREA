@@ -259,7 +259,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Open Modal for Add New Address
     btnAddNewAddress.addEventListener('click', function() {
         document.getElementById('addressModalTitle').textContent = 'Add New Address';
-        document.getElementById('addressId').value = '';
         addressForm.reset();
         
         // Reset address type to Home
@@ -273,59 +272,12 @@ document.addEventListener('DOMContentLoaded', function() {
         addressModal.show();
     });
 
-    // Open Modal for Edit Address
-    document.querySelectorAll('.btn-edit-address').forEach(btn => {
-        btn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const addressId = this.dataset.addressId;
-            
-            try {
-                const response = await axios.get(`/checkout/get-address/${addressId}`);
-                
-                if (response.data.success) {
-                    const address = response.data.data;
-                    
-                    document.getElementById('addressModalTitle').textContent = 'Edit Address';
-                    document.getElementById('addressId').value = address._id;
-                    document.getElementById('fullName').value = address.fullName;
-                    document.getElementById('phone').value = address.phone;
-                    document.getElementById('alternatePhone').value = address.alternatePhone || '';
-                    document.getElementById('addressLine1').value = address.addressLine1;
-                    document.getElementById('addressLine2').value = address.addressLine2 || '';
-                    document.getElementById('city').value = address.city;
-                    document.getElementById('state').value = address.state;
-                    document.getElementById('pincode').value = address.pincode;
-                    document.getElementById('isDefault').checked = address.isDefault;
-                    
-                    // Set address type
-                    document.querySelectorAll('.address-type-btn').forEach(btn => btn.classList.remove('active'));
-                    const typeBtn = Array.from(document.querySelectorAll('.address-type-btn')).find(
-                        btn => btn.textContent.trim().includes(address.addressType)
-                    );
-                    if (typeBtn) typeBtn.classList.add('active');
-                    document.getElementById('addressType').value = address.addressType;
-                    
-                    // Clear all errors
-                    document.querySelectorAll('.is-invalid').forEach(el => clearError(el));
-                    
-                    addressModal.show();
-                } else {
-                    showToast(response.data.message || 'Failed to load address', 'error');
-                }
-            } catch (error) {
-                console.error('Error loading address:', error);
-                showToast('Failed to load address details', 'error');
-            }
-        });
-    });
-
-    // Save Address (Add or Edit)
+    // Save Address (Add Only)
     btnSaveAddress.addEventListener('click', async function() {
         // Clear previous errors
         document.querySelectorAll('.is-invalid').forEach(el => clearError(el));
 
         // Get form values
-        const addressId = document.getElementById('addressId').value;
         const fullName = fullNameInput.value;
         const phone = phoneInput.value;
         const alternatePhone = alternatePhoneInput.value;
@@ -377,8 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         try {
-            const url = addressId ? `/checkout/edit-address/${addressId}` : '/checkout/add-address';
-            const response = await axios.post(url, data, {
+            const response = await axios.post('/checkout/add-address', data, {
                 headers: { 'Content-Type': 'application/json' }
             });
             
@@ -393,44 +344,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Submit error:', error);
             showToast(error.response?.data?.message || 'Failed to save address', 'error');
         }
-    });
-
-    // Delete Address
-    document.querySelectorAll('.btn-delete-address').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const addressId = this.dataset.addressId;
-            
-            Swal.fire({
-                title: 'Are you sure?',
-                text: 'This address will be permanently deleted!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, delete it!',
-                scrollbarPadding: false,
-                heightAuto: false
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        const response = await axios.delete(`/checkout/delete-address/${addressId}`, {
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                        
-                        if (response.data.success) {
-                            showToast(response.data.message, 'success');
-                            setTimeout(() => window.location.reload(), 1000);
-                        } else {
-                            showToast(response.data.message || 'Failed to delete address', 'error');
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        showToast('An error occurred while deleting the address', 'error');
-                    }
-                }
-            });
-        });
     });
 
     // Continue to Payment
@@ -454,7 +367,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if(response.data.success){
-                window.location.href = '/payment';
+                setTimeout(()=>{
+                    window.location.href = '/payment';
+                },2000)
+                
             }else{
                 showToast(response.data.message || 'Failed to proceed','error');
             }

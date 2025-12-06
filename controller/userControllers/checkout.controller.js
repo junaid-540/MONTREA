@@ -102,7 +102,8 @@ export const getCheckoutPage = async (req,res,next) =>{
             messages,
             user: res.locals.user || null,
             pageCss: '/public/css/user/checkout.css',
-            pageJs: '/public/js/user/checkout.js'
+            pageJs: '/public/js/user/checkout.js',
+            is404: true
         });
     } catch (err) {
         console.error('Error in getchecckoutPage :',err);
@@ -110,28 +111,6 @@ export const getCheckoutPage = async (req,res,next) =>{
     }
 }
 
-
-    // Get single address (for editing )
-export const getAddress = async (req,res,next) =>{
-    try {
-        const userId = req.session.userId;
-        const addressId = req.params.id;
-
-        const address = await Address.findOne({_id: addressId, userId})
-        if(!address){
-            return sendResponse(res,{success:false,statusCode:statusCodes.NOT_FOUND,message:errorMessages.ADDRESS_NOT_FOUND});
-        }
-
-        return sendResponse(res,{
-            success: true,
-            statusCode: statusCodes.OK,
-            data: address
-        });
-    } catch (err) {
-        console.error("Error in getAddress :",err);
-        next(err)
-    }
-}
 
 
 export const addAddress = async (req,res,next) =>{
@@ -187,77 +166,6 @@ export const addAddress = async (req,res,next) =>{
             });
         }
         next(err);
-    }
-}
-
-export const editAddress = async (req,res,next) =>{
-    try {
-        const userId = req.session.userId;
-        const addressId = req.params.id;
-
-        const address = await Address.findOne({_id: addressId , userId});
-        if(!address){
-            return sendResponse(res,{success:false, statusCode: statusCodes.NOT_FOUND, message:errorMessages.ADDRESS_NOT_FOUND});
-        }
-
-        const updatedData = {
-            addressType: req.body.addressType,
-            fullName: req.body.fullName.trim(),
-            phone: req.body.phone.trim(),
-            alternatePhone: req.body.alternatePhone?.trim() || '',
-            addressLine1: req.body.addressLine1.trim(),
-            addressLine2: req.body.addressLine2?.trim() || '',
-            city: req.body.city.trim(),
-            state: req.body.state,
-            pincode: req.body.pincode.trim(),
-            country: req.body.country || 'India',
-            isDefault: req.body.isDefault || false
-        };
-
-        if(updatedData.isDefault && !address.isDefault){
-            await Address.updateMany(
-                {userId, isDefault: true , _id: {$ne : addressId}},
-                {$set: {isDefault: false}}
-            )
-        }
-
-        await Address.findByIdAndUpdate(addressId,updatedData);
-        return sendResponse(res,{
-            success:true,
-            statusCode: statusCodes.OK,
-            message: 'Address updated successfully.'
-        });
-    } catch (err) {
-        console.error("Error in editAddress :",err)
-        next(err)
-    }
-}
-
-export const deleteAddress = async (req,res,next) =>{
-    try {
-        const userId = req.session.userId;
-        const addressId = req.params.id;
-
-        const address = await Address.findByIdAndDelete({_id: addressId , userId});
-        if(!address){
-            return sendResponse(res,{success:false, statusCode: statusCodes.NOT_FOUND, message: errorMessages.ADDRESS_NOT_FOUND});
-        }
-
-        if(address.isDefault){
-            const remainingAddress = await Address.findOne({userId}).sort({createdAt: -1});
-            if(remainingAddress){
-                await Address.findByIdAndUpdate(remainingAddress._id,{isDefault: true});
-            }
-        }
-
-        return sendResponse(res,{
-            success: true,
-            statusCode: statusCodes.OK,
-            message: 'Address deleted successfully.'
-        });
-    } catch (err) {
-        console.error("Error in deleteAddress :",err);
-        next(err)
     }
 }
 

@@ -217,6 +217,11 @@ body {
     font-weight: 700;
 }
 
+.price-range-separator {
+  color: #666;
+  font-weight: 500;
+}
+
 .price-discount {
     font-size: 0.7rem;
     color: #e74c3c;

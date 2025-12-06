@@ -1,5 +1,24 @@
 const variants = window.variants || [];
 
+function UpdateCartBadge(count){
+    const cartLink = document.querySelector('a[href="/cart"]');
+    if(!cartLink) return ;
+
+    let badge = cartLink.querySelector('.cart-badge');
+    if(count > 0){
+        if(!badge){
+            badge = document.createElement('span');
+            badge.className = 'cart-badge';
+            cartLink.appendChild(badge);
+        }
+        badge.textContent = count;
+    }else{
+        if(badge){
+            badge.remove();
+        }
+    }
+}
+
 function initImageZoom() {
     const container = document.querySelector('.image-zoom-container');
     const img = document.getElementById("mainImage");
@@ -183,7 +202,7 @@ async function updateAddToCartButton(variantId) {
     const addToCartBtn = document.getElementById('addToCartBtn');
     if (!addToCartBtn) return;
 
-    // Don't check if button is already dis abled due to stock
+    
     if (addToCartBtn.dataset.stockDisabled === 'true') {
         return;
     }
@@ -329,6 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Successful JSON response
                 if (response.ok && data && data.success) {
+                    UpdateCartBadge(data.data.cartItemscount)
                     const productName = document.querySelector('.product-title') ?
                         document.querySelector('.product-title').textContent :
                         document.querySelector('h1').textContent;

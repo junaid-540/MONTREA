@@ -140,7 +140,7 @@
                     <h3>Order Summary</h3>
                     
                     <div class="summary-row">
-                        <span>Subtotal (<%= cart.itemsCount %> items):</span>
+                        <span>Subtotal:</span>
                         <span>₹<%= cart.subtotal.toFixed(2) %></span>
                     </div>
                     
@@ -158,16 +158,16 @@
                     
                     <div class="summary-divider"></div>
                     
-                    <div class="summary-row summary-total">
+                    <!-- <div class="summary-row summary-total">
                         <span>Total:</span>
                         <span>₹<%= cart.subtotal.toFixed(2) %></span>
-                    </div>
+                    </div> -->
                     
                     <p class="note">Taxes and shipping calculated at checkout</p>
                     
                     <!-- Checkout Button -->
-                    <% if (cart.itemsCount > 0) { %>
-                        <% if (canCheckout) { %>
+                    <% if (cart.totalItems > 0) { %>
+                        <% if (canCheckout && cart.itemsCount > 0) { %>
                             <a href="/checkout" class="btn btn-primary checkout-btn">
                                 Checkout
                             </a>

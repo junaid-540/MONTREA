@@ -21,20 +21,20 @@ export const getPaymentPage = async (req,res,next) =>{
         const userId = req.session.userId;
         const selectedAddressId = req.session.selectedAddressId;
 
-        if(!selectedAddressId){
-            setSessionError(req,'Please select a delivery address');
-            return res.redirect('/checkout');
-        }
-
+        
         const cart = await Cart.findOne({userId})
-                    .populate('items.productId', 'name coverImage isListed categoryId')
-                    .populate('items.productVariantId', 'color size stock images price discountedPrice isListed');
-
+        .populate('items.productId', 'name coverImage isListed categoryId')
+        .populate('items.productVariantId', 'color size stock images price discountedPrice isListed');
+        
         if(!cart || cart.items.length === 0){
             setSessionError(req,'Your cart is empty');
             return res.redirect('/cart');
         }
-
+        
+        if(!selectedAddressId){
+            setSessionError(req,'Please select a delivery address');
+            return res.redirect('/checkout');
+        }
         const categoryIds = cart.items.map(item => item.productId?.categoryId).filter(Boolean);
         const categories  = await Category.find({_id: {$in: categoryIds}}).lean();
 
@@ -114,7 +114,8 @@ export const getPaymentPage = async (req,res,next) =>{
             totalAmount,
             messages,
             pageCss: '/public/css/user/payment.css',
-            pageJs: '/public/js/user/payment.js'
+            pageJs: '/public/js/user/payment.js',
+            is404: true
         });
     } catch (err) {
         console.error("Error in getPaymentPage :",err),
@@ -265,33 +266,3 @@ export const placeOrder = async (req,res,next) =>{
 }
 
 
-export const getOrderSuccessPage = async (req, res, next) => {
-    try {
-        const userId = req.session.userId;
-        const orderId = req.params.orderId;
-
-        console.log("Items =" , userId , 'order ID' , orderId)
-        // Find order
-        const order = await Order.findOne({ orderId, userId }).lean();
-
-        if (!order) {
-            req.session.messages = req.session.messages || [];
-            req.session.messages.push({ 
-                type: 'error', 
-                text: 'Order not found' 
-            });
-            return res.redirect('/');
-        }
-
-        res.render('user/order-success', {
-            Title: 'Order Success',
-            order,
-            user: res.locals.user || null,
-            pageCss: '/public/css/user/order-success.css',
-            pageJs: null
-        });
-    } catch (err) {
-        console.error('Error in getOrderSuccessPage:', err);
-        next(err);
-    }
-};

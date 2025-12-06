@@ -9,6 +9,7 @@ import { addCategoryValidation , addProductValidation, addVariantValidation, edi
 import { getProducts , getAddProductPage, addProduct, getEditProductPage, editProduct, toggleProductStatus} from '../controller/adminControllers/product.controller.js';
 import { addVariant, getProductVariants , toggleVariantStatus ,editVariant, getAddVariant, getEditVariant } from '../controller/adminControllers/variant.controller.js';
 import upload from '../middleware/multerConfig.js';
+import { getOrders, getUpdateOrder, updateItemStatus } from '../controller/adminControllers/order.controller.js';
 // import { validateVariantImages } from '../middleware/validateVariantImages.js';
 
 
@@ -55,9 +56,6 @@ router.patch("/products/toggle/:id", adminAuth,toggleProductStatus);
 
 
 
-
-
-
 // Product Variants Management
 
 router.get("/products/:productId/variants", adminAuth, getProductVariants);
@@ -67,5 +65,14 @@ router.get('/products/variants/edit/:id',adminAuth,getEditVariant)
 router.put("/products/variants/edit/:id", adminAuth, upload.any(), editVariant);
 router.patch("/products/variants/toggle/:id", adminAuth, toggleVariantStatus);
 
+
+
+
+
+// order routes //
+
+router.get('/order',adminAuth,getOrders)
+router.get('/order/:orderId',adminAuth,getUpdateOrder)
+router.patch('/order/:orderId/items/:itemId/status',adminAuth, updateItemStatus)
 
 export default router

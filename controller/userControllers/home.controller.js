@@ -103,23 +103,31 @@ export const getHomePage = async (req, res, next) => {
 
 export const getShopPage = async (req, res, next) => {
   try {
-    const { category, color, size, priceRange, sort, search } = req.query; // search from helper
+    const { category, color, size, priceRange, sort, search } = req.query;
     const filters = { isListed: true };
 
     const categories = Array.isArray(category) ? category : (category ? category.split(',') : []);
     const colors = Array.isArray(color) ? color : (color ? color.split(',') : []);
     const sizes = Array.isArray(size) ? size : (size ? size.split(',') : []);
 
-
+    // Category filter
     if (categories.length > 0) {
-      const categoryDocs = await Category.find({ name: { $in: categories.map(c => c.toUpperCase()) } }).lean();
-      if (categoryDocs.length > 0) filters.categoryId = { $in: categoryDocs.map(c => c._id) };
+      const categoryDocs = await Category.find({ 
+        name: { $in: categories.map(c => c.toUpperCase()) }, 
+        isListed: true 
+      }).lean();
+      
+      if (categoryDocs.length > 0) {
+        filters.categoryId = { $in: categoryDocs.map(c => c._id) };
+      } else {
+        filters.categoryId = null;
+      }
     }
 
+    // Variant filters
     const variantMatch = { isListed: true };
     if (colors.length > 0) variantMatch.color = { $in: colors };
     if (sizes.length > 0) variantMatch.size = { $in: sizes };
-
 
     if (priceRange) {
       let min = 0, max = Infinity;
@@ -127,69 +135,149 @@ export const getShopPage = async (req, res, next) => {
       else if (priceRange === '1000-2000') { min = 1000; max = 2000; }
       else if (priceRange === '2000-3000') { min = 2000; max = 3000; }
       else if (priceRange === '3000-max') { min = 3000; max = Infinity; }
+      
       variantMatch.$or = [
-        { discountedPrice: { $gte: min, $lte: max } },
-        { price: { $gte: min, $lte: max } }
+        { 
+          discountedPrice: { $exists: true, $ne: null },
+          $expr: { 
+            $and: [
+              { $gte: ['$discountedPrice', min] },
+              max !== Infinity ? { $lte: ['$discountedPrice', max] } : { $gte: ['$discountedPrice', 0] }
+            ]
+          }
+        },
+        { 
+          $or: [
+            { discountedPrice: { $exists: false } },
+            { discountedPrice: null }
+          ],
+          price: { $gte: min, ...(max !== Infinity && { $lte: max }) }
+        }
       ];
     }
 
     const matchingVariants = await ProductVariant.find(variantMatch).select('_id').lean();
     if (matchingVariants.length > 0) {
       filters.variants = { $in: matchingVariants.map(v => v._id) };
+    } else if (colors.length > 0 || sizes.length > 0 || priceRange) {
+      filters._id = null;
     }
 
-    // Sort (use min variant price for price sorts)
-    let sortOption = { createdAt: -1 };
+    const page = parseInt(req.query.page) || 1;
+    const limit = 12;
+    const skip = (page - 1) * limit;
+
+    
+    const pipeline = [
+      { $match: filters },
+      {
+        $lookup: {
+          from: "productvariants",
+          localField: "variants",
+          foreignField: "_id",
+          as: "variants",
+          pipeline: [
+            { $match: variantMatch },
+            { $project: { color: 1, size: 1, price: 1, discountedPrice: 1, images: 1 } }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categoryId",
+          foreignField: "_id",
+          as: "categoryId",
+          pipeline: [
+            { $match: { isListed: true } },
+            { $project: { name: 1 } }
+          ]
+        }
+      },
+      { $unwind: { path: "$categoryId", preserveNullAndEmptyArrays: true } },
+      { $match: { categoryId: { $ne: null }, variants: { $ne: [] } } },
+      // Calculate minPrice for sorting
+      {
+        $addFields: {
+          minPrice: {
+            $min: {
+              $map: {
+                input: "$variants",
+                as: "variant",
+                in: {
+                  $cond: {
+                    if: { 
+                      $and: [
+                        { $ne: ["$$variant.discountedPrice", null] },
+                        { $gt: ["$$variant.discountedPrice", 0] }
+                      ]
+                    },
+                    then: "$$variant.discountedPrice",
+                    else: "$$variant.price"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ];
+
+    if (search) {
+      pipeline.splice(1, 0, { // Add at position 1 (after initial match)
+        $match: {
+          $or: [
+            { name: { $regex: search, $options: "i" } }
+            // { description: { $regex: search, $options: "i" } }
+          ]
+        }
+      });
+    }
+
+    // Add sorting
+    let sortStage = { createdAt: -1 }; 
     switch (sort) {
       case 'priceLow':
-
-        const productsWithMinPrice = await Product.aggregate([
-          { $match: filters },
-          { $lookup: { from: 'productVariants', localField: 'variants', foreignField: '_id', as: 'variants', pipeline: [{ $match: { isListed: true } }, { $project: { price: 1, discountedPrice: 1 } }] } },
-          { $addFields: { minPrice: { $min: '$variants.discountedPrice' } } }, // Use discounted or price
-          { $sort: { minPrice: 1 } },
-          { $limit: 100 } // Temp limit for sort
-        ]);
-
-        sortOption = { basePrice: 1 };
+        sortStage = { minPrice: 1 };
         break;
       case 'priceHigh':
-        sortOption = { basePrice: -1 };
+        sortStage = { minPrice: -1 };
         break;
       case 'newest':
-        sortOption = { createdAt: -1 };
-        break;
-      case 'bestSelling':
-        sortOption = { createdAt: -1 }; // Placeholder
+        sortStage = { createdAt: -1 };
         break;
       case 'aToZ':
-        sortOption = { name: 1 };
+        sortStage = { name: 1 };
         break;
     }
+    pipeline.push({ $sort: sortStage });
 
-    const { data: products, totalPages, currentPage } = await getPaginateData(Product, req, {
-      searchFields: ['name', 'description'],
-      filters,
-      sort: sortOption,
-      limit: 12,
-    });
+    // Count total documents (for pagination)
+    const countPipeline = [...pipeline];
+    countPipeline.push({ $count: "total" });
+    const countResult = await Product.aggregate(countPipeline);
+    const totalDocuments = countResult[0]?.total || 0;
+    const totalPages = Math.ceil(totalDocuments / limit);
 
-    const populatedProducts = await Product.populate(products, [
-      { path: 'variants', match: { isListed: true }, select: 'color size price discountedPrice images' },
-      { path: 'categoryId', select: 'name' }
-    ]);
+    pipeline.push({ $skip: skip }, { $limit: limit });
 
+    const products = await Product.aggregate(pipeline);
+
+    // Get filter options
     const allCategories = await Category.find({ isListed: true }).lean();
     const allColors = await ProductVariant.distinct('color', { isListed: true });
     const allSizes = await ProductVariant.distinct('size', { isListed: true });
 
     res.render("user/shop", {
-      products: populatedProducts,
+      products: products,
       Title: "Shop",
       pageCss: "/public/css/user/shop.css",
       pageJs: "/public/js/user/shop.js",
       user: res.locals.user || null,
-      pagination: { totalPages, currentPage },
+      pagination: {
+        totalPages,
+        currentPage: page
+      },
       categories: allCategories,
       colors: allColors.filter(Boolean),
       sizes: allSizes.filter(Boolean),
@@ -200,7 +288,7 @@ export const getShopPage = async (req, res, next) => {
         priceRange,
         sort
       },
-      query: req.query  // For pagination links
+      query: req.query
     });
   } catch (err) {
     console.error('Error loading shop page:', err);

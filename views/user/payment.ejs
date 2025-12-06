@@ -96,7 +96,7 @@
                                 </div>
                                 <div class="price-wrapper">
                                     <% if (item.discountedPriceAtTime > 0 && item.discountedPriceAtTime < item.priceAtTime) { %>
-                                        <span class="original-price">₹<%= item.priceAtTime.toFixed(2) %></span>
+                                        <span class="original-price">₹<%= (item.priceAtTime * item.quantity).toFixed(2) %></span>
                                         <span class="discounted-price">₹<%= (item.discountedPriceAtTime * item.quantity).toFixed(2) %></span>
                                     <% } else { %>
                                         <span class="discounted-price">₹<%= (item.priceAtTime * item.quantity).toFixed(2) %></span>
@@ -110,7 +110,7 @@
                 <!-- Price Breakdown -->
                 <div style="margin-top: 20px;">
                     <div class="summary-row">
-                        <span>Subtotal (<%= cart.itemsCount %> items)</span>
+                        <span>Subtotal</span>
                         <span>₹<%= subtotal.toFixed(2) %></span>
                     </div>
                     <div class="summary-row">

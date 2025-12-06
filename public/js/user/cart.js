@@ -1,10 +1,33 @@
+function updateCartBadge(count) {
+
+    const cartLink = document.querySelector('a[href="/cart"]');
+    if (!cartLink) {
+        return;
+    }
+
+    let badge = cartLink.querySelector('.cart-badge');
+
+    if (count > 0) {
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'cart-badge';
+            cartLink.appendChild(badge);
+        }
+        badge.textContent = count;
+    } else {
+        if (badge) {
+            badge.remove();
+        }
+    }
+}
+
 
 document.querySelectorAll('.qty-decrease').forEach(btn => {
-    btn.addEventListener('click', async function() {
+    btn.addEventListener('click', async function () {
         const form = this.closest('.qty-form');
         const input = form.querySelector('input[name="quantity"]');
         const currentQty = parseInt(input.value);
-        
+
         if (currentQty > 1) {
             const newQty = currentQty - 1;
             await updateCartQuantity(form, newQty);
@@ -22,12 +45,12 @@ document.querySelectorAll('.qty-decrease').forEach(btn => {
 
 
 document.querySelectorAll('.qty-increase').forEach(btn => {
-    btn.addEventListener('click', async function() {
+    btn.addEventListener('click', async function () {
         const form = this.closest('.qty-form');
         const input = form.querySelector('input[name="quantity"]');
         const currentQty = parseInt(input.value);
         const maxQty = parseInt(this.dataset.max);
-        
+
         if (currentQty < maxQty) {
             const newQty = currentQty + 1;
             await updateCartQuantity(form, newQty);
@@ -47,15 +70,17 @@ document.querySelectorAll('.qty-increase').forEach(btn => {
 });
 
 
+
 async function updateCartQuantity(form, newQuantity) {
     const variantId = form.querySelector('input[name="productVariantId"]').value;
-    
-    // Disable buttons during request
+    const qtyInput = form.querySelector('input[name="quantity"]');
     const decreaseBtn = form.querySelector('.qty-decrease');
     const increaseBtn = form.querySelector('.qty-increase');
+
+    // Disable buttons during request
     decreaseBtn.disabled = true;
     increaseBtn.disabled = true;
-    
+
     try {
         const response = await axios.post('/cart/update', {
             productVariantId: variantId,
@@ -63,21 +88,33 @@ async function updateCartQuantity(form, newQuantity) {
         });
 
         if (response.data.success) {
-            // Show success message
+
+            qtyInput.value = newQuantity;
+
+
+            decreaseBtn.disabled = newQuantity <= 1;
+            increaseBtn.disabled = newQuantity >= response.data.data.maxQty;
+
+
+            qtyInput.max = response.data.data.maxQty;
+            increaseBtn.dataset.max = response.data.data.maxQty;
+
+
+            updateOrderSummary(response.data.data);
+
+
             Toastify({
                 text: response.data.message || "Cart updated successfully",
-                duration: 2000,
+                duration: 1000,
                 gravity: "top",
                 position: "right",
                 backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
             }).showToast();
-            
-            // Reload page to show updated cart
-            setTimeout(() => {
-                window.location.reload();
-            }, 500);
+
+
+
         } else {
-            // Show error message
+
             Toastify({
                 text: response.data.message || "Failed to update cart",
                 duration: 3000,
@@ -85,15 +122,15 @@ async function updateCartQuantity(form, newQuantity) {
                 position: "right",
                 backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a24)",
             }).showToast();
-            
-            // Re-enable buttons
+
+
             decreaseBtn.disabled = false;
             increaseBtn.disabled = false;
         }
     } catch (error) {
         console.error('Error updating cart:', error);
-        
-        // Show error message from response or generic
+
+
         const errorMessage = error.response?.data?.message || "Failed to update cart";
         Toastify({
             text: errorMessage,
@@ -102,7 +139,7 @@ async function updateCartQuantity(form, newQuantity) {
             position: "right",
             backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a24)",
         }).showToast();
-        
+
         // Re-enable buttons
         decreaseBtn.disabled = false;
         increaseBtn.disabled = false;
@@ -110,14 +147,15 @@ async function updateCartQuantity(form, newQuantity) {
 }
 
 
+
 document.querySelectorAll('.remove-form').forEach(form => {
-    form.addEventListener('submit', function(e) {
-        e.preventDefault(); 
-        
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
         const itemElement = this.closest('.item');
         const productName = itemElement.querySelector('h3').textContent;
         const variantId = this.querySelector('input[name="productVariantId"]').value;
-        
+
         Swal.fire({
             title: 'Remove Item?',
             text: `Remove "${productName}" from your cart?`,
@@ -131,47 +169,74 @@ document.querySelectorAll('.remove-form').forEach(form => {
             heightAuto: false
         }).then(async (result) => {
             if (result.isConfirmed) {
-                await removeFromCart(variantId);
+                await removeFromCart(variantId, itemElement);
             }
         });
     });
 });
 
 
-async function removeFromCart(variantId) {
+
+async function removeFromCart(variantId, itemElement) {
     try {
         const response = await axios.post('/cart/remove', {
             productVariantId: variantId
         });
 
         if (response.data.success) {
-            // Show success message
-            Toastify({
-                text: response.data.message || "Item removed from cart",
-                duration: 3000,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-            }).showToast();
-            
-            // Reload page to show updated cart
+            //  Remove the item from DOM with animation
+            itemElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            itemElement.style.opacity = '0';
+            itemElement.style.transform = 'translateX(-20px)';
+
             setTimeout(() => {
-                window.location.reload();
-            }, 500);
+                itemElement.remove();
+
+                console.log('Cart data after removal:', response.data.data);
+
+                if (response.data.data.isEmpty) {
+                    updateCartBadge(0);
+                    window.location.reload();
+                } else {
+                    updateCartBadge(response.data.data.cartItemscount);
+                    updateOrderSummary(response.data.data);
+
+                    if (!response.data.data.hasInvalidItems) {
+                        const warningBanner = document.querySelector('.alert-warning');
+                        if (warningBanner) {
+                            warningBanner.remove();
+                        }
+                    }
+
+                    updateCheckoutButton(response.data.data.canCheckout);
+                }
+
+            }, 300);
+
+
+            // Toastify({
+            //     text: response.data.message || "Item removed from cart",
+            //     duration: 1500,
+            //     gravity: "top",
+            //     position: "right",
+            //     backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+            // }).showToast();
+
+
+
         } else {
-            // Show error message
+
             Toastify({
                 text: response.data.message || "Failed to remove item",
                 duration: 3000,
                 gravity: "top",
                 position: "right",
-                            backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a24)",
-
+                backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a24)",
             }).showToast();
         }
     } catch (error) {
         console.error('Error removing from cart:', error);
-        
+
         const errorMessage = error.response?.data?.message || "Failed to remove item";
         Toastify({
             text: errorMessage,
@@ -184,9 +249,10 @@ async function removeFromCart(variantId) {
 }
 
 
+
 function clearInvalidItems() {
     const invalidItems = document.querySelectorAll('.item[data-invalid="true"]');
-    
+
     if (invalidItems.length === 0) {
         Toastify({
             text: "No invalid items to remove",
@@ -199,7 +265,7 @@ function clearInvalidItems() {
         }).showToast();
         return;
     }
-    
+
     Swal.fire({
         title: 'Clear Invalid Items?',
         text: `This will remove ${invalidItems.length} unavailable item(s) from your cart.`,
@@ -213,17 +279,23 @@ function clearInvalidItems() {
         heightAuto: false
     }).then(async (result) => {
         if (result.isConfirmed) {
-            await clearInvalidItemsRequest();
+            await clearInvalidItemsRequest(invalidItems);
         }
     });
 }
 
 
-async function clearInvalidItemsRequest() {
+
+async function clearInvalidItemsRequest(invalidItems) {
     try {
         const response = await axios.post('/cart/clear-invalid');
 
         if (response.data.success) {
+
+            const isSingleItem = invalidItems.length === 1;
+            const removalDelay = isSingleItem ? 1000 : 0;
+
+
             Toastify({
                 text: response.data.message || "Invalid items removed",
                 duration: 3000,
@@ -231,11 +303,44 @@ async function clearInvalidItemsRequest() {
                 position: "right",
                 backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
             }).showToast();
-            
-            // Reload page
+
+
             setTimeout(() => {
-                window.location.reload();
-            }, 500);
+
+                invalidItems.forEach((item, index) => {
+                    setTimeout(() => {
+                        item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        item.style.opacity = '0';
+                        item.style.transform = 'translateX(-20px)';
+
+                        setTimeout(() => {
+                            item.remove();
+
+
+                            if (index === invalidItems.length - 1) {
+                                console.log('Cart data after clearing:', response.data.data);
+
+                                if (response.data.data.isEmpty) {
+                                    updateCartBadge(0);
+                                    window.location.reload();
+                                } else {
+                                    updateCartBadge(response.data.data.itemsCount);
+
+                                    const warningBanner = document.querySelector('.alert-warning');
+                                    if (warningBanner) {
+                                        warningBanner.remove();
+                                    }
+
+                                    updateOrderSummary(response.data.data);
+                                    updateCheckoutButton(response.data.data.canCheckout);
+                                }
+                            }
+                        }, 300);
+                    }, index * 100);
+                });
+            }, removalDelay);
+
+
         } else {
             Toastify({
                 text: response.data.message || "Failed to clear invalid items",
@@ -247,7 +352,7 @@ async function clearInvalidItemsRequest() {
         }
     } catch (error) {
         console.error('Error clearing invalid items:', error);
-        
+
         const errorMessage = error.response?.data?.message || "Failed to clear invalid items";
         Toastify({
             text: errorMessage,
@@ -260,11 +365,76 @@ async function clearInvalidItemsRequest() {
 }
 
 
-document.addEventListener('DOMContentLoaded', function() {
+
+function updateOrderSummary(data) {
+    console.log('📊 Updating order summary with data:', data);
+
+
+    const subtotalElements = document.querySelectorAll('.summary-row span');
+    if (subtotalElements.length >= 2) {
+
+        subtotalElements[1].textContent = `₹${data.subtotal.toFixed(2)}`;
+        console.log('✅ Updated subtotal to:', data.subtotal.toFixed(2));
+    }
+
+    // ✅ Update invalid items note if exists
+    if (data.hasInvalidItems !== undefined) {
+        const invalidNote = document.querySelector('.invalid-items-note');
+
+        if (data.hasInvalidItems && !invalidNote && data.totalItems) {
+            // Add invalid items note if it doesn't exist
+            const firstSummaryRow = document.querySelector('.summary-row');
+            if (firstSummaryRow) {
+                const invalidDiv = document.createElement('div');
+                invalidDiv.className = 'summary-row invalid-items-note';
+                invalidDiv.innerHTML = `
+                    <span>${data.totalItems - data.itemsCount} unavailable items</span>
+                    <span>Not included</span>
+                `;
+                firstSummaryRow.parentNode.insertBefore(invalidDiv, firstSummaryRow.nextSibling);
+                console.log('✅ Added invalid items note');
+            }
+        } else if (!data.hasInvalidItems && invalidNote) {
+            invalidNote.remove();
+            console.log('✅ Removed invalid items note');
+        }
+    }
+}
+
+
+
+function updateCheckoutButton(canCheckout) {
+    const checkoutBtn = document.querySelector('.checkout-btn');
+    const blockedMsg = document.querySelector('.checkout-blocked-msg');
+
+    if (checkoutBtn) {
+        if (canCheckout) {
+            checkoutBtn.disabled = false;
+            checkoutBtn.textContent = 'Checkout';
+            checkoutBtn.setAttribute('href', '/checkout');
+            if (blockedMsg) blockedMsg.remove();
+            console.log('✅ Checkout button enabled');
+        } else {
+            checkoutBtn.disabled = true;
+            checkoutBtn.textContent = 'Cannot Proceed';
+            checkoutBtn.removeAttribute('href');
+            if (!blockedMsg) {
+                const msg = document.createElement('p');
+                msg.className = 'checkout-blocked-msg';
+                msg.textContent = 'Remove unavailable or out-of-stock items to continue';
+                checkoutBtn.parentNode.insertBefore(msg, checkoutBtn.nextSibling);
+            }
+            console.log('✅ Checkout button disabled');
+        }
+    }
+}
+
+
+document.addEventListener('DOMContentLoaded', function () {
     const urlParams = new URLSearchParams(window.location.search);
     const success = urlParams.get('success');
     const error = urlParams.get('error');
-    
+
     if (success) {
         Toastify({
             text: success,
@@ -275,11 +445,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 background: "#28a745",
             }
         }).showToast();
-        
-        // Clean URL
+
         window.history.replaceState({}, document.title, window.location.pathname);
     }
-    
     if (error) {
         Toastify({
             text: error,
@@ -290,8 +458,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 background: "#dc3545",
             }
         }).showToast();
-        
-        // Clean URL
+
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 });
+

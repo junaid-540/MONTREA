@@ -62,7 +62,7 @@
                     </div>
                     <div class="row g-4">
                         <% categories.slice(0, 3).forEach(category=> { %>
-                            <div class="col-md-4 col-sm-6">
+                            <div class="col-md-4 col-sm-4">
                                 <div class="category-card">
                                     <div class="category-image">
                                         <img src="<%= category.image %>" alt="<%= category.name %>">
@@ -143,7 +143,7 @@
 
                         <% if (featuredProducts && featuredProducts.length> 0) { %>
                             <% featuredProducts.forEach(product=> { %>
-                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                <div class="col-lg-3 col-md-6 col-sm-6">
                                     <div class="product-card">
                                         <div class="product-image">
                                             <img src="<%= product.image %>" alt="<%= product.name %>">

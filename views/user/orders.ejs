@@ -1,0 +1,159 @@
+<%- include('../partials/user/header') %>
+
+<body>
+    <%- include('../partials/user/navbar') %>
+
+    <div class="container my-5">
+        <div class="row">
+            
+            <%- include('../partials/user/sidebar') %>
+
+            <div class=" col-12 col-lg-9 ">
+                <div class="main-content">
+                    <div class="orders-header">
+                        <h1 class="page-title">My Orders</h1>
+                        <p class="orders-count">Total Orders: <span><%= totalOrders %></span></p>
+                    </div>
+
+                    <div class="search-wrapper">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="Search orders by Order ID..." 
+                                value="<%= search || '' %>" 
+                                autocomplete="off"
+                            />
+                            <button type="button" class="search-clear <%= search ? 'show' : '' %>" id="clearSearch">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="orders-list">
+                        <% if (orders && orders.length > 0) { %>
+                            <% orders.forEach(order => { %>
+                                <div class="order-card" data-order-id="<%= order.orderId %>" data-product-names="<%= order.items.map(i => i.name).join(' | ') %>">
+                                    <div class="order-header">
+                                        <div class="order-info-group">
+                                            <div class="order-info-item">
+                                                <span class="label">Order ID:</span>
+                                                <span class="value order-id"><%= order.orderId %></span>
+                                            </div>
+                                            <div class="order-info-item">
+                                                <i class="far fa-calendar-alt"></i>
+                                                <span class="value"><%= new Date(order.placedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></span>
+                                            </div>
+                                            <div class="order-info-item">
+                                                <i class="fas fa-rupee-sign"></i>
+                                                <span class="value">₹<%= order.totalAmount.toFixed(2) %></span>
+                                            </div>
+                                        </div>
+                                        <span class="status-badge status-<%= order.orderStatus.toLowerCase().replace(/\s+/g, '-') %>">
+                                            <%= order.orderStatus %>
+                                        </span>
+                                    </div>
+
+                                    <div class="order-body">
+                                        <div class="order-items">
+                                            <div class="order-item-preview">
+                                                <img src="<%= order.items[0].image %>" 
+                                                     alt="<%= order.items[0].name %>"
+                                                     class="item-image"
+                                                     onerror="this.src='https://via.placeholder.com/80x80/eee/ccc?text=No+Image'">
+                                                <div class="item-details">
+                                                    <h3 class="item-name"><%= order.items[0].name %></h3>
+                                                    <p class="item-specs">
+                                                        Color: <%= order.items[0].color %> | 
+                                                        Size: <%= order.items[0].size %> | 
+                                                        Qty: <%= order.items[0].quantity %>
+                                                    </p>
+                                                    <% if (order.items.length > 1) { %>
+                                                        <p class="more-items">+<%= order.items.length - 1 %> more item(s)</p>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+
+                                            <a href="/orders/<%= order.orderId %>" class="btn-view-details">
+                                                View Details
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="empty-state">
+                                <i class="fas fa-box-open"></i>
+                                <h2>No Orders Yet</h2>
+                                <p>Looks like you haven't placed any orders yet</p>
+                                <a href="/shop" class="btn-shop-now">Start Shopping</a>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <!-- Pagination -->
+                    <% if (totalPages > 1) { %>
+                        <div class="pagination-wrapper">
+                            <nav class="pagination">
+                                <% if (currentPage > 1) { %>
+                                    <a href="/orders?page=<%= currentPage - 1 %>" class="page-link">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                <% } %>
+
+                                <% for (let i = 1; i <= totalPages; i++) { %>
+                                    <% if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
+                                        <a href="/orders?page=<%= i %>" 
+                                           class="page-link <%= i === currentPage ? 'active' : '' %>">
+                                            <%= i %>
+                                        </a>
+                                    <% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
+                                        <span class="page-dots">...</span>
+                                    <% } %>
+                                <% } %>
+
+                                <% if (currentPage < totalPages) { %>
+                                    <a href="/orders?page=<%= currentPage + 1 %>" class="page-link">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                <% } %>
+                            </nav>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/user/footer') %>
+
+ <script>
+        const messages = <%- JSON.stringify(messages || []) %>;
+        messages.forEach(msg => {
+            let bgColor, duration = 3000;
+            switch (msg.type) {
+                case 'error':
+                    bgColor = "linear-gradient(to right, #ff6b6b, #ee5a24)";
+                    break;
+                case 'success':
+                    bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
+                    break;
+                case 'warning':
+                    bgColor = "linear-gradient(to right, #ffa726, #ff7043)";
+                    duration = 4000;
+                    break;
+                default:
+                    bgColor = "linear-gradient(to right, #2196f3, #21cbf3)";
+            }
+            Toastify({
+                text: msg.text,
+                duration: duration,
+                gravity: "top",
+                position: "right",
+                backgroundColor: bgColor,
+                stopOnFocus: true,
+            }).showToast();
+        });
+    </script>

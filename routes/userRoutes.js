@@ -12,8 +12,9 @@ import validateRequest from '../middleware/validateRequest.js';
 import { addAddressValidation, editProfileValidation } from '../validations/userValidations.js';
 import { deleteAddress, getAddAddress, getAddressPage, getEditAddress, postAddAddress, postEditAddress, setDefaultAddress } from '../controller/userControllers/address.controller.js';
 import { getCartPage ,clearInvalidItems, addToCart, checkVariantInCart, updateCartQuantity, removeFromCart } from '../controller/userControllers/cart.controller.js';
-import { getCheckoutPage, getAddress, addAddress as addCheckoutAddress, editAddress as editCheckoutAddress, deleteAddress as deleteCheckoutAddress, continueToPayment, } from '../controller/userControllers/checkout.controller.js';
-import { getOrderSuccessPage, getPaymentPage, placeOrder } from '../controller/userControllers/payment.controller.js';
+import { getCheckoutPage, addAddress as addCheckoutAddress, continueToPayment, } from '../controller/userControllers/checkout.controller.js';
+import { getPaymentPage, placeOrder } from '../controller/userControllers/payment.controller.js';
+import { cancelOrder, downloadInvoice, getMyOrdersPage, getOrderDetailsPage, getOrderSuccessPage, returnOrder } from '../controller/userControllers/order.controller.js';
 
 
 const router = express.Router()
@@ -87,18 +88,21 @@ router.post('/cart/remove',checkSession,removeFromCart)
 
 // checkout routes //
 router.get('/checkout',checkSession,getCheckoutPage);
-router.get('/checkout/get-address/:id',checkSession,getAddress);
 router.post('/checkout/add-address',checkSession,validateRequest(addAddressValidation),addCheckoutAddress);
-router.post('/checkout/edit-address/:id',checkSession,validateRequest(addAddressValidation),editCheckoutAddress);
-router.delete('/checkout/delete-address/:id',checkSession,deleteCheckoutAddress);
 router.post('/checkout/continue-to-payment',checkSession,continueToPayment)
 
 // payment Routes //
 
 router.get('/payment',checkSession,getPaymentPage)
 router.post('/payment/place-order',checkSession,placeOrder)
-
-
 router.get('/order-success/:orderId',checkSession,getOrderSuccessPage)
 
+
+// Orders routes //
+
+router.get('/orders',checkSession,getMyOrdersPage)
+router.get('/orders/:orderId',checkSession,getOrderDetailsPage)
+router.post('/orders/:orderId/cancel',checkSession,cancelOrder);
+router.post('/orders/:orderId/return',checkSession,returnOrder)
+router.get('/order/:orderId/invoice',checkSession,downloadInvoice)
 export default router

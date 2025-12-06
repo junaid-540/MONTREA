@@ -85,9 +85,7 @@ body {
 
 .categories-table thead th {
     background-color: #000;
-    
     color: #fff;
-    
     border-color: #333;
     padding: 15px;
     font-weight: 600;
@@ -97,17 +95,22 @@ body {
     background-color: #e8e8e8;
     color: #333;
     border-bottom: 1px solid #ddd;
+    transition: all 0.3s 
+ease;
 }
 
 .categories-table tbody td {
     padding: 15px;
     vertical-align: middle;
+    transition: all 0.3s 
+ease;
 }
 
 .categories-table tbody tr:hover td {
     background-color: #e3e3e3 !important;
     color: #000 !important;
-    transition: background-color 0.2s ease;
+    transition: all 0.3s ease;
+    transform: translateY(-4px);
 }
 
 /* Status Badges */

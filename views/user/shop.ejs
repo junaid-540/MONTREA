@@ -126,70 +126,98 @@
             <section class="products-section">
                 <div class="container">
                     <div class="row g-4">
-                        <% if (products && products.length> 0) { %>
-                            <% products.forEach(product=> { %>
-                                <div class="col-lg-3 col-md-6 col-sm-6">
+                        <% if (products && products.length > 0) { %>
+                                <% products.forEach(product => { %>
+                                    <div class="col-lg-3 col-md-6 col-sm-6">
                                     <div class="product-card">
                                         <a href="/product/<%= product._id %>" class="product-link">
-                                            <div class="product-image-container">
-                                                <img src="<%= product.coverImage.url || '/public/images/placeholder.png' %>"
-                                                    alt="<%= product.name %>" class="product-image">
-                                                <div class="wishlist-icon">
-                                                    <i class="far fa-heart"></i>
-                                                </div>
+                                        <div class="product-image-container">
+                                            <img src="<%= product.coverImage.url || '/public/images/placeholder.png' %>"
+                                            alt="<%= product.name %>" class="product-image">
+                                            <div class="wishlist-icon">
+                                            <i class="far fa-heart"></i>
                                             </div>
+                                        </div>
                                         </a>
 
                                         <div class="product-info">
-                                            <p class="product-category">
-                                                <%= product.categoryId?.name || 'Uncategorized' %>
-                                            </p>
+                                        <p class="product-category">
+                                            <%= product.categoryId?.name || 'Uncategorized' %>
+                                        </p>
 
-                                            <h5 class="product-title">
-                                                <a href="/product/<%= product._id %>">
-                                                    <%= product.name %>
-                                                </a>
-                                            </h5>
+                                        <h5 class="product-title">
+                                            <a href="/product/<%= product._id %>">
+                                            <%= product.name %>
+                                            </a>
+                                        </h5>
 
-                                            <% if (product.variants && product.variants.length> 0) { %>
-                                                <% const prices=product.variants.map(v=> v.price);
-                                                    const minPrice = Math.min(...prices);
-                                                    const maxPrice = Math.max(...prices);
-                                                    %>
-                                                    <div class="product-pricing">
-                                                        <span class="price-current">₹ <%= minPrice.toLocaleString() %>
-                                                        </span>
-                                                        <% if (minPrice !==maxPrice) { %>
-                                                            <span class="price-original">₹ <%= maxPrice.toLocaleString()
-                                                                    %></span>
-                                                            <% } %>
-                                                    </div>
+                                        <% if (product.variants && product.variants.length > 0) { %>
+                                            <% 
+                                            
+                                            const discountedPrices = product.variants
+                                                .map(v => v.discountedPrice)
+                                                .filter(p => p != null && p > 0);
+                                            const regularPrices = product.variants.map(v => v.price);
+                                            
+                                            
+                                            const hasDiscount = discountedPrices.length > 0;
+                                            const displayPrice = hasDiscount 
+                                                ? Math.min(...discountedPrices)
+                                                : Math.min(...regularPrices);
+                                            const originalPrice = hasDiscount 
+                                                ? Math.min(...regularPrices)
+                                                : null;
+                                            const maxDisplayPrice = hasDiscount
+                                                ? Math.max(...discountedPrices)
+                                                : Math.max(...regularPrices);
+                                            const showRange = displayPrice !== maxDisplayPrice;
+                                            %>
+                                            
+                                            <div class="product-pricing">
+                                            <span class="price-current">
+                                                ₹ <%= displayPrice.toLocaleString() %>
+                                            </span>
+                                            
+                                            <% if (showRange) { %>
+                                                <span class="price-range-separator">-</span>
+                                                <span class="price-current">
+                                                ₹ <%= maxDisplayPrice.toLocaleString() %>
+                                                </span>
+                                            <% } %>
+                                            
+                                            <% if (hasDiscount && originalPrice) { %>
+                                                <span class="price-original">
+                                                ₹ <%= originalPrice.toLocaleString() %>
+                                                </span>
+                                            <% } %>
+                                            </div>
 
-                                                    <!-- Variant Colors -->
-                                                    <div class="variant-colors mt-2 d-flex flex-wrap gap-1">
-                                                        <% product.variants.forEach(v=> {
-                                                            const rawColor = v && v.color ? String(v.color).trim() : '';
-                                                            const safeColor = rawColor ?
-                                                            rawColor.toLowerCase().replace(/\s+/g, '') : '#ccc';
-                                                            %>
-                                                            <span class="color-dot"
-                                                                style="background-color:<%= safeColor %>;
-                                                                title="<%= rawColor || 'No color' %>"></span>
-                                                            <% }) %>
-                                                    </div>
-
-                                                    <% } else { %>
-                                                        <p class="product-price">Price N/A</p>
-                                                        <% } %>
+                                            <!-- Variant Colors -->
+                                            <div class="variant-colors mt-2 d-flex flex-wrap gap-1">
+                                            <% product.variants.forEach(v => {
+                                                const rawColor = v && v.color ? String(v.color).trim() : '';
+                                                const safeColor = rawColor 
+                                                ? rawColor.toLowerCase().replace(/\s+/g, '') 
+                                                : '#ccc';
+                                            %>
+                                                <span class="color-dot"
+                                                style="background-color:<%= safeColor %>;"
+                                                title="<%= rawColor || 'No color' %>">
+                                                </span>
+                                            <% }) %>
+                                            </div>
+                                        <% } else { %>
+                                            <p class="product-price">Price N/A</p>
+                                        <% } %>
                                         </div>
                                     </div>
-                                </div>
+                                    </div>
                                 <% }) %>
-                                    <% } else { %>
-                                        <div class="col-12">
-                                            <p class="text-center no-products">No products found.</p>
-                                        </div>
-                                        <% } %>
+                                <% } else { %>
+                                <div class="col-12">
+                                    <p class="text-center no-products">No products found.</p>
+                                </div>
+                                <% } %>
                     </div>
 
                     <!-- Pagination -->
