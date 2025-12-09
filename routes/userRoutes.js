@@ -11,10 +11,11 @@ import upload from '../middleware/multerConfig.js';
 import validateRequest from '../middleware/validateRequest.js';
 import { addAddressValidation, editProfileValidation } from '../validations/userValidations.js';
 import { deleteAddress, getAddAddress, getAddressPage, getEditAddress, postAddAddress, postEditAddress, setDefaultAddress } from '../controller/userControllers/address.controller.js';
-import { getCartPage ,clearInvalidItems, addToCart, checkVariantInCart, updateCartQuantity, removeFromCart } from '../controller/userControllers/cart.controller.js';
+import { getCartPage ,clearInvalidItems, addToCart, checkVariantInCart, updateCartQuantity, removeFromCart, moveToWishlist } from '../controller/userControllers/cart.controller.js';
 import { getCheckoutPage, addAddress as addCheckoutAddress, continueToPayment, } from '../controller/userControllers/checkout.controller.js';
 import { getPaymentPage, placeOrder } from '../controller/userControllers/payment.controller.js';
 import { cancelOrder, downloadInvoice, getMyOrdersPage, getOrderDetailsPage, getOrderSuccessPage, returnOrder } from '../controller/userControllers/order.controller.js';
+import { addToWishlist, checkVariantInWishlist, getWishlist, moveToCart, removeFromWishlist } from '../controller/userControllers/wishlist.controller.js';
 
 
 const router = express.Router()
@@ -84,7 +85,7 @@ router.get('/cart/check/:variantId',checkVariantInCart)
 router.post('/cart/clear-invalid',checkSession,clearInvalidItems)
 router.post('/cart/update',checkSession,updateCartQuantity)
 router.post('/cart/remove',checkSession,removeFromCart)
-
+router.post('/cart/move-to-wishlist', checkSession, moveToWishlist);
 
 // checkout routes //
 router.get('/checkout',checkSession,getCheckoutPage);
@@ -103,6 +104,17 @@ router.get('/order-success/:orderId',checkSession,getOrderSuccessPage)
 router.get('/orders',checkSession,getMyOrdersPage)
 router.get('/orders/:orderId',checkSession,getOrderDetailsPage)
 router.post('/orders/:orderId/cancel',checkSession,cancelOrder);
-router.post('/orders/:orderId/return',checkSession,returnOrder)
-router.get('/order/:orderId/invoice',checkSession,downloadInvoice)
+router.post('/orders/:orderId/return',checkSession,returnOrder);
+router.get('/order/:orderId/invoice',checkSession,downloadInvoice);
+
+
+
+// wishlist routes //
+
+router.get('/wishlist',checkSession,getWishlist)
+router.post('/wishlist/add',checkSession,addToWishlist);
+router.get('/wishlist/check/:variantId',checkVariantInWishlist)
+router.post('/wishlist/remove',checkSession,removeFromWishlist)
+router.post('/wishlist/move-to-cart',checkSession,moveToCart)
+
 export default router

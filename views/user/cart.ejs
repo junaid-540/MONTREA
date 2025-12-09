@@ -47,6 +47,7 @@
                             %>
                             <div class="item <%= item.isInvalid ? 'item-invalid' : '' %> <%= item.isOutOfStock ? 'item-out-of-stock' : '' %>" 
                                  data-variant-id="<%= item.productVariantId %>"
+                                 data-product-id="<%= item.productId %>" 
                                  data-invalid="<%= item.isInvalid %>">
                                 
                                 <!-- Product Image -->

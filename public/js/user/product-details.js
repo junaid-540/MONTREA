@@ -19,6 +19,25 @@ function UpdateCartBadge(count){
     }
 }
 
+function UpdateWishlistBadge(count){
+    const wishlistLink = document.querySelector('a[href="/wishlist"]');
+    if(!wishlistLink) return ;
+
+    let badge = wishlistLink.querySelector('.wishlist-badge');
+    if(count > 0){
+        if(!badge){
+            badge = document.createElement('span');
+            badge.className = 'wishlist-badge';
+            wishlistLink.appendChild(badge);
+        }
+        badge.textContent = count;
+    }else{
+        if(badge){
+            badge.remove();
+        }
+    }
+}
+
 function initImageZoom() {
     const container = document.querySelector('.image-zoom-container');
     const img = document.getElementById("mainImage");
@@ -78,12 +97,10 @@ function changeImage(src, element) {
 
     img.src = src;
 
-    // Update zoom background image
     if (result) {
         result.style.backgroundImage = `url('${src}')`;
     }
 
-    // Update active thumbnail
     document.querySelectorAll('.thumbnail').forEach(thumb => {
         thumb.classList.remove('active');
     });
@@ -114,25 +131,21 @@ function updateVariant() {
     const selectedColor = document.getElementById('selectedColor').value;
     const selectedSize = document.getElementById('selectedSize').value;
 
-    // Find matching variant
     const matchedVariant = variants.find(v =>
         v.color === selectedColor && v.size === selectedSize
     );
 
     if (matchedVariant) {
-        // Update images
         if (matchedVariant.images && matchedVariant.images.length > 0) {
             const img = document.getElementById('mainImage');
             const result = document.getElementById("zoomResult");
 
             img.src = matchedVariant.images[0].url;
 
-            // Update zoom background
             if (result) {
                 result.style.backgroundImage = `url('${matchedVariant.images[0].url}')`;
             }
 
-            // Update thumbnails
             const thumbnailContainer = document.querySelector('.thumbnail-images');
             thumbnailContainer.innerHTML = '';
             matchedVariant.images.forEach((image, index) => {
@@ -145,7 +158,6 @@ function updateVariant() {
             });
         }
 
-        // Update price
         const priceElement = document.getElementById('currentPrice');
         if (matchedVariant.discountedPrice > 0 && matchedVariant.discountedPrice < matchedVariant.price) {
             priceElement.textContent = '₹' + matchedVariant.discountedPrice.toFixed(2);
@@ -153,7 +165,6 @@ function updateVariant() {
             priceElement.textContent = '₹' + matchedVariant.price.toFixed(2);
         }
 
-        // Update stock info
         const stockInfo = document.querySelector('.stock-info');
         const addToCartBtn = document.getElementById('addToCartBtn');
 
@@ -162,13 +173,15 @@ function updateVariant() {
             stockInfo.innerHTML = '<i class="fas fa-times-circle me-2"></i>Out of Stock';
             addToCartBtn.disabled = true;
             addToCartBtn.textContent = 'OUT OF STOCK';
+            addToCartBtn.style.opacity = '0.8';
+            addToCartBtn.style.cursor = 'not-allowed';
             addToCartBtn.dataset.stockDisabled = 'true';
         } else if (matchedVariant.stock < 10) {
             stockInfo.className = 'stock-info low-stock';
             stockInfo.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Only ' + matchedVariant.stock + ' left in stock';
             addToCartBtn.disabled = false;
             addToCartBtn.textContent = 'ADD TO CART';
-            addToCartBtn.dataset.stockDisabled = 'false'; // NEW
+            addToCartBtn.dataset.stockDisabled = 'false';
 
             updateAddToCartButton(matchedVariant._id);
         } else {
@@ -176,10 +189,13 @@ function updateVariant() {
             stockInfo.innerHTML = '<i class="fas fa-check-circle me-2"></i>In Stock';
             addToCartBtn.disabled = false;
             addToCartBtn.textContent = 'ADD TO CART';
-            addToCartBtn.dataset.stockDisabled = 'false'; // NEW
+            addToCartBtn.dataset.stockDisabled = 'false';
 
             updateAddToCartButton(matchedVariant._id);
         }
+
+        // Update wishlist button state
+        updateWishlistButton(matchedVariant._id);
     }
 }
 
@@ -198,11 +214,25 @@ async function checkIfVariantInCart(variantId) {
     }
 }
 
+async function checkIfVariantInWishlist(variantId) {
+    try {
+        const response = await fetch(`/wishlist/check/${variantId}`);
+        const data = await response.json();
+
+        if (data.success && data.data) {
+            return data.data;
+        }
+        return { inWishlist: false };
+    } catch (error) {
+        console.error('Error checking wishlist:', error);
+        return { inWishlist: false };
+    }
+}
+
 async function updateAddToCartButton(variantId) {
     const addToCartBtn = document.getElementById('addToCartBtn');
     if (!addToCartBtn) return;
 
-    
     if (addToCartBtn.dataset.stockDisabled === 'true') {
         return;
     }
@@ -210,13 +240,12 @@ async function updateAddToCartButton(variantId) {
     const cartStatus = await checkIfVariantInCart(variantId);
 
     if (cartStatus.inCart) {
-        addToCartBtn.disabled = true;
-        addToCartBtn.textContent = `ALREADY IN CART (${cartStatus.quantity})`;
-        addToCartBtn.style.opacity = '0.6';
-        addToCartBtn.style.cursor = 'not-allowed';
+        // addToCartBtn.disabled = true;
+        addToCartBtn.textContent = `ALREADY IN CART`;
+        // addToCartBtn.style.opacity = '0.8';
+        // addToCartBtn.style.cursor = 'not-allowed';
         addToCartBtn.dataset.inCart = 'true';
     } else {
-        // Only enable if stock is available
         const stockStatus = document.querySelector('.stock-info');
         const isOutOfStock = stockStatus && stockStatus.classList.contains('out-of-stock');
 
@@ -230,12 +259,32 @@ async function updateAddToCartButton(variantId) {
     }
 }
 
+async function updateWishlistButton(variantId) {
+    const addToWishlistBtn = document.getElementById('addToWishlistBtn');
+    if (!addToWishlistBtn) return;
+
+    const wishlistStatus = await checkIfVariantInWishlist(variantId);
+
+    if (wishlistStatus.inWishlist) {
+        addToWishlistBtn.innerHTML = '<i class="fas fa-heart me-2"></i>IN WISHLIST';
+        // addToWishlistBtn.disabled = true;
+        // addToWishlistBtn.style.opacity = '0.8';
+        // addToWishlistBtn.style.cursor = 'not-allowed';
+        addToWishlistBtn.dataset.inWishlist = 'true';
+    } else {
+        addToWishlistBtn.innerHTML = '<i class="far fa-heart me-2"></i>WISHLIST';
+        addToWishlistBtn.disabled = false;
+        addToWishlistBtn.style.opacity = '1';
+        addToWishlistBtn.style.cursor = 'pointer';
+        addToWishlistBtn.dataset.inWishlist = 'false';
+    }
+}
+
 // Add to cart functionality
 document.addEventListener('DOMContentLoaded', function () {
     const addToCartBtn = document.getElementById('addToCartBtn');
 
     if (addToCartBtn) {
-        // Check initial variant on page load
         const selectedColor = document.getElementById('selectedColor').value;
         const selectedSize = document.getElementById('selectedSize').value;
         const initialVariant = variants.find(v =>
@@ -253,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     title: 'Already in Cart',
                     text: 'This product is already in your cart!',
                     showCancelButton: true,
-                    confirmButtonColor: '#007bff',
+                    confirmButtonColor: '#f59e0b',
                     cancelButtonColor: '#6c757d',
                     confirmButtonText: 'Go to Cart',
                     cancelButtonText: 'Continue Shopping',
@@ -283,7 +332,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const selectedColor = document.getElementById('selectedColor').value;
             const selectedSize = document.getElementById('selectedSize').value;
 
-            // Find the selected variant
             const variant = variants.find(v =>
                 v.color === selectedColor && v.size === selectedSize
             );
@@ -301,7 +349,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Check stock before API call
             if (variant.stock === 0) {
                 Toastify({
                     text: "This product is out of stock",
@@ -315,8 +362,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Disable button and show loading
-            this.disabled = true;
+            // this.disabled = true;
             const originalText = this.textContent;
             this.textContent = 'ADDING...';
 
@@ -333,7 +379,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     })
                 });
 
-                // Read raw response as text first (avoid JSON parse errors when server returns HTML)
                 const raw = await response.text();
                 const contentType = response.headers.get('content-type') || '';
                 let data = null;
@@ -346,7 +391,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
-                // Successful JSON response
                 if (response.ok && data && data.success) {
                     UpdateCartBadge(data.data.cartItemscount)
                     const productName = document.querySelector('.product-title') ?
@@ -373,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             </div>
                         `,
                         showCancelButton: true,
-                        confirmButtonColor: '#007bff',
+                        confirmButtonColor: '#f59e0b',
                         cancelButtonColor: '#6c757d',
                         confirmButtonText: '🛒 Go to Cart',
                         cancelButtonText: '🛍️ Continue Shopping',
@@ -389,18 +433,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
 
                 } else {
-                    // Not successful — handle unauthenticated / redirect case
                     this.disabled = false;
                     this.textContent = originalText;
 
-                    // If server returned JSON with statusCode 401 and redirectTo
                     if (data && (data.statusCode === 401 || data.statusCode === 403) && data.redirectTo) {
                         Swal.fire({
                             icon: 'warning',
                             title: 'Login Required',
                             text: data.message || 'Please sign in to add items to your cart.',
                             showCancelButton: true,
-                            confirmButtonColor: '#007bff',
+                            confirmButtonColor: '#f59e0b',
                             cancelButtonColor: '#6c757d',
                             confirmButtonText: 'Go to Login',
                             cancelButtonText: 'Cancel',
@@ -414,14 +456,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
-                    // If server returned HTML (likely a redirect to login or error page)
                     if (raw && raw.trim().startsWith('<')) {
                         Swal.fire({
                             icon: 'warning',
                             title: 'Login Required',
                             text: 'Please sign in to add items to your cart.',
                             showCancelButton: true,
-                            confirmButtonColor: '#007bff',
+                            confirmButtonColor: '#f59e0b',
                             cancelButtonColor: '#6c757d',
                             confirmButtonText: 'Go to Login',
                             cancelButtonText: 'Cancel',
@@ -435,7 +476,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
 
-                    // Generic JSON error
                     const errMsg = (data && data.message) ? data.message : 'Failed to add to cart';
                     Toastify({
                         text: errMsg,
@@ -461,24 +501,174 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Add to wishlist functionality (placeholder for now)
+    // Add to wishlist functionality
     const addToWishlistBtn = document.getElementById('addToWishlistBtn');
-    // if (addToWishlistBtn) {
-    //     addToWishlistBtn.addEventListener('click', function() {
-    //         Toastify({
-    //             text: "Wishlist feature coming soon!",
-    //             duration: 2000,
-    //             gravity: "top",
-    //             position: "right",
-    //             style: {
-    //                 background: "#17a2b8",
-    //             }
-    //         }).showToast();
-    //     });
-    // }
+    if (addToWishlistBtn) {
+        // Check initial variant on page load
+        const selectedColor = document.getElementById('selectedColor').value;
+        const selectedSize = document.getElementById('selectedSize').value;
+        const initialVariant = variants.find(v =>
+            v.color === selectedColor && v.size === selectedSize
+        );
+
+        if (initialVariant) {
+            updateWishlistButton(initialVariant._id);
+        }
+
+        addToWishlistBtn.addEventListener('click', async function() {
+            if (this.dataset.inWishlist === 'true') {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Already in Wishlist',
+                    text: 'This product is already in your wishlist!',
+                    showCancelButton: true,
+                    confirmButtonColor: '#f59e0b',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Go to Wishlist',
+                    cancelButtonText: 'Continue Shopping',
+                    scrollbarPadding: false,
+                    heightAuto: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/wishlist';
+                    }
+                });
+                return;
+            }
+
+            const selectedColor = document.getElementById('selectedColor').value;
+            const selectedSize = document.getElementById('selectedSize').value;
+
+            const variant = variants.find(v =>
+                v.color === selectedColor && v.size === selectedSize
+            );
+
+            if (!variant) {
+                Toastify({
+                    text: "Please select a valid variant",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "#ffc107",
+                    }
+                }).showToast();
+                return;
+            }
+
+            // this.disabled = true;
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ADDING...';
+
+            try {
+                const response = await fetch('/wishlist/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        productId: window.productId,
+                        productVariantId: variant._id
+                    })
+                });
+
+                const raw = await response.text();
+                const contentType = response.headers.get('content-type') || '';
+                let data = null;
+
+                if (contentType.includes('application/json')) {
+                    try {
+                        data = JSON.parse(raw);
+                    } catch (err) {
+                        console.error('Invalid JSON from /wishlist/add:', raw);
+                    }
+                }
+
+                if (response.ok && data && data.success) {
+                    UpdateWishlistBadge(data.data.wishlistItemsCount);
+
+                    Toastify({
+                        text: "Added to wishlist successfully! ❤️",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: "linear-gradient(to right, #f59e0b, #d97706)",
+                        }
+                    }).showToast();
+
+                    updateWishlistButton(variant._id);
+
+                } else {
+                    this.disabled = false;
+                    this.innerHTML = originalHTML;
+
+                    if (data && (data.statusCode === 401 || data.statusCode === 403) && data.redirectTo) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Login Required',
+                            text: data.message || 'Please sign in to add items to your wishlist.',
+                            showCancelButton: true,
+                            confirmButtonColor: '#f59e0b',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: 'Go to Login',
+                            cancelButtonText: 'Cancel',
+                            scrollbarPadding: false,
+                            heightAuto: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = data.redirectTo;
+                            }
+                        });
+                        return;
+                    }
+
+                    if (raw && raw.trim().startsWith('<')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Login Required',
+                            text: 'Please sign in to add items to your wishlist.',
+                            showCancelButton: true,
+                            confirmButtonColor: '#f59e0b',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: 'Go to Login',
+                            cancelButtonText: 'Cancel',
+                            scrollbarPadding: false,
+                            heightAuto: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '/signin';
+                            }
+                        });
+                        return;
+                    }
+
+                    const errMsg = (data && data.message) ? data.message : 'Failed to add to wishlist';
+                    Toastify({
+                        text: errMsg,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        style: { background: "#dc3545" }
+                    }).showToast();
+                }
+
+            } catch (error) {
+                this.disabled = false;
+                this.innerHTML = originalHTML;
+                console.error('Error adding to wishlist:', error);
+                Toastify({
+                    text: 'Something went wrong. Please try again.',
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: { background: "#dc3545" }
+                }).showToast();
+            }
+        });
+    }
 });
 
-// Optional: Add custom CSS for wider SweetAlert
 const style = document.createElement('style');
 style.textContent = `
     .swal-wide {

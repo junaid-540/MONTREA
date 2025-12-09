@@ -294,6 +294,24 @@ body.modal-open {
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+.wishlist-badge {
+    position: absolute;
+    top: -8px;              
+    right: -8px;            
+    background: #dc3545;    
+    color: white;
+    font-size: 0.65rem;     
+    font-weight: 600;       
+    min-width: 18px;        
+    height: 18px;           
+    border-radius: 50%;     
+    display: flex;          
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;        
+    border: 2px solid white; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+}
 /* Responsive adjustments */
 @media (max-width: 991px) {
     .search-container {

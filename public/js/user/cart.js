@@ -1,5 +1,4 @@
 function updateCartBadge(count) {
-
     const cartLink = document.querySelector('a[href="/cart"]');
     if (!cartLink) {
         return;
@@ -21,6 +20,24 @@ function updateCartBadge(count) {
     }
 }
 
+function UpdateWishlistBadge(count) {
+    const wishlistLink = document.querySelector('a[href="/wishlist"]');
+    if (!wishlistLink) return;
+
+    let badge = wishlistLink.querySelector('.wishlist-badge');
+    if (count > 0) {
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'wishlist-badge';
+            wishlistLink.appendChild(badge);
+        }
+        badge.textContent = count;
+    } else {
+        if (badge) {
+            badge.remove();
+        }
+    }
+}
 
 document.querySelectorAll('.qty-decrease').forEach(btn => {
     btn.addEventListener('click', async function () {
@@ -42,7 +59,6 @@ document.querySelectorAll('.qty-decrease').forEach(btn => {
         }
     });
 });
-
 
 document.querySelectorAll('.qty-increase').forEach(btn => {
     btn.addEventListener('click', async function () {
@@ -69,15 +85,12 @@ document.querySelectorAll('.qty-increase').forEach(btn => {
     });
 });
 
-
-
 async function updateCartQuantity(form, newQuantity) {
     const variantId = form.querySelector('input[name="productVariantId"]').value;
     const qtyInput = form.querySelector('input[name="quantity"]');
     const decreaseBtn = form.querySelector('.qty-decrease');
     const increaseBtn = form.querySelector('.qty-increase');
 
-    // Disable buttons during request
     decreaseBtn.disabled = true;
     increaseBtn.disabled = true;
 
@@ -88,20 +101,12 @@ async function updateCartQuantity(form, newQuantity) {
         });
 
         if (response.data.success) {
-
             qtyInput.value = newQuantity;
-
-
             decreaseBtn.disabled = newQuantity <= 1;
             increaseBtn.disabled = newQuantity >= response.data.data.maxQty;
-
-
             qtyInput.max = response.data.data.maxQty;
             increaseBtn.dataset.max = response.data.data.maxQty;
-
-
             updateOrderSummary(response.data.data);
-
 
             Toastify({
                 text: response.data.message || "Cart updated successfully",
@@ -110,11 +115,7 @@ async function updateCartQuantity(form, newQuantity) {
                 position: "right",
                 backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
             }).showToast();
-
-
-
         } else {
-
             Toastify({
                 text: response.data.message || "Failed to update cart",
                 duration: 3000,
@@ -123,13 +124,11 @@ async function updateCartQuantity(form, newQuantity) {
                 backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a24)",
             }).showToast();
 
-
             decreaseBtn.disabled = false;
             increaseBtn.disabled = false;
         }
     } catch (error) {
         console.error('Error updating cart:', error);
-
 
         const errorMessage = error.response?.data?.message || "Failed to update cart";
         Toastify({
@@ -140,12 +139,10 @@ async function updateCartQuantity(form, newQuantity) {
             backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a24)",
         }).showToast();
 
-        // Re-enable buttons
         decreaseBtn.disabled = false;
         increaseBtn.disabled = false;
     }
 }
-
 
 
 document.querySelectorAll('.remove-form').forEach(form => {
@@ -155,27 +152,105 @@ document.querySelectorAll('.remove-form').forEach(form => {
         const itemElement = this.closest('.item');
         const productName = itemElement.querySelector('h3').textContent;
         const variantId = this.querySelector('input[name="productVariantId"]').value;
+        const productId = itemElement.dataset.productId; // Make sure to add this data attribute in cart.ejs
 
         Swal.fire({
             title: 'Remove Item?',
-            text: `Remove "${productName}" from your cart?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, remove it',
-            cancelButtonText: 'Cancel',
+            text: `What would you like to do with "${productName}"?`,
+            icon: 'question',
+            showDenyButton: true,
+            confirmButtonColor: '#f59e0b',
+            denyButtonColor: '#dc3545',
+            confirmButtonText: '💖 Move to Wishlist',
+            denyButtonText: '🗑️ Remove',
             scrollbarPadding: false,
             heightAuto: false
         }).then(async (result) => {
             if (result.isConfirmed) {
+                // Move to wishlist
+                await moveToWishlistFromCart(productId, variantId, itemElement);
+            } else if (result.isDenied) {
+                // Remove from cart
                 await removeFromCart(variantId, itemElement);
             }
         });
     });
 });
 
+async function moveToWishlistFromCart(productId, variantId, itemElement) {
+    try {
+        const response = await axios.post('/cart/move-to-wishlist', {
+            productId: productId,
+            productVariantId: variantId
+        });
 
+        if (response.data.success) {
+            const data = response.data.data;
+            
+            // Update badges
+            updateCartBadge(data.cartItemscount);
+            UpdateWishlistBadge(data.wishlistItemsCount);
+
+            // Show appropriate message
+            const message = data.alreadyInWishlist 
+                ? 'Item was already in wishlist. Removed from cart.'
+                : 'Item moved to wishlist successfully!';
+
+            // Remove the item from DOM with animation
+            itemElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            itemElement.style.opacity = '0';
+            itemElement.style.transform = 'translateX(-20px)';
+
+            setTimeout(() => {
+                itemElement.remove();
+
+                if (data.isEmpty) {
+                    updateCartBadge(0);
+                    window.location.reload();
+                } else {
+                    updateOrderSummary(data);
+                    if (!data.hasInvalidItems) {
+                        const warningBanner = document.querySelector('.alert-warning');
+                        if (warningBanner) {
+                            warningBanner.remove();
+                        }
+                    }
+                    updateCheckoutButton(data.canCheckout);
+                }
+
+                // Show success toast
+                Toastify({
+                    text: message,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                }).showToast();
+
+            }, 300);
+
+        } else {
+            Toastify({
+                text: response.data.message || "Failed to move to wishlist",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a24)",
+            }).showToast();
+        }
+    } catch (error) {
+        console.error('Error moving to wishlist:', error);
+        
+        const errorMessage = error.response?.data?.message || "Failed to move to wishlist";
+        Toastify({
+            text: errorMessage,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "linear-gradient(to right, #ff6b6b, #ee5a24)",
+        }).showToast();
+    }
+}
 
 async function removeFromCart(variantId, itemElement) {
     try {
@@ -184,7 +259,6 @@ async function removeFromCart(variantId, itemElement) {
         });
 
         if (response.data.success) {
-            //  Remove the item from DOM with animation
             itemElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
             itemElement.style.opacity = '0';
             itemElement.style.transform = 'translateX(-20px)';
@@ -213,19 +287,7 @@ async function removeFromCart(variantId, itemElement) {
 
             }, 300);
 
-
-            // Toastify({
-            //     text: response.data.message || "Item removed from cart",
-            //     duration: 1500,
-            //     gravity: "top",
-            //     position: "right",
-            //     backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-            // }).showToast();
-
-
-
         } else {
-
             Toastify({
                 text: response.data.message || "Failed to remove item",
                 duration: 3000,
@@ -247,8 +309,6 @@ async function removeFromCart(variantId, itemElement) {
         }).showToast();
     }
 }
-
-
 
 function clearInvalidItems() {
     const invalidItems = document.querySelectorAll('.item[data-invalid="true"]');
@@ -284,17 +344,13 @@ function clearInvalidItems() {
     });
 }
 
-
-
 async function clearInvalidItemsRequest(invalidItems) {
     try {
         const response = await axios.post('/cart/clear-invalid');
 
         if (response.data.success) {
-
             const isSingleItem = invalidItems.length === 1;
             const removalDelay = isSingleItem ? 1000 : 0;
-
 
             Toastify({
                 text: response.data.message || "Invalid items removed",
@@ -304,9 +360,7 @@ async function clearInvalidItemsRequest(invalidItems) {
                 backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
             }).showToast();
 
-
             setTimeout(() => {
-
                 invalidItems.forEach((item, index) => {
                     setTimeout(() => {
                         item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
@@ -315,7 +369,6 @@ async function clearInvalidItemsRequest(invalidItems) {
 
                         setTimeout(() => {
                             item.remove();
-
 
                             if (index === invalidItems.length - 1) {
                                 console.log('Cart data after clearing:', response.data.data);
@@ -340,7 +393,6 @@ async function clearInvalidItemsRequest(invalidItems) {
                 });
             }, removalDelay);
 
-
         } else {
             Toastify({
                 text: response.data.message || "Failed to clear invalid items",
@@ -364,25 +416,19 @@ async function clearInvalidItemsRequest(invalidItems) {
     }
 }
 
-
-
 function updateOrderSummary(data) {
     console.log('📊 Updating order summary with data:', data);
 
-
     const subtotalElements = document.querySelectorAll('.summary-row span');
     if (subtotalElements.length >= 2) {
-
         subtotalElements[1].textContent = `₹${data.subtotal.toFixed(2)}`;
         console.log('✅ Updated subtotal to:', data.subtotal.toFixed(2));
     }
 
-    // ✅ Update invalid items note if exists
     if (data.hasInvalidItems !== undefined) {
         const invalidNote = document.querySelector('.invalid-items-note');
 
         if (data.hasInvalidItems && !invalidNote && data.totalItems) {
-            // Add invalid items note if it doesn't exist
             const firstSummaryRow = document.querySelector('.summary-row');
             if (firstSummaryRow) {
                 const invalidDiv = document.createElement('div');
@@ -400,8 +446,6 @@ function updateOrderSummary(data) {
         }
     }
 }
-
-
 
 function updateCheckoutButton(canCheckout) {
     const checkoutBtn = document.querySelector('.checkout-btn');
@@ -428,7 +472,6 @@ function updateCheckoutButton(canCheckout) {
         }
     }
 }
-
 
 document.addEventListener('DOMContentLoaded', function () {
     const urlParams = new URLSearchParams(window.location.search);
@@ -462,4 +505,3 @@ document.addEventListener('DOMContentLoaded', function () {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 });
-
