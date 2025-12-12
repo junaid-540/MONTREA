@@ -16,6 +16,7 @@ import passport from 'passport';
 import nocache from 'nocache';
 import { userFinder } from './middleware/userfinder.js';
 import flash from 'connect-flash'
+import { cleanupTempOrders } from './middleware/cleanupTempOrders.js';
 
 
 dotenv.config()
@@ -50,6 +51,8 @@ app.use(nocache())
 
 app.use(userFinder)
 
+
+app.use(cleanupTempOrders)
 
 //get the current directory name , because in ES module __dirname is not available
 const __filename = fileURLToPath(import.meta.url)

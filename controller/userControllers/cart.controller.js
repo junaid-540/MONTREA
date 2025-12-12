@@ -340,7 +340,7 @@ export const updateCartQuantity = async (req, res, next) => {
             return res.redirect('/signin');
         }
 
-        console.log('📝 Update Cart - Request received:', req.body);
+        console.log('Update Cart - Request received:', req.body);
         const { productVariantId, quantity } = req.body;
 
         const qty = parseInt(quantity);
@@ -353,7 +353,7 @@ export const updateCartQuantity = async (req, res, next) => {
         }
 
         if (qty > MAX_QUANTITY_PER_PRODUCT) {
-            console.log('❌ Update Cart - Quantity exceeds max:', qty);
+            console.log('Update Cart - Quantity exceeds max:', qty);
             return sendResponse(res, {
                 success: false,
                 statusCode: statusCodes.NOT_FOUND,
@@ -366,7 +366,7 @@ export const updateCartQuantity = async (req, res, next) => {
             .populate('items.productVariantId', 'isListed stock price discountedPrice');
 
         if (!cart) {
-            console.log('❌ Update Cart - Cart not found for user:', userId);
+            console.log('Update Cart - Cart not found for user:', userId);
             return sendResponse(res, {
                 success: false,
                 statusCode: statusCodes.BAD_REQUEST,
@@ -379,7 +379,7 @@ export const updateCartQuantity = async (req, res, next) => {
         );
 
         if (itemIndex === -1) {
-            console.log('❌ Update Cart - Item not found in cart:', productVariantId);
+            console.log('Update Cart - Item not found in cart:', productVariantId);
             return sendResponse(res, {
                 success: false,
                 statusCode: statusCodes.NOT_FOUND,
@@ -389,7 +389,7 @@ export const updateCartQuantity = async (req, res, next) => {
 
         const variant = cart.items[itemIndex].productVariantId;
         if (!variant) {
-            console.log('❌ Update Cart - Variant not found:', productVariantId);
+            console.log('Update Cart - Variant not found:', productVariantId);
             return sendResponse(res, {
                 success: false,
                 statusCode: statusCodes.NOT_FOUND,
@@ -398,7 +398,7 @@ export const updateCartQuantity = async (req, res, next) => {
         }
 
         if (qty > variant.stock) {
-            console.log('❌ Update Cart - Requested qty exceeds stock:', { qty, stock: variant.stock });
+            console.log('Update Cart - Requested qty exceeds stock:', { qty, stock: variant.stock });
             return sendResponse(res, {
                 success: false,
                 statusCode: statusCodes.BAD_REQUEST,
@@ -416,7 +416,7 @@ export const updateCartQuantity = async (req, res, next) => {
         const { validItemsCount, subtotal } = await getCartSummary(cart.items);
         const maxQty = Math.min(MAX_QUANTITY_PER_PRODUCT, variant.stock);
 
-        console.log('✅ Update Cart - Success:', {
+        console.log('Update Cart - Success:', {
             oldQuantity,
             newQuantity: qty,
             variantId: productVariantId
@@ -452,11 +452,11 @@ export const removeFromCart = async (req, res, next) => {
             });
         }
 
-        console.log("🛒 Remove from cart - Request body:", req.body);
+        console.log(" Remove from cart - Request body:", req.body);
         const { productVariantId } = req.body;
 
         if (!productVariantId) {
-            console.log("❌ Remove from cart - Variant ID missing");
+            console.log(" Remove from cart - Variant ID missing");
             return sendResponse(res, {
                 success: false,
                 statusCode: statusCodes.BAD_REQUEST,
@@ -476,17 +476,17 @@ export const removeFromCart = async (req, res, next) => {
             });
         }
 
-        console.log("🛒 Remove from cart - Items before removal:", cart.items.length);
+        console.log(" Remove from cart - Items before removal:", cart.items.length);
         const originalCount = cart.items.length;
 
         cart.items = cart.items.filter(
             item => item.productVariantId._id.toString() !== productVariantId
         );
 
-        console.log("🛒 Remove from cart - Items after removal:", cart.items.length);
+        console.log(" Remove from cart - Items after removal:", cart.items.length);
 
         if (originalCount === cart.items.length) {
-            console.log("❌ Remove from cart - Item not found:", productVariantId);
+            console.log(" Remove from cart - Item not found:", productVariantId);
             return sendResponse(res, {
                 success: false,
                 statusCode: statusCodes.NOT_FOUND,

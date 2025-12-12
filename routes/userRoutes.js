@@ -13,8 +13,8 @@ import { addAddressValidation, editProfileValidation } from '../validations/user
 import { deleteAddress, getAddAddress, getAddressPage, getEditAddress, postAddAddress, postEditAddress, setDefaultAddress } from '../controller/userControllers/address.controller.js';
 import { getCartPage ,clearInvalidItems, addToCart, checkVariantInCart, updateCartQuantity, removeFromCart, moveToWishlist } from '../controller/userControllers/cart.controller.js';
 import { getCheckoutPage, addAddress as addCheckoutAddress, continueToPayment, } from '../controller/userControllers/checkout.controller.js';
-import { getPaymentPage, placeOrder } from '../controller/userControllers/payment.controller.js';
-import { cancelOrder, downloadInvoice, getMyOrdersPage, getOrderDetailsPage, getOrderSuccessPage, returnOrder } from '../controller/userControllers/order.controller.js';
+import { createRazorpayOrder, getPaymentPage, handlePaymentFailure, placeOrder, verifyRazorpayPayment } from '../controller/userControllers/payment.controller.js';
+import { cancelOrder, downloadInvoice, getMyOrdersPage, getOrderDetailsPage, getOrderFailurePage, getOrderSuccessPage, returnOrder } from '../controller/userControllers/order.controller.js';
 import { addToWishlist, checkVariantInWishlist, getWishlist, moveToCart, removeFromWishlist } from '../controller/userControllers/wishlist.controller.js';
 
 
@@ -94,9 +94,13 @@ router.post('/checkout/continue-to-payment',checkSession,continueToPayment)
 
 // payment Routes //
 
-router.get('/payment',checkSession,getPaymentPage)
-router.post('/payment/place-order',checkSession,placeOrder)
-router.get('/order-success/:orderId',checkSession,getOrderSuccessPage)
+router.get('/payment',checkSession,getPaymentPage);
+router.post('/payment/place-order',checkSession,placeOrder);
+router.post('/payment/create-razorpay-order',checkSession,createRazorpayOrder);
+router.post('/payment/verify-payment',checkSession,verifyRazorpayPayment);
+router.post('/payment/payment-failure',checkSession,handlePaymentFailure);
+router.get('/order-success/:orderId',checkSession,getOrderSuccessPage);
+router.get('/order-failure/:orderId',checkSession,getOrderFailurePage);
 
 
 // Orders routes //

@@ -1,6 +1,6 @@
 <%- include('../partials/user/header') %>
 
-<body>
+<body data-razorpay-key="<%= razorpayKeyId %>">
     <%- include('../partials/user/navbar') %>
 
     <!-- Main Content -->
@@ -51,25 +51,29 @@
                         </div>
                     </label>
 
-                    <!-- Razorpay -->
-                    <label class="payment-method disabled">
-                        <input type="radio" name="payment_method" value="razorpay" disabled>
+                    
+                    <label class="payment-method">
+                        <input type="radio" name="payment_method" value="razorpay">
                         <span class="radio-indicator"></span>
-                        <i class="fas fa-credit-card payment-icon" style="color: #3395FF;"></i>
+                        <!-- <i class="fas fa-credit-card payment-icon" style="color: #3395FF;"></i> -->
                         <div class="payment-details">
-                            <h4>Razorpay</h4>
-                            <p>Pay securely via Razorpay gateway</p>
+                            <!-- <h4>Razorpay</h4> -->
+                            <!-- <p>Pay securely via Razorpay gateway</p> -->
+                            <div style="display: flex; gap: 8px; margin-left: auto;">
+                                <img src="https://cdn.razorpay.com/static/assets/logo/payment.svg" 
+                                     alt="Payment Methods" 
+                                     style="height: 60px; opacity: 0.8;">
+                            </div>
                         </div>
-                        <span class="coming-soon-badge">Coming Soon</span>
                     </label>
 
-                    <!-- Wallet -->
+                    
                     <label class="payment-method disabled">
                         <input type="radio" name="payment_method" value="wallet" disabled>
                         <span class="radio-indicator"></span>
                         <i class="fas fa-wallet payment-icon" style="color: #ff6b6b;"></i>
                         <div class="payment-details">
-                            <h4>Wallets</h4>
+                            <h4>Wallet</h4>
                             <p>Use your digital wallet</p>
                         </div>
                         <span class="coming-soon-badge">Coming Soon</span>
@@ -142,7 +146,11 @@
         </div>
     </div>
 
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <%- include('../partials/user/footer') %>
+    
     <script>
         const messages = <%- JSON.stringify(messages || []) %>;
         messages.forEach(msg => {
@@ -171,3 +179,5 @@
             }).showToast();
         });
     </script>
+</body>
+</html>

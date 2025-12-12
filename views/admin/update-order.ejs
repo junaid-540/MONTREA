@@ -64,6 +64,7 @@
                         </h2>
 
                         <!-- Order Tracking Stepper -->
+                         <% if (order.paymentStatus !== 'Failed') { %> 
                         <div class="order-tracking">
                             <h3 class="tracking-title">Order Progress</h3>
                             <%if(!order.orderStatus.includes('Cancelled')) { %>
@@ -117,15 +118,18 @@
                                 </div>
                             <% } %>
                         </div>
+                        <% } %>
 
                         <% order.items.forEach((item, index) => { %>
                             <div class="order-item-card" data-item-id="<%= item._id %>">
+                                <% if (order.paymentStatus !== 'Failed') { %> 
                                 <div class="item-header">
                                     <span class="item-number">#<%= index + 1 %></span>
                                     <span class="item-status-badge status-<%= item.itemStatus.toLowerCase().replace(/\s+/g, '-') %>">
                                         <%= item.itemStatus %>
                                     </span>
                                 </div>
+                               <% } %>
 
                                 <div class="item-content">
                                     <img src="<%= item.image %>" 
@@ -173,7 +177,8 @@
                                     }
                                 }
                                 %>
-                                <% if (!isTerminal) { %>
+
+                                <% if (!isTerminal && order.paymentStatus !== 'Failed') { %>
                                 <div class="status-management">
                                     <label class="status-label">Update Item Status:</label>
                                     <div class="status-controls">

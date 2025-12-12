@@ -31,7 +31,7 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/admin/order<%= search ? '?search=' + encodeURIComponent(search) : '' %>">All Status</a></li>
-                            <% ['Placed','Processing','Shipped','Out for Delivery','Delivered','Cancelled','Partially Cancelled','Partially Delivered'].forEach(s => { %>
+                            <% ['Pending','Placed','Processing','Shipped','Out for Delivery','Delivered','Cancelled','Partially Cancelled','Partially Delivered'].forEach(s => { %>
                                 <li><a class="dropdown-item" href="/admin/order?status=<%= s %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"><%= s %></a></li>
                             <% }) %>
                         </ul>
@@ -78,6 +78,7 @@
                                 <% 
                                     
                                     const statusBadgeClass = 
+                                        order.orderStatus === 'Pending' ? 'badge-pending' :
                                         order.orderStatus === 'Placed' ? 'badge-placed' :
                                         order.orderStatus === 'Processing' ? 'badge-processing' :
                                         order.orderStatus === 'Shipped' ? 'badge-shipped' :

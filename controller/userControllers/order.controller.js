@@ -288,7 +288,7 @@ export const downloadInvoice = async (req,res,next) =>{
         }
 
         const hasReturn = order.items.some(item => item.returnRequested);
-        if(!(order.orderStatus === 'Delivered') || hasReturn){
+        if(order.orderStatus !== 'Delivered' && !hasReturn){
             return sendResponse(res,{
                 success: false,
                 statusCode: statusCodes.BAD_REQUEST,
@@ -303,7 +303,7 @@ export const downloadInvoice = async (req,res,next) =>{
 
     } catch (err) {
         console.error("Error in downloadInvoice :",err);
-        if(!res.headerSent){
+        if(!res.headersSent){
             return sendResponse(res,{
                 success: false,
                 statusCode: statusCodes.INTERNAL_SERVER_ERROR,
@@ -315,3 +315,32 @@ export const downloadInvoice = async (req,res,next) =>{
 }
 
 
+export const getOrderFailurePage = async (req,res,next) =>{
+    try {
+        
+        const {orderId} = req.params;
+        const reason = req.query.reason || 'Payment failed';
+        const userId = req.session.userId;
+
+        const order = await Order.findOne({
+            orderId: orderId,
+            userId: userId
+        }).lean()
+
+        if(!order){
+            return res.redirect('/orders');
+        }
+
+        res.render('user/order-failure',{
+            Title: 'Payment Failed',
+            order,
+            reason: decodeURIComponent(reason),
+            user: res.locals.user || null,
+            pageCss: '/public/css/user/order-failure.css',
+            is404: true
+        });
+    } catch (err) {
+        console.error("Error in getOrderFailurePage :",err);
+        next(err)
+    }
+}

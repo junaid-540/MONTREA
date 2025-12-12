@@ -72,6 +72,9 @@
                                                     <% if (order.items.length > 1) { %>
                                                         <p class="more-items">+<%= order.items.length - 1 %> more item(s)</p>
                                                     <% } %>
+                                                    <% if(order.paymentStatus === 'Failed') { %> 
+                                                        <p class="more-items">Payment Failed</p> 
+                                                   <% } %>
                                                 </div>
                                             </div>
 

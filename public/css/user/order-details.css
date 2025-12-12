@@ -7,6 +7,7 @@
     --border-light: #e5e5e5;
     --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.20);
     --hover-shadow: 0 15px 35px rgba(0, 0, 0, 0.30);
+    --error-red: #e74c3c;
 }
 
 body {
@@ -100,6 +101,10 @@ body {
     white-space: nowrap;
 }
 
+.status-pending {
+    background-color: #fef3c7;
+    color: #000000;
+}
 .status-placed {
     background: #dbeafe;
     color: #1e40af;
@@ -183,7 +188,6 @@ body {
     border-right: 4px solid var(--accent-gold);
     margin-bottom: 2rem;
     transition: all 0.3s ease;
-    
 }
 
 .section-card:hover {
@@ -384,8 +388,6 @@ body {
     font-weight: 500;
 }
 
-
-
 .payment-info {
     display: flex;
     flex-direction: column;
@@ -423,7 +425,7 @@ body {
 }
 
 .payment-status-failed {
-    color: #dc2626;
+    color: var(--error-red);
 }
 
 .price-breakdown {
@@ -450,6 +452,47 @@ body {
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--primary-black);
+}
+
+/* New: Payment Failed Section Styles */
+.payment-failed {
+    text-align: center;
+    padding: 10px 0;
+}
+
+.failed-message {
+    color: var(--secondary-text);
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.btn-retry {
+    width: 100%;
+    padding: 15px;
+    background: var(--primary-black);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-retry:hover:not(:disabled) {
+    background: var(--accent-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-retry:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* Download Invoice Button */
@@ -615,7 +658,6 @@ body {
     }
 }
 
-
 /* Order Tracking Stepper */
 .order-tracking {
     margin-bottom: 2rem;
@@ -701,7 +743,7 @@ body {
 .step-label {
     font-size: 0.8rem;
     font-weight: 500;
-    color: var(--secondary-text);
+    color: var(-- secondary-text);
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -811,14 +853,4 @@ body {
     font-size: 0.9rem;
     font-weight: 600;
     border: 2px solid #fbbf24;
-    /* animation: pulse 2s ease-in-out infinite; */
 }
-
-/* @keyframes pulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 8px rgba(251, 191, 36, 0);
-    }
-} */

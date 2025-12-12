@@ -12,10 +12,13 @@ export const getOrders = async (req,res,next) =>{
         const {status , payment , search} = req.query;
 
         const filters = {};
+        
+        // SOLUTION 1: Filter at database level after getPaginateData
+        // This is the simplest - just add a post-filter
         if(status) filters.orderStatus = status;
         if(payment) filters.paymentStatus = payment;
 
-        const {data: orders , totalPages , currentPage} = await getPaginateData(Order,req,{
+        const {data: allOrders , totalPages , currentPage} = await getPaginateData(Order,req,{
             filters,
             searchFields:['orderId', 'shippingAddress.fullName', 'shippingAddress.phone'],
             sort: {createdAt:-1},
@@ -29,11 +32,22 @@ export const getOrders = async (req,res,next) =>{
             }
         });
 
+        // ADDED: Filter out Razorpay pending/failed orders AFTER fetching
+        const orders = allOrders.filter(order => {
+            // Keep COD orders
+            if (order.paymentMethod === 'COD') return true;
+            
+            // Keep Razorpay orders only if paid
+            if (order.paymentStatus === 'Paid') return true;
+            
+            // Filter out everything else
+            return false;
+        });
+
         const transformedOrder = orders.map(order =>({
             ...order,
             user: order.user || {name: 'N/A' , email: ''}
         }));
-
 
         const messages = req.session.messages || [];
         delete req.session.messages
@@ -53,7 +67,8 @@ export const getOrders = async (req,res,next) =>{
         })
 
     } catch (err) {
-        
+        console.error('Error in getOrders:', err);
+        next(err);
     }
 }
 
@@ -71,7 +86,7 @@ export const getUpdateOrder = async (req,res,next) =>{
             });
             return res.redirect('/admin/order');
         }
-
+       
         const messages = req.session.messages || [];
         delete req.session.messages;
 
@@ -94,7 +109,7 @@ export const updateItemStatus = async (req, res, next) => {
         const { orderId, itemId } = req.params;
         const { status } = req.body;
 
-        const allowedStatuses = ['Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
+        const allowedStatuses = ['Pending','Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
         
         if (!allowedStatuses.includes(status)) {
             return sendResponse(res, {
@@ -155,6 +170,7 @@ export const updateItemStatus = async (req, res, next) => {
         
         if (status === "Delivered") {
             item.deliveredAt = new Date();
+        
         }
 
         
@@ -170,10 +186,11 @@ export const updateItemStatus = async (req, res, next) => {
         } else if (deliveredItems === totalItems) {
             order.orderStatus = "Delivered";
             order.deliveredAt = new Date(); //  Set order deliveredAt
+            order.paymentStatus = 'Paid';
         } else if (deliveredItems > 0 && deliveredItems < totalItems) {
             order.orderStatus = "Partially Delivered";
         } else {
-            const statusOrder = { 'Placed': 1, 'Processing': 2, 'Shipped': 3, 'Out for Delivery': 4, 'Delivered': 5 };
+            const statusOrder = { 'Pending': 0, 'Placed': 1, 'Processing': 2, 'Shipped': 3, 'Out for Delivery': 4, 'Delivered': 5 };
             const maxStatus = order.items
                 .filter(i => i.itemStatus !== 'Cancelled')
                 .reduce((max, i) => statusOrder[i.itemStatus] > (statusOrder[max] || 0) ? i.itemStatus : max, 'Placed');
@@ -186,7 +203,7 @@ export const updateItemStatus = async (req, res, next) => {
                 return;
             }
 
-            const statusOrder = { 'Placed': 1, 'Processing': 2, 'Shipped': 3, 'Out for Delivery': 4, 'Delivered': 5 };
+            const statusOrder = {'Pending': 0, 'Placed': 1, 'Processing': 2, 'Shipped': 3, 'Out for Delivery': 4, 'Delivered': 5 };
             const nonCancelled = order.items.filter(i => i.itemStatus !== 'Cancelled');
             
             if (nonCancelled.length === 0) {

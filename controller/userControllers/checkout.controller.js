@@ -80,7 +80,7 @@ export const getCheckoutPage = async (req,res,next) =>{
         },0)
 
         const shippingCharge = subtotal >= 1000 ? 0 : 50; // free shipping over 1000
-        const tax = subtotal * 0.18 / 1.18  // Calculate tax (18% GST included in price, just for display)
+        const tax = subtotal * 0.18   // Calculate tax (18% GST included in price, just for display)
         const totalAmount = subtotal + shippingCharge + tax;
 
         const addresses = await Address.find({userId}).sort({isDefault: -1 , createdAt: -1}).lean();

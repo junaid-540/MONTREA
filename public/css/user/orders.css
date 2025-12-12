@@ -177,6 +177,11 @@ body {
     white-space: nowrap;
 }
 
+.status-pending {
+    background-color: #fef3c7;
+    color: #000000;
+}
+
 .status-placed {
     background: #dbeafe;
     color: #1e40af;
