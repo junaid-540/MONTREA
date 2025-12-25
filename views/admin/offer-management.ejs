@@ -1,0 +1,330 @@
+<html>
+
+<%- include('../partials/admin/header') %>
+
+<body>
+
+    <%- include('../partials/admin/sidebar') %>
+
+    <main class="content-area">
+        <div class="offers-container">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h2 class="offers-title">Offers Management</h2>
+                    <p class="products-subtitle">Manage product and category offers</p>
+                </div>
+                <button class="btn btn-dark btn-sm add-offer-btn" id="addOfferBtn">
+                    <i class="bi bi-plus-circle me-1"></i> Add Offer
+                </button>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="d-flex justify-content-end align-items-center mb-4">
+                <form method="GET" action="/admin/offers" class="d-flex gap-2">
+                    <input type="text" class="form-control border-start-0 search-input" name="search"
+                        placeholder="Search by name or product/category..." value="<%= search || '' %>">
+
+                    <button type="submit" class="btn btn-outline-dark btn-sm search">Search</button>
+                    <button type="button" class="btn btn-outline-dark btn-sm clear"
+                        onclick="window.location.href='/admin/offers'">Clear</button>
+
+                    <!-- Type Filter Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-dark btn-sm dropdown-toggle filter" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <%= type ? (type === 'product' ? 'Product' : 'Category') : 'All Types' %>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/admin/offers<%= search ? '?search=' + encodeURIComponent(search) : '' %><%= status ? (search ? '&' : '?') + 'status=' + status : '' %>">All Types</a></li>
+                            <li><a class="dropdown-item" href="/admin/offers?type=product<%= search ? '&search=' + encodeURIComponent(search) : '' %><%= status ? '&status=' + status : '' %>">Product Offers</a></li>
+                            <li><a class="dropdown-item" href="/admin/offers?type=category<%= search ? '&search=' + encodeURIComponent(search) : '' %><%= status ? '&status=' + status : '' %>">Category Offers</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Status Filter Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-dark btn-sm dropdown-toggle filter" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <%= status ? status.charAt(0).toUpperCase() + status.slice(1) : 'All Status' %>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/admin/offers<%= search ? '?search=' + encodeURIComponent(search) : '' %><%= type ? (search ? '&' : '?') + 'type=' + type : '' %>">All Status</a></li>
+                            <li><a class="dropdown-item" href="/admin/offers?status=active<%= search ? '&search=' + encodeURIComponent(search) : '' %><%= type ? '&type=' + type : '' %>">Active</a></li>
+                            <li><a class="dropdown-item" href="/admin/offers?status=inactive<%= search ? '&search=' + encodeURIComponent(search) : '' %><%= type ? '&type=' + type : '' %>">Inactive</a></li>
+                            <li><a class="dropdown-item" href="/admin/offers?status=expired<%= search ? '&search=' + encodeURIComponent(search) : '' %><%= type ? '&type=' + type : '' %>">Expired</a></li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table offers-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Type</th>
+                            <th>Applied To</th>
+                            <th>Offer Name</th>
+                            <th>Discount</th>
+                            <th>Validity</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (offers.length === 0) { %>
+                            <tr>
+                                <td colspan="8" class="text-center">No offers found</td>
+                            </tr>
+                        <% } else { %>
+                            <% offers.forEach((offer, index) => { %>
+                                <%
+                                    const now = new Date();
+                                    const isExpired = now > new Date(offer.endDate);
+                                    const isActive = offer.isActive && !isExpired;
+                                    const startDate = new Date(offer.startDate);
+                                    const endDate = new Date(offer.endDate);
+                                    const isProductOffer = offer.productId;
+                                    const isCategoryOffer = offer.categoryId;
+                                    const type = isProductOffer ? 'product' : 'category';
+                                    
+                                    let appliedTo = '';
+                                    let appliedToName = '';
+                                    let appliedToId = '';
+                                    
+                                    if (isProductOffer) {
+                                        appliedTo = 'Product';
+                                        appliedToName = offer.productId?.name || 'Product Deleted';
+                                        appliedToId = offer.productId?._id;
+                                    } else if (isCategoryOffer) {
+                                        appliedTo = 'Category';
+                                        appliedToName = offer.categoryId?.name || 'Category Deleted';
+                                        appliedToId = offer.categoryId?._id;
+                                    }
+                                %>
+                                <tr>
+                                    <td><%= (currentPage - 1) * pageSize + index + 1 %></td>
+                                    <td>
+                                        <span class="type-badge <%= type %>-badge">
+                                            <%= appliedTo %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="applied-to-info">
+                                            <strong><%= appliedToName %></strong>
+                                            <% if (isProductOffer && offer.productId?.categoryId) { %>
+                                                <small class="text-muted">
+                                                    Category: <%= offer.productId.categoryId.name %>
+                                                </small>
+                                            <% } %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong><%= offer.offerName %></strong>
+                                    </td>
+                                    <td>
+                                        <span class="discount-badge">
+                                            <%= offer.offerPercentage %>% OFF
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="date-info">
+                                            <small><strong>From:</strong> <%= startDate.toLocaleDateString('en-IN', { 
+                                                day: '2-digit', 
+                                                month: 'short', 
+                                                year: 'numeric' 
+                                            }) %></small>
+                                            <br>
+                                            <small><strong>To:</strong> <%= endDate.toLocaleDateString('en-IN', { 
+                                                day: '2-digit', 
+                                                month: 'short', 
+                                                year: 'numeric' 
+                                            }) %></small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <% if (isExpired) { %>
+                                            <span class="badge badge-expired">Expired</span>
+                                        <% } else if (isActive) { %>
+                                            <span class="badge badge-active">Active</span>
+                                        <% } else { %>
+                                            <span class="badge badge-inactive">Inactive</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-edit" 
+                                                data-id="<%= offer._id %>"
+                                                data-type="<%= type %>">
+                                            Edit
+                                        </button>
+
+                                        <% if (isActive) { %>
+                                            <button class="btn btn-sm btn-deactivate" 
+                                                    data-id="<%= offer._id %>" 
+                                                    data-name="<%= offer.offerName %>"
+                                                    data-type="<%= type %>">
+                                                Deactivate
+                                            </button>
+                                        <% } else if (!isExpired) { %>
+                                            <button class="btn btn-sm btn-activate" 
+                                                    data-id="<%= offer._id %>" 
+                                                    data-name="<%= offer.offerName %>"
+                                                    data-type="<%= type %>">
+                                                Activate
+                                            </button>
+                                        <% } %>
+                                        <button class="btn btn-sm btn-danger btn-delete" 
+                                            data-id="<%= offer._id %>" 
+                                            data-name="<%= offer.offerName %>"
+                                            data-type="<%= type %>">
+                                        Delete
+                                    </button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Offer pagination" class="mt-4">
+                <div class="d-flex justify-content-end">
+                    <ul class="pagination mb-0">
+                        <% if (currentPage > 1) { %>
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page=<%= currentPage - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= type ? '&type=' + type : '' %><%= status ? '&status=' + status : '' %>">&lt;</a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">&lt;</a>
+                            </li>
+                        <% } %>
+
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                <a class="page-link"
+                                    href="?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= type ? '&type=' + type : '' %><%= status ? '&status=' + status : '' %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                        <% } %>
+
+                        <% if (currentPage < totalPages) { %>
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="?page=<%= currentPage + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %><%= type ? '&type=' + type : '' %><%= status ? '&status=' + status : '' %>">&gt;</a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">&gt;</a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
+            </nav>
+
+        </div>
+    </main>
+
+    <!-- Add Offer Modal -->
+    <div class="modal fade" id="addOfferModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Offer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Offer Type Selection -->
+                    <div class="offer-type-selection mb-4">
+                        <h6 class="mb-3">Select Offer Type</h6>
+                        <div class="d-flex gap-3">
+                            <div class="offer-type-card product-offer" data-type="product">
+                                <div class="offer-type-icon">
+                                    <i class="bi bi-box"></i>
+                                </div>
+                                <div class="offer-type-info">
+                                    <h6>Product Offer</h6>
+                                    <p class="small">Apply discount to specific product</p>
+                                </div>
+                            </div>
+                            <div class="offer-type-card category-offer" data-type="category">
+                                <div class="offer-type-icon">
+                                    <i class="bi bi-grid"></i>
+                                </div>
+                                <div class="offer-type-info">
+                                    <h6>Category Offer</h6>
+                                    <p class="small">Apply discount to entire category</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Form Container -->
+                    <div id="offerFormContainer" style="display: none;">
+                        <form id="addOfferForm">
+                            <input type="hidden" id="offerType" name="offerType">
+                            
+                            <!-- Dynamic fields will be loaded here -->
+                            <div id="dynamicFormFields"></div>
+
+                            <div class="mb-3">
+                                <label for="offerName" class="form-label">Offer Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="offerName" name="offerName"
+                                    placeholder="e.g., Summer Sale, Diwali Special" maxlength="100">
+                                <div class="invalid-feedback" id="offerNameFeedback"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="offerPercentage" class="form-label">Discount Percentage <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="offerPercentage" name="offerPercentage"
+                                        placeholder="e.g., 20" min="1" max="80" step="1">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <small class="form-text text-muted">Discount between 1-80%</small>
+                                <div class="invalid-feedback" id="offerPercentageFeedback"></div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="startDate" name="startDate">
+                                    <div class="invalid-feedback" id="startDateFeedback"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="endDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="endDate" name="endDate">
+                                    <div class="invalid-feedback" id="endDateFeedback"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                                <label class="form-check-label" for="isActive">
+                                    Active (Offer will be live immediately)
+                                </label>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Create Offer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+    </script>
+
+    <%- include('../partials/admin/footer') %>
+</body>
+
+</html>

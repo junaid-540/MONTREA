@@ -6,12 +6,14 @@ const passwordInput = document.getElementById('password');
 const confirmPasswordInput = document.getElementById('confirmPassword');
 const passwordToggle = document.getElementById('passwordToggle');
 const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
+const referralCodeInput = document.getElementById('referralCode')
 
 const nameFeedback = document.getElementById('nameFeedback');
 const emailFeedback = document.getElementById('emailFeedback');
 const phoneFeedback = document.getElementById('phoneFeedback');
 const passwordFeedback = document.getElementById('passwordFeedback');
 const confirmFeedback = document.getElementById('confirmFeedback');
+const referralFeedback = document.getElementById('referralFeedback');
 
 
 passwordToggle.addEventListener('click', () => {
@@ -69,8 +71,19 @@ function validateConfirmPassword(confirmPassword) {
     return null;
 }
 
+function validateReferralCode(code){
+    if(!code || !code.trim()) return null;
 
+    const referralRegex = /^REF-[A-Z0-9]{5}$/i;
 
+    if(!referralRegex.test(code.trim())){
+        return 'Invalid format. Must be REF-XXXXX (e.g., REF-ABC12)';
+    }
+}
+
+referralCodeInput.addEventListener('input',(e)=>{
+    e.target.value = e.target.value.toUpperCase();
+})
 
 
 // ------------------ Show / Hide Errors ------------------
@@ -88,7 +101,7 @@ function hideError(input, feedback) {
     feedback.textContent = '';
 }
 
-// ------------------ Event Listeners for Inputs ------------------
+//  Event Listeners for Inputs 
 nameInput.addEventListener('blur', () => {
     const error = validateName(nameInput.value);
     error ? showError(nameInput, nameFeedback, error) : hideError(nameInput, nameFeedback);
@@ -120,6 +133,11 @@ confirmPasswordInput.addEventListener('blur', () => {
     error ? showError(confirmPasswordInput, confirmFeedback, error) : hideError(confirmPasswordInput, confirmFeedback);
 });
 
+referralCodeInput.addEventListener('blur', ()=>{
+    const error = validateReferralCode(referralCodeInput.value);
+    error ? showError( referralCodeInput, referralFeedback, error) : hideError( referralCodeInput, referralFeedback);
+});
+
 // Remove error on focus
 [nameInput, emailInput, phoneInput, passwordInput, confirmPasswordInput].forEach(input => {
     input.addEventListener('focus', () => {
@@ -130,7 +148,8 @@ confirmPasswordInput.addEventListener('blur', () => {
                 email: emailFeedback,
                 phone: phoneFeedback,
                 password: passwordFeedback,
-                confirmPassword: confirmFeedback
+                confirmPassword: confirmFeedback,
+                referralCode: referralFeedback
             };
             feedbackMap[input.id].textContent = '';
         }
@@ -146,7 +165,8 @@ form.addEventListener('submit', (e) => {
         [emailInput, emailFeedback, validateEmail(emailInput.value)],
         [phoneInput, phoneFeedback, validatePhone(phoneInput.value)],
         [passwordInput, passwordFeedback, validatePassword(passwordInput.value)],
-        [confirmPasswordInput, confirmFeedback, validateConfirmPassword(confirmPasswordInput.value)]
+        [confirmPasswordInput, confirmFeedback, validateConfirmPassword(confirmPasswordInput.value)],
+        [referralCodeInput, referralFeedback, validateReferralCode(referralCodeInput.value)]
     ];
 
     validations.forEach(([input, feedback, error]) => {

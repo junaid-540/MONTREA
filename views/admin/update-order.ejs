@@ -178,7 +178,7 @@
                                 }
                                 %>
 
-                                <% if (!isTerminal && order.paymentStatus !== 'Failed') { %>
+                                <% if (!isTerminal && order.paymentStatus !== 'Failed' && !item.returnRequested) { %>
                                 <div class="status-management">
                                     <label class="status-label">Update Item Status:</label>
                                     <div class="status-controls">
@@ -274,11 +274,16 @@
                                 <span>Subtotal</span>
                                 <span>₹<%= order.subtotal.toFixed(2) %></span>
                             </div>
-                            <% if (order.discount > 0) { %>
-                                <div class="price-row discount-row">
-                                    <span>Discount</span>
-                                    <span>-₹<%= order.discount.toFixed(2) %></span>
-                                </div>
+                            <% if (order.couponApplied && order.discountAmount > 0) { %>
+                            <div class="price-row discount-row">
+                                <span style="color: #16a34a; font-weight: 500; margin-left: -4px;">
+                                    <i class="fas fa-tag me-1"></i>
+                                    Coupon <%= order.code ? '(' + order.code + ')' : '' %>
+                                </span>
+                                <span style="color: #16a34a; font-weight: 600;">
+                                    -₹<%= Math.round(order.discountAmount) %>
+                                </span>
+                            </div>
                             <% } %>
                             <div class="price-row">
                                 <span>Tax (GST)</span>

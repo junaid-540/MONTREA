@@ -58,7 +58,7 @@
                 <% } %>
                 <div class="timeline-item">
                     <div class="timeline-label">Total Amount</div>
-                    <div class="timeline-value total-amount">₹<%= order.totalAmount.toFixed(2) %></div>
+                    <div class="timeline-value total-amount">₹<%= Math.round(order.totalAmount) %></div>
                 </div>
             </div>
         </div>
@@ -143,63 +143,100 @@
                                 </p>
 
                                 <div class="item-pricing">
-                                    <span class="current-price">₹<%= item.discountedPriceAtPurchase || item.priceAtPurchase %></span>
+                                    <span class="current-price">₹<%= Math.round(item.discountedPriceAtPurchase) || Math.round(item.priceAtPurchase) %></span>
                                     <% if (item.discountedPriceAtPurchase && item.discountedPriceAtPurchase < item.priceAtPurchase) { %>
-                                    <span class="original-price">₹<%= item.priceAtPurchase %></span>
+                                    <span class="original-price">₹<%= Math.round(item.priceAtPurchase) %></span>
                                     <% } %>
                                 </div>
 
-                                <% if (order.paymentStatus !== 'Failed') { %>
-                                    <span class="item-status-badge status-<%= item.itemStatus.toLowerCase().replace(/\s+/g, '-') %>">
-                                    <%= item.itemStatus %>
-                                </span>
-                               <% } %>
-                            </div>
-                        </div>
+                                <!-- Item Status Badge -->
+                                    <% if (order.paymentStatus !== 'Failed') { %>
+                                        <span class="item-status-badge status-<%= item.itemStatus.toLowerCase().replace(/\s+/g, '-') %>">
+                                            <%= item.itemStatus %>
+                                        </span>
+                                    <% } %>
+                                    </div>
+                                    </div>
 
-                        <!-- Action Buttons -->
-                        <div class="item-actions">
-                            <% if ((item.itemStatus === 'Placed' || item.itemStatus === 'Processing') && order.paymentStatus !== 'Failed') { %>
-                            <button class="btn-action btn-cancel" onclick="openCancelModal('<%= item._id %>', '<%= item.name %>')">
-                                <i class="fas fa-times-circle me-2"></i>
-                                Cancel Item
-                            </button>
-                            <% } %>
+                                    <!-- Action Buttons -->
+                                    <div class="item-actions">
+                                        <% if ((item.itemStatus === 'Placed' || item.itemStatus === 'Processing') && order.paymentStatus !== 'Failed') { %>
+                                        <button class="btn-action btn-cancel" onclick="openCancelModal('<%= item._id %>', '<%= item.name %>')">
+                                            <i class="fas fa-times-circle me-2"></i>
+                                            Cancel Item
+                                        </button>
+                                        <% } %>
 
-                            <% if (item.itemStatus === 'Delivered' && !item.returnRequested) { %>
-                            <button class="btn-action btn-return" onclick="openReturnModal('<%= item._id %>', '<%= item.name %>')">
-                                <i class="fas fa-undo me-2"></i>
-                                Return Item
-                            </button>
-                            <% } %>
+                                        <% if (item.itemStatus === 'Delivered' && !item.returnRequested) { %>
+                                        <button class="btn-action btn-return" onclick="openReturnModal('<%= item._id %>', '<%= item.name %>')">
+                                            <i class="fas fa-undo me-2"></i>
+                                            Return Item
+                                        </button>
+                                        <% } %>
 
-                            <% if (item.returnRequested) { %>
-                            <span class="return-requested-badge">
-                                <i class="fas fa-clock me-2"></i>
-                                Return Requested
-                            </span>
-                            <% } %>
-                        </div>
+                                        <!-- Show Return Requested Badge only if status is still 'requested' -->
+                                        <% if (item.returnRequested && item.returnStatus === 'requested') { %>
+                                        <span class="return-requested-badge">
+                                            <i class="fas fa-clock me-2"></i>
+                                            Return Requested
+                                        </span>
+                                        <% } %>
+                                    </div>
 
-                        <!-- Cancel/Return Info -->
-                        <% if (item.itemStatus === 'Cancelled' && item.cancelReason) { %>
-                        <div class="status-info cancel-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Cancellation Reason:</strong>
-                            <%= item.cancelReason %>
-                        </div>
-                        <% } %>
+                                    <!-- Cancel/Return Info -->
+                                    <% if (item.itemStatus === 'Cancelled' && item.cancelReason) { %>
+                                    <div class="status-info cancel-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Cancellation Reason:</strong>
+                                        <%= item.cancelReason %>
+                                    </div>
+                                    <% } %>
 
-                        <% if (item.returnRequested) { %>
-                        <div class="status-info return-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Return Status:</strong>
-                            <%= item.returnStatus %>
-                            <% if (item.returnReason) { %>
-                            | <strong>Reason:</strong> <%= item.returnReason %>
-                            <% } %>
-                        </div>
-                        <% } %>
+                                    <!-- Return Status Messages -->
+                                    <% if (item.returnRequested) { %>
+                                        <% if (item.returnStatus === 'requested') { %>
+                                            <div class="status-info return-info return-requested">
+                                                <i class="fas fa-clock me-2"></i>
+                                                <strong>Return Status:</strong> Pending Review
+                                                <% if (item.returnReason) { %>
+                                                <br><strong>Reason:</strong> <%= item.returnReason %>
+                                                <% } %>
+                                            </div>
+                                        <% } else if (item.returnStatus === 'approved' || item.returnStatus === 'completed') { %>
+                                            <div class="status-info return-info return-approved">
+                                                <i class="fas fa-check-circle me-2"></i>
+                                                <strong>Return Status:</strong> <%= item.returnStatus === 'completed' ? 'Completed' : 'Approved' %>
+                                                <% if (item.returnReason) { %>
+                                                <!-- <br><strong>Reason:</strong> <%= item.returnReason %> -->
+                                                <% } %>
+                                                <% 
+                                                    // Calculate refund amount (works for both Razorpay and COD)
+                                                    let refundAmount = item.itemTotal;
+                                                    if (order.couponApplied && order.discountAmount > 0) {
+                                                        const itemShare = item.itemTotal / order.subtotal;
+                                                        const couponShare = order.discountAmount * itemShare;
+                                                        refundAmount = item.itemTotal - couponShare;
+                                                    }
+                                                %>
+                                                <br><strong>Refund:</strong> 
+                                                Amount of ₹<%= Math.round(refundAmount) %> <%= item.returnStatus === 'completed' ? 'credited to your wallet' : 'will be credited to your wallet' %>
+                                                <% if (order.paymentMethod === 'COD') { %>
+                                                    <br><small class="text-muted">(Your cash payment will be refunded to wallet)</small>
+                                                <% } %>
+                                            </div>
+                                        <% } else if (item.returnStatus === 'rejected') { %>
+                                            <div class="status-info return-info return-rejected">
+                                                <i class="fas fa-times-circle me-2"></i>
+                                                <strong>Return Request Rejected</strong>
+                                                <% if (item.returnReason) { %>
+                                                <!-- <br><strong>Your Reason:</strong> <%= item.returnReason %> -->
+                                                <% } %>
+                                                <% if (item.adminNotes) { %>
+                                                <br><strong>Admin Note:</strong> <%= item.adminNotes %>
+                                                <% } %>
+                                            </div>
+                                        <% } %>
+                                    <% } %>
                     </div>
                     <% }); %>
 
@@ -293,16 +330,27 @@
                     <div class="price-breakdown">
                         <div class="price-row">
                             <span>Subtotal</span>
-                            <span>₹<%= order.subtotal.toFixed(2) %></span>
+                            <span>₹<%= Math.round(order.subtotal) %></span>
                         </div>
+                        <% if (order.couponApplied && order.discountAmount > 0) { %>
+                            <div class="price-row discount-row" style="background: #f0fdf4; padding: 8px 0; margin: 8px -15px; padding-left: 15px; padding-right: 15px;">
+                                <span style="color: #16a34a; font-weight: 500;">
+                                    <i class="fas fa-tag me-1"></i>
+                                    Coupon <%= order.code ? '(' + order.code + ')' : '' %>
+                                </span>
+                                <span style="color: #16a34a; font-weight: 600;">
+                                    -₹<%= Math.round(order.discountAmount) %>
+                                </span>
+                            </div>
+                            <% } %>
                         <div class="price-row">
                             <span>Tax (GST)</span>
-                            <span>₹<%= order.tax.toFixed(2) %></span>
+                             <span>₹<%= Math.round(order.tax) %></span>
                         </div>
                         <div class="price-row">
                             <span>Shipping</span>
                             <span class="<%= order.shippingCharge === 0 ? 'text-success' : '' %>">
-                                <%= order.shippingCharge === 0 ? 'FREE' : '₹' + order.shippingCharge.toFixed(2) %>
+                                <%= order.shippingCharge === 0 ? 'FREE' : '₹' + Math.round(order.shippingCharge) %>
                             </span>
                         </div>
                         <% if (order.discount > 0) { %>
@@ -313,7 +361,7 @@
                         <% } %>
                         <div class="price-row total-row">
                             <span>Total</span>
-                            <span>₹<%= order.totalAmount.toFixed(2) %></span>
+                            <span>₹<%= Math.round(order.totalAmount) %></span>
                         </div>
                     </div>
                 </div>

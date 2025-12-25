@@ -154,7 +154,7 @@ export const generateInvoice = (order, stream) => {
 
             // Tax
             doc.text('Tax (GST):', totalsX, yPosition, { width: 100, align: 'left' })
-               .text(`${order.tax.toFixed(2)}`, 450, yPosition, { width: 80, align: 'right' });
+               .text(`${Math.round(order.tax.toFixed(2))}`, 450, yPosition, { width: 80, align: 'right' });
             yPosition += 20;
 
             // Shipping
@@ -182,7 +182,7 @@ export const generateInvoice = (order, stream) => {
             doc.fontSize(12)
                .font('Helvetica-Bold')
                .text('TOTAL:', totalsX, yPosition, { width: 100, align: 'left' })
-               .text(`${order.totalAmount.toFixed(2)}`, 450, yPosition, { width: 80, align: 'right' });
+               .text(`${Math.round(order.totalAmount.toFixed(2))}`, 450, yPosition, { width: 80, align: 'right' });
 
             // Return note if applicable
             if (hasCompletedReturn) {

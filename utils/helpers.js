@@ -6,7 +6,7 @@ export const getPaginateData = async (Model, req, options = {}) => {
             filters = {},
             sort = { createdAt: -1 },
             limit = 6,
-            // New: Optional lookup for joins (e.g., for products)
+            //  Optional lookup for joins (e.g., for products)
             lookup = null,  // e.g., { from: 'categories', local: 'categoryId', foreign: '_id', as: 'category', searchOn: 'category.name' }
         } = options;
 
@@ -76,7 +76,7 @@ export const getPaginateData = async (Model, req, options = {}) => {
             const countResult = await Model.aggregate(countPipeline);
             totalDocuments = countResult[0]?.total || 0;
         } else {
-            // Simple mode: Old find() behavior (for admin/users/categories)
+            //  Old find() behavior (for admin/users/categories)
             const finalQuery = {
                 ...filters,
                 ...(search ? { $or: searchConditions } : {}),

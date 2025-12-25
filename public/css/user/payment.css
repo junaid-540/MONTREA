@@ -382,3 +382,28 @@ body {
         padding: 20px;
     }
 }
+
+.wallet-balance-info {
+    color: #c5a47e;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-left: 5px;
+}
+
+.payment-method.insufficient {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.payment-method.insufficient:hover {
+    transform: none;
+    border-color: #e5e5e5;
+}
+
+.insufficient-wallet {
+    color: #e74c3c;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 5px;
+    display: block;
+}

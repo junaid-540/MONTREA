@@ -5,7 +5,7 @@ import passport from 'passport';
 import { userFinder } from '../middleware/userfinder.js';
 import { preventCache, redirectIfLoggedIn } from '../middleware/preventcache.js';
 import { checkBlockedUser } from '../middleware/userBlockCheck.js';
-import { getChangePassword, getEditProfile, getPasswordReset, getProfile, getResendEmailChangeOtp, getVerifyEmailChange, postChangePassword, postVerifyEmailChange, updateProfile } from '../controller/userControllers/profile.Controller.js';
+import { getChangePassword, getEditProfile, getPasswordReset, getProfile, getReferralPage, getResendEmailChangeOtp, getVerifyEmailChange, postChangePassword, postVerifyEmailChange, updateProfile } from '../controller/userControllers/profile.controller.js';
 import { checkSession } from '../middleware/checkSession.js';
 import upload from '../middleware/multerConfig.js';
 import validateRequest from '../middleware/validateRequest.js';
@@ -13,9 +13,11 @@ import { addAddressValidation, editProfileValidation } from '../validations/user
 import { deleteAddress, getAddAddress, getAddressPage, getEditAddress, postAddAddress, postEditAddress, setDefaultAddress } from '../controller/userControllers/address.controller.js';
 import { getCartPage ,clearInvalidItems, addToCart, checkVariantInCart, updateCartQuantity, removeFromCart, moveToWishlist } from '../controller/userControllers/cart.controller.js';
 import { getCheckoutPage, addAddress as addCheckoutAddress, continueToPayment, } from '../controller/userControllers/checkout.controller.js';
-import { createRazorpayOrder, getPaymentPage, handlePaymentFailure, placeOrder, verifyRazorpayPayment } from '../controller/userControllers/payment.controller.js';
+import { createRazorpayOrder, createRazorpayRetryOrder, getPaymentPage, handlePaymentFailure, placeOrder, verifyRazorpayPayment } from '../controller/userControllers/payment.controller.js';
 import { cancelOrder, downloadInvoice, getMyOrdersPage, getOrderDetailsPage, getOrderFailurePage, getOrderSuccessPage, returnOrder } from '../controller/userControllers/order.controller.js';
 import { addToWishlist, checkVariantInWishlist, getWishlist, moveToCart, removeFromWishlist } from '../controller/userControllers/wishlist.controller.js';
+import { createWalletTopUpOrder, getTransactionHistory, getWalletBalance, getWalletPage, verifyWalletTopUp } from '../controller/userControllers/wallet.controller.js';
+import { applyCouponToCart, getAvailableCouponsForUser, removeCoupon, validateCouponBeforePayment } from '../controller/userControllers/coupon.controller.js';
 
 
 const router = express.Router()
@@ -87,16 +89,20 @@ router.post('/cart/update',checkSession,updateCartQuantity)
 router.post('/cart/remove',checkSession,removeFromCart)
 router.post('/cart/move-to-wishlist', checkSession, moveToWishlist);
 
-// checkout routes //
+
+// Checkout Routes //
+
+
 router.get('/checkout',checkSession,getCheckoutPage);
 router.post('/checkout/add-address',checkSession,validateRequest(addAddressValidation),addCheckoutAddress);
 router.post('/checkout/continue-to-payment',checkSession,continueToPayment)
 
-// payment Routes //
+// Payment Routes //
 
 router.get('/payment',checkSession,getPaymentPage);
 router.post('/payment/place-order',checkSession,placeOrder);
 router.post('/payment/create-razorpay-order',checkSession,createRazorpayOrder);
+router.post('/payment/create-razorpay-retry-order',checkSession,createRazorpayRetryOrder);
 router.post('/payment/verify-payment',checkSession,verifyRazorpayPayment);
 router.post('/payment/payment-failure',checkSession,handlePaymentFailure);
 router.get('/order-success/:orderId',checkSession,getOrderSuccessPage);
@@ -113,12 +119,36 @@ router.get('/order/:orderId/invoice',checkSession,downloadInvoice);
 
 
 
-// wishlist routes //
+// Wishlist Routes //
 
 router.get('/wishlist',checkSession,getWishlist)
 router.post('/wishlist/add',checkSession,addToWishlist);
 router.get('/wishlist/check/:variantId',checkVariantInWishlist)
 router.post('/wishlist/remove',checkSession,removeFromWishlist)
 router.post('/wishlist/move-to-cart',checkSession,moveToCart)
+
+
+
+// Wallet Routes //
+
+router.get('/wallet',checkSession,getWalletPage)
+router.post('/wallet/create-topup-order', checkSession, createWalletTopUpOrder);
+router.post('/wallet/verify-topup', checkSession, verifyWalletTopUp);
+router.get('/wallet/balance', checkSession, getWalletBalance);
+router.get('/wallet/transactions', checkSession, getTransactionHistory);
+
+
+
+// Coupon Routes //
+
+router.get('/coupons/available', checkSession, getAvailableCouponsForUser);
+router.post('/checkout/apply-coupon', checkSession, applyCouponToCart);
+router.post('/checkout/remove-coupon', checkSession, removeCoupon);
+router.get('/checkout/validate-coupon', checkSession, validateCouponBeforePayment);
+
+
+// referral route //
+router.get('/refer',checkSession,getReferralPage)
+
 
 export default router

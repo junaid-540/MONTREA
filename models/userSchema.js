@@ -64,6 +64,43 @@ const userSchema = new mongoose.Schema(
             expires:900,
         },
 
+        referralCode: {
+            type: String,
+            unique: true,
+            // required: true,
+            uppercase: true,
+            trim: true,
+        },
+
+        referredBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            default: null,
+        },
+
+        referralCount: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+
+        referredUsers: [{
+            userId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+            },
+            referredAt: {
+                type: Date,
+                default: Date.now,
+            }
+        }],
+
+        referralEarnings: {
+            type: Number,
+            default: 0,
+            min: 0
+        },
+
     },
     { timestamps : true }
 );
@@ -81,7 +118,7 @@ userSchema.index(
     {unique: true , partialFilterExpression : { phone :{ $type : "string"}}}
 )
 
-
+// userSchema.index({referralCode: 1})
 
 const User = mongoose.model('User',userSchema)
 

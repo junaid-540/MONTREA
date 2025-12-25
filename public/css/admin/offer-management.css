@@ -1,0 +1,467 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+}
+
+.offers-container {
+    padding-top: 2rem;
+    margin: 0;
+}
+
+.offers-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+}
+
+.add-offer-btn {
+    background-color: #0c0d0d;
+    color: #fff;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-offer-btn:hover {
+    background-color: #a47f5f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Table */
+.table-responsive {
+    background-color: #999;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.offers-table {
+    background-color: #e3e3e3;
+    color: #fff;
+    margin-bottom: 0;
+}
+
+.offers-table thead {
+    background-color: #000;
+}
+
+.offers-table thead th {
+    background-color: #000;
+    color: #fff;
+    border-color: #333;
+    padding: 15px;
+    font-weight: 600;
+}
+
+.offers-table tbody tr {
+    background-color: #e8e8e8;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.offers-table tbody td {
+    padding: 15px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
+
+.offers-table tbody tr:hover {
+    background-color: #e3e3e3 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.offers-table tbody tr:hover td {
+    background-color: #e3e3e3 !important;
+    color: #000 !important;
+    transition: all 0.3s ease;
+    transform: translateY(-3px);
+}
+
+/* Type Badges */
+.type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.product-badge {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.category-badge {
+    background-color: #10b981;
+    color: white;
+}
+
+/* Applied To Info */
+.applied-to-info {
+    max-width: 200px;
+}
+
+.applied-to-info strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.applied-to-info small {
+    color: #666;
+    font-size: 12px;
+}
+
+/* Date Info */
+.date-info {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.date-info strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* Discount Badge */
+.discount-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Status Badges */
+.badge-active {
+    background-color: #167c06;
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-inactive {
+    background-color: #6b7280;
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-expired {
+    background-color: #dc2626;
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Action Buttons */
+.btn-edit {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 5px;
+}
+
+.btn-edit:hover {
+    background-color: #a47f5f;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-deactivate {
+    background-color: #ff0000;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-deactivate:hover {
+    background-color: #dc2626;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(220, 38, 38, 0.3);
+}
+
+.btn-activate {
+    background-color: #00ff00;
+    color: #333;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.btn-activate:hover {
+    background-color: #22c55e;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(34, 197, 94, 0.3);
+}
+
+/* Search Section */
+.search {
+    background-color: #0c0d0d;
+    color: white;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.search:hover {
+    background-color: #a47f5f;
+    border-color: transparent;
+    transform: translateY(-1px);
+}
+
+.clear {
+    background-color: #0c0d0d;
+    color: white;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.clear:hover {
+    background-color: #a47f5f;
+    border-color: transparent;
+    transform: translateY(-1px);
+}
+
+/* Pagination */
+.pagination .page-link {
+    border-radius: 4px;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #333;
+    color: #fff;
+    border-color: #333;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.pagination .page-link:hover {
+    background-color: #a47f5f;
+    color: #fff;
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+/* Modal Styles */
+.offer-type-selection {
+    padding: 20px;
+}
+
+.offer-type-card {
+    flex: 1;
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.offer-type-card:hover {
+    border-color: #a47f5f;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.offer-type-card.active {
+    border-color: #000;
+    background-color: #000;
+    color: white;
+}
+
+.offer-type-icon {
+    font-size: 2rem;
+}
+
+.offer-type-info h6 {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.offer-type-info p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+/* Form Validation */
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .offers-title {
+        font-size: 20px;
+    }
+
+    .add-offer-btn {
+        padding: 6px 15px;
+        font-size: 12px;
+    }
+
+    .offers-table thead th,
+    .offers-table tbody td {
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .offer-type-card {
+        padding: 15px;
+    }
+
+    .offer-type-icon {
+        font-size: 1.5rem;
+    }
+
+    .btn-edit,
+    .btn-deactivate,
+    .btn-activate {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .discount-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .offer-type-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .applied-to-info {
+        max-width: 150px;
+    }
+}
+
+/* Filter Dropdown Styles - Match Coupon Management */
+.filter {
+    background-color: #0c0d0d !important;
+    color: #fff !important;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+    transition: all 0.3s ease;
+}
+
+.filter:hover {
+    background-color: #a47f5f !important;
+    color: #fff !important;
+    transform: translateY(-2px);
+}
+
+.dropdown-menu {
+    background-color: #0c0d0d;
+    border: none;
+    border-radius: 5px;
+    min-width: 150px;
+}
+
+.dropdown-item {
+    background-color: #000;
+    color: #fff;
+    padding: 8px 12px;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #a47f5f;
+    color: #fff;
+}
+
+/* Search Input */
+.search-input {
+    min-width: 300px;
+}
+
+@media (max-width: 768px) {
+    .search-input {
+        min-width: 200px;
+    }
+}
+
+.products-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+/* Delete Button */
+.btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 5px;
+}
+
+.btn-delete:hover {
+    background-color: #bb2d3b;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(220, 53, 69, 0.3);
+}

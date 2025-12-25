@@ -170,12 +170,178 @@ async function validateAndFillPincode(pincodeInput, cityInput, stateSelect) {
     }
 }
 
+// Couopon functionality //
+async function loadAvailableCoupons() {
+    const modalBody = document.getElementById('couponsModalBody');
+    
+    try {
+        const response = await axios.get('/coupons/available');
+        
+        if (response.data.success) {
+            const coupons = response.data.data.coupons;
+            
+            if (coupons.length === 0) {
+                modalBody.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No coupons available at the moment</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="coupons-list">';
+            
+            coupons.forEach(coupon => {
+                const canApply = coupon.canApply;
+                const discountText = coupon.discountType === 'percentage' 
+                    ? `${coupon.discountValue}% OFF` 
+                    : `₹${coupon.discountValue} OFF`;
+                
+                const maxDiscountText = coupon.maxDiscountAmount && coupon.discountType === 'percentage'
+                    ? ` (Max ₹${coupon.maxDiscountAmount})`
+                    : '';
+                
+                html += `
+                    <div class="coupon-card ${!canApply ? 'coupon-disabled' : ''}">
+                        <div class="coupon-left">
+                            <div class="coupon-discount">${discountText}${maxDiscountText}</div>
+                            <div class="coupon-code">${coupon.code}</div>
+                        </div>
+                        <div class="coupon-right">
+                            <p class="coupon-desc">${coupon.description}</p>
+                            <p class="coupon-condition">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Min purchase: ₹${coupon.minPurchaseAmount}
+                            </p>
+                            ${!canApply ? `
+                                <p class="coupon-warning">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Add ₹${Math.round(coupon.amountNeeded)} more to cart
+                                </p>
+                            ` : `
+                                <p class="coupon-savings text-success">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Save ₹${Math.round(coupon.estimatedDiscount)}
+                                </p>
+                            `}
+                            <button class="btn-apply-coupon ${!canApply ? 'disabled' : ''}" 
+                                    data-code="${coupon.code}"
+                                    ${!canApply ? 'disabled' : ''}>
+                                ${canApply ? 'Apply' : 'Not Eligible'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            modalBody.innerHTML = html;
+            
+            // Attach event listeners to apply buttons
+            document.querySelectorAll('.btn-apply-coupon:not(.disabled)').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const code = this.getAttribute('data-code');
+                    applyCoupon(code, true); // true = from modal
+                });
+            });
+            
+        } else {
+            throw new Error(response.data.message || 'Failed to load coupons');
+        }
+        
+    } catch (error) {
+        console.error('Error loading coupons:', error);
+        modalBody.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                <p class="text-danger">Failed to load coupons</p>
+                <button class="btn btn-sm btn-primary" onclick="loadAvailableCoupons()">Retry</button>
+            </div>
+        `;
+    }
+}
+
+
+// Apply coupon
+async function applyCoupon(code, fromModal = false) {
+    const couponInput = document.getElementById('couponCode');
+    const couponCode = code || couponInput?.value?.trim();
+    
+    if (!couponCode) {
+        showToast('Please enter a coupon code', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await axios.post('/checkout/apply-coupon', {
+            couponCode: couponCode
+        }, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.data.success) {
+            showToast(response.data.message, 'success');
+            
+            // Close modal if opened from modal
+            if (fromModal) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('couponsModal'));
+                if (modal) modal.hide();
+            }
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+            
+        } else {
+            showToast(response.data.message, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error applying coupon:', error);
+        showToast(error.response?.data?.message || 'Failed to apply coupon', 'error');
+    }
+}
+
+    // Remove coupon
+async function removeCoupon() {
+    try {
+        const response = await axios.post('/checkout/remove-coupon', {}, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.data.success) {
+            showToast(response.data.message, 'success');
+            
+            // Reload page to show updated totals
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+            
+        } else {
+            showToast(response.data.message, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error removing coupon:', error);
+        showToast(error.response?.data?.message || 'Failed to remove coupon', 'error');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const addressModal = new bootstrap.Modal(document.getElementById('addressModal'));
+    const couponsModalEl = document.getElementById('couponsModal');
+    const couponsModal = couponsModalEl? new bootstrap.Modal(couponsModalEl): null;
     const btnAddNewAddress = document.getElementById('btnAddNewAddress');
     const btnSaveAddress = document.getElementById('btnSaveAddress');
     const addressForm = document.getElementById('addressForm');
     const btnContinueToPayment = document.getElementById('btnContinueToPayment');
+
+    // Coupon buttons
+    const btnViewCoupons = document.getElementById('btnViewCoupons');
+    const btnApplyCoupon = document.getElementById('btnApplyCoupon');
+    const btnRemoveCoupon = document.getElementById('btnRemoveCoupon');
+    const couponInput = document.getElementById('couponCode');
 
     // Form inputs
     const fullNameInput = document.getElementById('fullName');
@@ -344,6 +510,31 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Submit error:', error);
             showToast(error.response?.data?.message || 'Failed to save address', 'error');
         }
+    });
+
+    // view coupon modal 
+
+    btnViewCoupons?.addEventListener('click', function() {
+        couponsModal.show();
+        loadAvailableCoupons();
+    });
+
+    // aplly coupon from input
+    btnApplyCoupon?.addEventListener('click', function() {
+        applyCoupon();
+    });
+
+     // Apply coupon on Enter key
+    couponInput?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            applyCoupon();
+        }
+    });
+
+    // Remove Coupon
+    btnRemoveCoupon?.addEventListener('click', function() {
+        removeCoupon();
     });
 
     // Continue to Payment

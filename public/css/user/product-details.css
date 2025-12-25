@@ -111,6 +111,73 @@ body {
     cursor: not-allowed;
 }
 
+/* Quantity Selector */
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 0.5rem;
+    max-width: 225px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.qty-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: white;
+    color: var(--text-dark);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+
+.qty-btn:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: white;
+}
+
+.qty-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8f9fa;
+}
+
+.decrease-btn:hover:not(:disabled) {
+    border-radius: 4px 0 0 4px;
+}
+
+.increase-btn:hover:not(:disabled) {
+    border-radius: 0 4px 4px 0;
+}
+
+.qty-input {
+    width: 143px;
+    height: 40px;
+    border: none;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    background: white;
+    -moz-appearance: textfield;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+
 .price-section {
     margin: 1.5rem 0;
 }
@@ -357,44 +424,239 @@ body {
     .image-zoom-container {
         overflow: visible;
     }
+
+    .quantity-selector {
+        max-width: 120px;
+    }
+
+    .qty-btn {
+        width: 35px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .qty-input {
+        width: 73%;
+    }
+    .quantity-selector {
+        max-width: 50%;
+    }
 }
 
 /* Breadcrumb Styling */
 .breadcrumb {
-  background-color: transparent;
-  padding: 0.75rem 0;
-  font-size: 0.95rem;
-  border-bottom: 1px solid #eee;
+    background-color: transparent;
+    padding: 0.75rem 0;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #eee;
 }
 
 .breadcrumb-item {
-  text-transform: capitalize;
+    text-transform: capitalize;
 }
 
 .breadcrumb-item a {
-  color: var(--text-dark);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
 }
 
 .breadcrumb-item a:hover {
-  color: var(--primary-color);
-  text-decoration: underline;
+    color: var(--primary-color);
+    text-decoration: underline;
 }
 
 .breadcrumb-item + .breadcrumb-item::before {
-  content: "›";
-  color: #999;
-  padding: 0 0.5rem;
+    content: "›";
+    color: #999;
+    padding: 0 0.5rem;
 }
 
 .breadcrumb-item.active {
-  color: var(--text-light);
-  font-weight: 600;
+    color: var(--text-light);
+    font-weight: 600;
 }
-
 
 .btn-wishlist .fas.fa-heart {
     color: #ff0000 ; 
+}
+
+/* Add these styles to your existing product-details.css */
+
+/* Active Offers Section */
+.active-offers-section {
+    margin: 1rem 0;
+}
+
+.offer-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    animation: fadeInSlide 0.4s ease;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.offer-banner i {
+    font-size: 1.2rem;
+}
+
+.offer-banner strong {
+    font-size: 1rem;
+    flex: 1;
+}
+
+.offer-discount-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.offer-type-badge {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.category-offer-banner {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+}
+
+.product-offer-banner {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Offer Applied Text in Price Section */
+.offer-applied-text {
+    display: inline-block;
+    margin-left: 10px;
+    color: #10b981;
+    font-size: 0.9rem;
+    font-weight: 600;
+    animation: fadeIn 0.3s ease;
+}
+
+.offer-applied-text i {
+    margin-right: 4px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Update existing price section styles */
+.price-section {
+    margin: 1.5rem 0;
+    padding: 1rem 0;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: var(--text-light);
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.current-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-right: 0.5rem;
+}
+
+.discount-badge {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    color: white;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .offer-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 15px;
+    }
+
+    .offer-banner strong {
+        font-size: 0.9rem;
+    }
+
+    .offer-discount-text {
+        font-size: 1rem;
+    }
+
+    .offer-type-badge {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+
+    .offer-applied-text {
+        display: block;
+        margin-left: 0;
+        margin-top: 8px;
+        font-size: 0.85rem;
+    }
+
+    .price-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .current-price {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .offer-banner {
+        padding: 8px 12px;
+    }
+
+    .offer-banner i {
+        font-size: 1rem;
+    }
+
+    .offer-banner strong {
+        font-size: 0.85rem;
+    }
+
+    .offer-discount-text {
+        font-size: 0.9rem;
+    }
 }

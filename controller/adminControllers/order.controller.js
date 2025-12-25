@@ -13,14 +13,12 @@ export const getOrders = async (req,res,next) =>{
 
         const filters = {};
         
-        // SOLUTION 1: Filter at database level after getPaginateData
-        // This is the simplest - just add a post-filter
         if(status) filters.orderStatus = status;
         if(payment) filters.paymentStatus = payment;
 
         const {data: allOrders , totalPages , currentPage} = await getPaginateData(Order,req,{
             filters,
-            searchFields:['orderId', 'shippingAddress.fullName', 'shippingAddress.phone'],
+            searchFields:['orderId', 'shippingAddress.fullName', 'shippingAddress.phone','items.name'],
             sort: {createdAt:-1},
             limit: 10,
             lookup:{
@@ -32,15 +30,12 @@ export const getOrders = async (req,res,next) =>{
             }
         });
 
-        // ADDED: Filter out Razorpay pending/failed orders AFTER fetching
+        //  Filter out Razorpay pending/failed orders AFTER fetching
         const orders = allOrders.filter(order => {
-            // Keep COD orders
             if (order.paymentMethod === 'COD') return true;
             
-            // Keep Razorpay orders only if paid
             if (order.paymentStatus === 'Paid') return true;
             
-            // Filter out everything else
             return false;
         });
 
@@ -51,7 +46,7 @@ export const getOrders = async (req,res,next) =>{
 
         const messages = req.session.messages || [];
         delete req.session.messages
-
+        
         res.render('admin/order-management',{
             Title: 'Order Management',
             orders: transformedOrder,
@@ -134,6 +129,14 @@ export const updateItemStatus = async (req, res, next) => {
                 success: false,
                 statusCode: statusCodes.NOT_FOUND,
                 message: 'Item not found in order'
+            });
+        }
+
+        if (item.returnRequested) {
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: 'Cannot update status while return is being processed'
             });
         }
 

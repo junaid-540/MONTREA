@@ -235,6 +235,7 @@ export const addToCart = async (req, res, next) => {
         );
 
         if (existingItemIndex > -1) {
+            // Item already exists in cart - INCREASE the quantity
             const existingItem = cart.items[existingItemIndex];
             const newQuantity = existingItem.quantity + qty;
 
@@ -245,7 +246,21 @@ export const addToCart = async (req, res, next) => {
                     message: `Maximum ${MAX_QUANTITY_PER_PRODUCT} items allowed per product. You already have ${existingItem.quantity} in cart.`
                 });
             }
+
+            if (newQuantity > variant.stock) {
+                return sendResponse(res, {
+                    success: false,
+                    statusCode: statusCodes.BAD_REQUEST,
+                    message: `Cannot add more items. You already have the maximum available stock (${existingItem.quantity}) in your cart.`
+                });
+            }
+
+            // Update the quantity and prices
+            cart.items[existingItemIndex].quantity = newQuantity;
+            cart.items[existingItemIndex].priceAtTime = variant.price;
+            cart.items[existingItemIndex].discountedPriceAtTime = variant.discountedPrice || 0;
         } else {
+            // New item - add to cart
             cart.items.push({
                 productId,
                 productVariantId,

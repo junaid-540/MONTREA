@@ -7,6 +7,8 @@ import Category from "../../models/categorySchema.js";
 import { sendResponse } from "../../utils/responseHandler.js";
 import statusCodes from "../../utils/statusCodes.js";
 import errorMessages from "../../utils/errorMessages.js";
+import { calculateCartTotals, validateCoupon } from "../../utils/couponHelper.js";
+import Coupon from "../../models/couponSchema.js";
 
 // Helper to set session messages
 const setSessionError = (req, message) => {
@@ -59,7 +61,7 @@ export const getCheckoutPage = async (req,res,next) =>{
                 productId: product?._id,
                 productVariantId: variant?._id,
                 productName: product?.name || 'Unknown Product',
-                productImage: product?.coverImage?.url || variant?.images?.[0].url || '/images/placeholder.jpg',
+                productImage:  variant?.images?.[0]?.url|| product?.coverImage?.url || '/images/placeholder.jpg',
                 color: variant?.color,
                 size: variant?.size,
                 quantity: item.quantity,
@@ -79,9 +81,34 @@ export const getCheckoutPage = async (req,res,next) =>{
             return sum +(price * item.quantity);
         },0)
 
-        const shippingCharge = subtotal >= 1000 ? 0 : 50; // free shipping over 1000
-        const tax = subtotal * 0.18   // Calculate tax (18% GST included in price, just for display)
-        const totalAmount = subtotal + shippingCharge + tax;
+        let couponDiscount = 0;
+        let appliedCoupon = null;
+
+        if(req.session.appliedCoupon){
+            const coupon = await Coupon.findById(req.session.appliedCoupon.couponId);
+            if(coupon){
+                const validation = validateCoupon(coupon, subtotal, userId);
+                if(validation.valid){
+                    couponDiscount = validation.discount;
+                    appliedCoupon = {
+                        code: coupon.code,
+                        discountAmount: couponDiscount
+                    };
+                    req.session.appliedCoupon.discountAmount = couponDiscount;
+                }else{
+                    delete req.session.appliedCoupon;
+                    setSessionError(req,`Coupon removed: ${validation.message}`);
+                }
+            }else{
+                delete req.session.appliedCoupon;
+            }
+        }
+
+        const totals = calculateCartTotals(subtotal, couponDiscount)
+
+        // const shippingCharge = subtotal >= 1000 ? 0 : 50; 
+        // const tax = subtotal * 0.18  
+        // const totalAmount = subtotal + shippingCharge + tax;
 
         const addresses = await Address.find({userId}).sort({isDefault: -1 , createdAt: -1}).lean();
 
@@ -92,13 +119,15 @@ export const getCheckoutPage = async (req,res,next) =>{
             Title: 'Checkout',
             cart:{
                 items: enrichedItems,
-                subtotal: subtotal,
+                subtotal: Math.round(subtotal),
                 itemsCount: enrichedItems.length
             },
             addresses,
-            shippingCharge,
-            tax,
-            totalAmount,
+            shippingCharge: Math.round(totals.shippingCharge),
+            tax: Math.round(totals.tax),
+            couponDiscount: Math.round(totals.couponDiscount),
+            totalAmount: Math.round(totals.totalAmount),
+            appliedCoupon,
             messages,
             user: res.locals.user || null,
             pageCss: '/public/css/user/checkout.css',
@@ -182,6 +211,33 @@ export const continueToPayment = async (req,res,next) =>{
         const address = await Address.findOne({_id: addressId , userId});
         if(!address){
             return sendResponse(res,{success:false,statusCode:statusCodes.NOT_FOUND,message:'Selected address not found'});
+        }
+
+        if(req.session.appliedCoupon){
+            const cart = await Cart.findOne({userId})
+                        .populate('items.productVariantId', 'price discountedPrice');
+
+            const subtotal = cart.items.reduce((sum, item)=>{
+                const price = item.discountedPriceAtTime > 0
+                            ? item.discountedPriceAtTime : item.priceAtTime
+                return sum + (price * item.quantity)
+            },0);
+            
+            const coupon = await Coupon.findById(req.session.appliedCoupon.couponId);
+            if(coupon){
+                const validation = validateCoupon(coupon, subtotal, userId);
+                if(!validation.valid){
+                    delete req.session.appliedCoupon;
+                    return sendResponse(res,{
+                        success: false,
+                        statusCode: statusCodes.BAD_REQUEST,
+                        message: `Coupon is no longer valid: ${validation.message}`
+                    });
+                }
+
+            }else{
+                    delete req.session.appliedCoupon;
+                }
         }
 
         req.session.selectedAddressId = addressId;

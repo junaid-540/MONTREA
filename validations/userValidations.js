@@ -44,6 +44,14 @@ export const signupValidation = Joi.object({
         'any.only':errorMessages.CONFIRM_PASSWORD_MISMATCH,
         'any.required':errorMessages.CONFIRM_PASSWORD_REQUIRED,
     }),
+
+    referralCode: Joi.string()
+    .trim()
+    .allow('', null)
+    .optional()
+    .messages({
+        'string.base': 'Referral code must be a string'
+    }),
 });
 
 

@@ -1,6 +1,6 @@
 <%- include('../partials/user/header') %>
 
-    <body >
+    <body>
         <%- include('../partials/user/navbar') %>
 
             <div class="checkout-container">
@@ -89,14 +89,14 @@
                                                     <% if (item.discountedPriceAtTime> 0 && item.discountedPriceAtTime <
                                                             item.priceAtTime) { %>
                                                             <span class="text-muted original-price me-2">
-                                                                ₹<%= item.priceAtTime.toFixed(2) %>
+                                                                ₹<%= Math.round(item.priceAtTime) %>
                                                             </span>
                                                             <span class="fw-bold discounted-price">
-                                                                ₹<%= item.discountedPriceAtTime.toFixed(2) %>
+                                                                ₹<%= Math.round(item.discountedPriceAtTime) %>
                                                             </span>
                                                             <% } else { %>
                                                                 <span class="fw-bold">
-                                                                    ₹<%= item.priceAtTime.toFixed(2) %>
+                                                                    ₹<%= Math.round(item.priceAtTime) %>
                                                                 </span>
                                                                 <% } %>
                                                 </div>
@@ -111,34 +111,55 @@
                                             <div class="mt-4">
                                                 <div class="summary-row">
                                                     <span>Subtotal</span>
-                                                    <span>₹<%= cart.subtotal.toFixed(2) %></span>
-                                                </div>
-                                                <div class="summary-row">
-                                                    <span>Delivery Charges</span>
-                                                    <span class="text-success">
-                                                        <%= shippingCharge===0 ? 'Free' : '₹' +
-                                                            shippingCharge.toFixed(2) %>
-                                                    </span>
-                                                </div>
-                                                <div class="summary-row">
-                                                    <span>Tax (GST 18%)</span>
-                                                    <span>₹<%= tax.toFixed(2) %></span>
+                                                    <span id="subtotalAmount">₹<%= Math.round(cart.subtotal) %></span>
                                                 </div>
 
-                                                <!-- Coupon (Future Implementation) -->
-                                                <div class="coupon-group">
-                                                    <input type="text" placeholder="Gift card or discount code"
-                                                        id="couponCode" disabled>
-                                                    <button disabled>Apply</button>
-                                                </div>
-                                                <button class="view-coupon-btn" disabled>
-                                                    View available coupons (Coming Soon)
-                                                </button>
+                                                <!--  Coupon Section -->
+                                                <% if (appliedCoupon) { %>
+                                                    <div class="summary-row coupon-applied-row">
+                                                        <span class="text-success">
+                                                            <i class="fas fa-tag me-1"></i>
+                                                            Coupon (<%= appliedCoupon.code %>)
+                                                                <button type="button" class="btn-remove-coupon"
+                                                                    id="btnRemoveCoupon" title="Remove coupon">
+                                                                    <i class="fas fa-times"></i>
+                                                                </button>
+                                                        </span>
+                                                        <span class="text-success" id="couponDiscountAmount">-₹<%=
+                                                                Math.round(couponDiscount) %></span>
+                                                    </div>
+                                                    <% } %>
 
-                                                <div class="summary-row total">
-                                                    <span>Total</span>
-                                                    <span class="fs-4">₹<%= totalAmount.toFixed(2) %></span>
-                                                </div>
+                                                        <div class="summary-row">
+                                                            <span>Delivery Charges</span>
+                                                            <span class="text-success" id="shippingAmount">
+                                                                <%= shippingCharge===0 ? 'Free' : '₹' +
+                                                                    Math.round(shippingCharge) %>
+                                                            </span>
+                                                        </div>
+                                                        <div class="summary-row">
+                                                            <span>Tax (GST 18%)</span>
+                                                            <span id="taxAmount">₹<%= Math.round(tax) %>
+                                                            </span>
+                                                        </div>
+
+                                                        <!--  Coupon Input (only show if no coupon applied) -->
+                                                        <% if (!appliedCoupon) { %>
+                                                            <div class="coupon-group">
+                                                                <input type="text" placeholder="Enter coupon code"
+                                                                    id="couponCode" maxlength="20">
+                                                                <button id="btnApplyCoupon">Apply</button>
+                                                            </div>
+                                                            <button class="view-coupon-btn" id="btnViewCoupons">
+                                                                <i class="fas fa-gift me-2"></i>View available coupons
+                                                            </button>
+                                                            <% } %>
+
+                                                                <div class="summary-row total">
+                                                                    <span>Total</span>
+                                                                    <span class="fs-4" id="totalAmount">₹<%=
+                                                                            Math.round(totalAmount) %></span>
+                                                                </div>
                                             </div>
 
                                             <button class="btn-continue mt-4" id="btnContinueToPayment">
@@ -153,6 +174,29 @@
                     </div>
                 </div>
             </div>
+
+
+            <!-- Coupons Modal -->
+                <div class="modal fade" id="couponsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-gift me-2"></i>Available Coupons
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="couponsModalBody">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Loading coupons...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             <!-- Add Address Modal -->
             <div class="modal fade" id="addressModal" tabindex="-1" aria-hidden="true">
@@ -307,31 +351,31 @@
             </div>
 
             <%- include('../partials/user/footer') %>
-            <script>
-        const messages = <%- JSON.stringify(messages || []) %>;
-        messages.forEach(msg => {
-            let bgColor, duration = 3000;
-            switch (msg.type) {
-                case 'error':
-                    bgColor = "linear-gradient(to right, #ff6b6b, #ee5a24)";
-                    break;
-                case 'success':
-                    bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
-                    break;
-                case 'warning':
-                    bgColor = "linear-gradient(to right, #ffa726, #ff7043)";
-                    duration = 4000;  
-                    break;
-                default:
-                    bgColor = "linear-gradient(to right, #2196f3, #21cbf3)";
-            }
-            Toastify({
-                text: msg.text,
-                duration: duration,
-                gravity: "top",
-                position: "right",
-                backgroundColor: bgColor,
-                stopOnFocus: true,
-            }).showToast();
-        });
-    </script>
+                <script>
+                    const messages = <% - JSON.stringify(messages || []) %>;
+                    messages.forEach(msg => {
+                        let bgColor, duration = 3000;
+                        switch (msg.type) {
+                            case 'error':
+                                bgColor = "linear-gradient(to right, #ff6b6b, #ee5a24)";
+                                break;
+                            case 'success':
+                                bgColor = "linear-gradient(to right, #00b09b, #96c93d)";
+                                break;
+                            case 'warning':
+                                bgColor = "linear-gradient(to right, #ffa726, #ff7043)";
+                                duration = 4000;
+                                break;
+                            default:
+                                bgColor = "linear-gradient(to right, #2196f3, #21cbf3)";
+                        }
+                        Toastify({
+                            text: msg.text,
+                            duration: duration,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: bgColor,
+                            stopOnFocus: true,
+                        }).showToast();
+                    });
+                </script>

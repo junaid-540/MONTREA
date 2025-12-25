@@ -42,7 +42,7 @@
                         
                         <div class="info-item">
                             <div class="info-label">Total Amount</div>
-                            <div class="info-value">₹<%= order.totalAmount.toFixed(2) %></div>
+                            <div class="info-value">₹<%= Math.round(order.totalAmount.toFixed(2)) %></div>
                         </div>
                         
                         <div class="info-item">
@@ -119,7 +119,7 @@
                 const amount = <%= order ? order.totalAmount : 0 %>;
 
                 // Create Razorpay order
-                const razorpayOrderResponse = await axios.post('/payment/create-razorpay-order', {
+                const razorpayOrderResponse = await axios.post('/payment/create-razorpay-retry-order', {
                     orderId: orderId,
                     amount: amount
                 }, {
@@ -129,7 +129,7 @@
                 });
 
                 if (!razorpayOrderResponse.data.success) {
-                    throw new Error('Failed to create payment order');
+                    throw new Error( razorpayOrderResponse.data.message || 'Failed to create payment order');
                 }
 
                 const razorpayData = razorpayOrderResponse.data.data;
@@ -179,7 +179,7 @@
                         }
                     },
                     theme: {
-                        color: '#111'
+                        color: '#c5a47e'
                     },
                     modal: {
                         ondismiss: function() {

@@ -1,4 +1,5 @@
 const variants = window.variants || [];
+const variantsWithPrices = window.variantsWithPrices || [];
 
 function UpdateCartBadge(count){
     const cartLink = document.querySelector('a[href="/cart"]');
@@ -38,6 +39,10 @@ function UpdateWishlistBadge(count){
     }
 }
 
+function getCurrentPageUrl() {
+    return window.location.pathname + window.location.search;
+}
+
 function initImageZoom() {
     const container = document.querySelector('.image-zoom-container');
     const img = document.getElementById("mainImage");
@@ -45,7 +50,6 @@ function initImageZoom() {
     const result = document.getElementById("zoomResult");
 
     if (!container || !img || !lens || !result) {
-        console.log('Zoom elements not found');
         return;
     }
 
@@ -127,6 +131,62 @@ function selectSize(size, element) {
     updateVariant();
 }
 
+let currentStock = 0;
+const MAX_CART_QUANTITY = 5;
+
+function updateQuantityLimits(stock) {
+    currentStock = stock;
+    const qtyInput = document.getElementById('quantity');
+    const maxQty = Math.min(stock, MAX_CART_QUANTITY);
+    
+    qtyInput.value = 1;
+    qtyInput.max = maxQty;
+
+    updateQuantityButtons();
+}
+
+function updateQuantityButtons() {
+    const qtyInput = document.getElementById('quantity');
+    const decreaseBtn = document.querySelector('.decrease-btn');
+    const increaseBtn = document.querySelector('.increase-btn');
+    const currentQty = parseInt(qtyInput.value);
+    const maxQty = Math.min(currentStock, MAX_CART_QUANTITY);
+
+    decreaseBtn.disabled = currentQty <= 1;
+    increaseBtn.disabled = currentQty >= maxQty || currentStock === 0;
+}
+
+function increaseQty() {
+    const qtyInput = document.getElementById('quantity');
+    let qty = parseInt(qtyInput.value);
+    const maxQty = Math.min(currentStock, MAX_CART_QUANTITY);
+    
+    if (qty < maxQty && qty < 999) {
+        qtyInput.value = qty + 1;
+        updateQuantityButtons();
+    } else if (qty >= maxQty) {
+        const limitReason = maxQty === MAX_CART_QUANTITY ? "cart limit" : "available stock";
+        Toastify({
+            text: `Maximum quantity is ${maxQty} (${limitReason})`,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: {
+                background: "#f59e0b",
+            }
+        }).showToast();
+    }
+}
+
+function decreaseQty() {
+    const qtyInput = document.getElementById('quantity');
+    let qty = parseInt(qtyInput.value);
+    if (qty > 1) {
+        qtyInput.value = qty - 1;
+        updateQuantityButtons();
+    }
+}
+
 function updateVariant() {
     const selectedColor = document.getElementById('selectedColor').value;
     const selectedSize = document.getElementById('selectedSize').value;
@@ -136,6 +196,12 @@ function updateVariant() {
     );
 
     if (matchedVariant) {
+        // Find variant with calculated prices
+        const variantWithPrice = variantsWithPrices.find(v => 
+            v._id.toString() === matchedVariant._id.toString()
+        );
+
+        // Update images
         if (matchedVariant.images && matchedVariant.images.length > 0) {
             const img = document.getElementById('mainImage');
             const result = document.getElementById("zoomResult");
@@ -158,13 +224,55 @@ function updateVariant() {
             });
         }
 
+        // Update price with offer calculation
         const priceElement = document.getElementById('currentPrice');
-        if (matchedVariant.discountedPrice > 0 && matchedVariant.discountedPrice < matchedVariant.price) {
-            priceElement.textContent = '₹' + matchedVariant.discountedPrice.toFixed(2);
+        const priceSection = document.querySelector('.price-section');
+
+        if (variantWithPrice && variantWithPrice.calculatedPrice) {
+            const priceData = variantWithPrice.calculatedPrice;
+            
+            if (priceData.hasOffer || priceData.hasManualDiscount) {
+                priceSection.innerHTML = `
+                    <span class="text-muted">MRP</span>
+                    <span class="original-price">₹${Math.round(priceData.originalPrice)}</span>
+                    <span class="current-price" id="currentPrice">₹${Math.round(priceData.finalPrice)}</span>
+                    <span class="discount-badge">
+                        ${Math.round(priceData.discountPercentage)}% OFF
+                    </span>
+                    ${priceData.hasOffer ? `
+                        <span class="offer-applied-text">
+                            <i class="fas fa-check-circle"></i>
+                            ${priceData.discountType === 'product' ? 'Product' : 'Category'} Offer Applied
+                        </span>
+                    ` : ''}
+                `;
+            } else {
+                priceSection.innerHTML = `
+                    <span class="current-price" id="currentPrice">₹${Math.round(priceData.finalPrice)}</span>
+                `;
+            }
         } else {
-            priceElement.textContent = '₹' + matchedVariant.price.toFixed(2);
+            // Fallback to manual discount
+            if (matchedVariant.discountedPrice > 0 && matchedVariant.discountedPrice < matchedVariant.price) {
+                priceSection.innerHTML = `
+                    <span class="text-muted">MRP</span>
+                    <span class="original-price">₹${Math.round(matchedVariant.price)}</span>
+                    <span class="current-price" id="currentPrice">₹${Math.round(matchedVariant.discountedPrice)}</span>
+                    <span class="discount-badge">
+                        ${Math.round(((matchedVariant.price - matchedVariant.discountedPrice) / matchedVariant.price) * 100)}% OFF
+                    </span>
+                `;
+            } else {
+                priceSection.innerHTML = `
+                    <span class="current-price" id="currentPrice">₹${Math.round(matchedVariant.price)}</span>
+                `;
+            }
         }
 
+        // Update stock and quantity limits
+        updateQuantityLimits(matchedVariant.stock);
+
+        // Update stock info
         const stockInfo = document.querySelector('.stock-info');
         const addToCartBtn = document.getElementById('addToCartBtn');
 
@@ -180,21 +288,16 @@ function updateVariant() {
             stockInfo.className = 'stock-info low-stock';
             stockInfo.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Only ' + matchedVariant.stock + ' left in stock';
             addToCartBtn.disabled = false;
-            addToCartBtn.textContent = 'ADD TO CART';
             addToCartBtn.dataset.stockDisabled = 'false';
-
             updateAddToCartButton(matchedVariant._id);
         } else {
             stockInfo.className = 'stock-info in-stock';
             stockInfo.innerHTML = '<i class="fas fa-check-circle me-2"></i>In Stock';
             addToCartBtn.disabled = false;
-            addToCartBtn.textContent = 'ADD TO CART';
             addToCartBtn.dataset.stockDisabled = 'false';
-
             updateAddToCartButton(matchedVariant._id);
         }
 
-        // Update wishlist button state
         updateWishlistButton(matchedVariant._id);
     }
 }
@@ -240,11 +343,9 @@ async function updateAddToCartButton(variantId) {
     const cartStatus = await checkIfVariantInCart(variantId);
 
     if (cartStatus.inCart) {
-        // addToCartBtn.disabled = true;
-        addToCartBtn.textContent = `ALREADY IN CART`;
-        // addToCartBtn.style.opacity = '0.8';
-        // addToCartBtn.style.cursor = 'not-allowed';
+        addToCartBtn.textContent = `UPDATE CART`;
         addToCartBtn.dataset.inCart = 'true';
+        addToCartBtn.dataset.currentCartQty = cartStatus.quantity;
     } else {
         const stockStatus = document.querySelector('.stock-info');
         const isOutOfStock = stockStatus && stockStatus.classList.contains('out-of-stock');
@@ -255,6 +356,7 @@ async function updateAddToCartButton(variantId) {
             addToCartBtn.style.opacity = '1';
             addToCartBtn.style.cursor = 'pointer';
             addToCartBtn.dataset.inCart = 'false';
+            addToCartBtn.dataset.currentCartQty = '0';
         }
     }
 }
@@ -267,9 +369,6 @@ async function updateWishlistButton(variantId) {
 
     if (wishlistStatus.inWishlist) {
         addToWishlistBtn.innerHTML = '<i class="fas fa-heart me-2"></i>IN WISHLIST';
-        // addToWishlistBtn.disabled = true;
-        // addToWishlistBtn.style.opacity = '0.8';
-        // addToWishlistBtn.style.cursor = 'not-allowed';
         addToWishlistBtn.dataset.inWishlist = 'true';
     } else {
         addToWishlistBtn.innerHTML = '<i class="far fa-heart me-2"></i>WISHLIST';
@@ -280,8 +379,22 @@ async function updateWishlistButton(variantId) {
     }
 }
 
-// Add to cart functionality
 document.addEventListener('DOMContentLoaded', function () {
+    if(successMessage){
+        Toastify({
+            text:successMessage,
+            duration:2500,
+            gravity:"top",
+            position:"right",
+            close:true,
+            style:{
+                background: "linear-gradient(to right, #00b09b, #96c93d)",
+                color: "#fff",
+                borderRadius: "8px"
+            }
+        }).showToast();
+    }
+
     const addToCartBtn = document.getElementById('addToCartBtn');
 
     if (addToCartBtn) {
@@ -292,30 +405,11 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
         if (initialVariant) {
+            updateQuantityLimits(initialVariant.stock);
             updateAddToCartButton(initialVariant._id);
         }
 
         addToCartBtn.addEventListener('click', async function () {
-            if (this.dataset.inCart === 'true') {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Already in Cart',
-                    text: 'This product is already in your cart!',
-                    showCancelButton: true,
-                    confirmButtonColor: '#f59e0b',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Go to Cart',
-                    cancelButtonText: 'Continue Shopping',
-                    scrollbarPadding: false,
-                    heightAuto: false
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '/cart';
-                    }
-                });
-                return;
-            }
-
             if (this.disabled && this.dataset.stockDisabled === 'true') {
                 Toastify({
                     text: "This product is out of stock",
@@ -331,6 +425,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const selectedColor = document.getElementById('selectedColor').value;
             const selectedSize = document.getElementById('selectedSize').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
 
             const variant = variants.find(v =>
                 v.color === selectedColor && v.size === selectedSize
@@ -362,7 +457,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // this.disabled = true;
+            if (quantity < 1) {
+                Toastify({
+                    text: "Minimum quantity is 1",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "#ffc107",
+                    }
+                }).showToast();
+                return;
+            }
+
+            const maxQty = Math.min(variant.stock, MAX_CART_QUANTITY);
+            if (quantity > maxQty) {
+                const limitReason = maxQty === MAX_CART_QUANTITY ? "cart limit" : "available stock";
+                Toastify({
+                    text: `Maximum quantity is ${maxQty} (${limitReason})`,
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    style: {
+                        background: "#ffc107",
+                    }
+                }).showToast();
+                return;
+            }
+
             const originalText = this.textContent;
             this.textContent = 'ADDING...';
 
@@ -375,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     body: JSON.stringify({
                         productId: window.productId,
                         productVariantId: variant._id,
-                        quantity: 1
+                        quantity: quantity
                     })
                 });
 
@@ -392,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 if (response.ok && data && data.success) {
-                    UpdateCartBadge(data.data.cartItemscount)
+                    UpdateCartBadge(data.data.cartItemscount);
                     const productName = document.querySelector('.product-title') ?
                         document.querySelector('.product-title').textContent :
                         document.querySelector('h1').textContent;
@@ -433,10 +555,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
 
                 } else {
-                    this.disabled = false;
                     this.textContent = originalText;
 
                     if (data && (data.statusCode === 401 || data.statusCode === 403) && data.redirectTo) {
+                        const currentUrl = getCurrentPageUrl();
                         Swal.fire({
                             icon: 'warning',
                             title: 'Login Required',
@@ -450,13 +572,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             heightAuto: false
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = data.redirectTo;
+                                window.location.href = `${data.redirectTo}?returnUrl=${encodeURIComponent(currentUrl)}`;
                             }
                         });
                         return;
                     }
 
                     if (raw && raw.trim().startsWith('<')) {
+                        const currentUrl = getCurrentPageUrl();
                         Swal.fire({
                             icon: 'warning',
                             title: 'Login Required',
@@ -470,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             heightAuto: false
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = '/signin';
+                                window.location.href = `/signin?returnUrl=${encodeURIComponent(currentUrl)}`;
                             }
                         });
                         return;
@@ -487,7 +610,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
             } catch (error) {
-                this.disabled = false;
                 this.textContent = originalText;
                 console.error('Error adding to cart:', error);
                 Toastify({
@@ -504,7 +626,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add to wishlist functionality
     const addToWishlistBtn = document.getElementById('addToWishlistBtn');
     if (addToWishlistBtn) {
-        // Check initial variant on page load
         const selectedColor = document.getElementById('selectedColor').value;
         const selectedSize = document.getElementById('selectedSize').value;
         const initialVariant = variants.find(v =>
@@ -556,7 +677,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // this.disabled = true;
             const originalHTML = this.innerHTML;
             this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ADDING...';
 
@@ -600,10 +720,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateWishlistButton(variant._id);
 
                 } else {
-                    this.disabled = false;
                     this.innerHTML = originalHTML;
 
                     if (data && (data.statusCode === 401 || data.statusCode === 403) && data.redirectTo) {
+                        const currentUrl = getCurrentPageUrl();
                         Swal.fire({
                             icon: 'warning',
                             title: 'Login Required',
@@ -617,13 +737,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             heightAuto: false
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = data.redirectTo;
+                                window.location.href = `${data.redirectTo}?returnUrl=${encodeURIComponent(currentUrl)}`;
                             }
                         });
                         return;
                     }
 
                     if (raw && raw.trim().startsWith('<')) {
+                        const currentUrl = getCurrentPageUrl();
                         Swal.fire({
                             icon: 'warning',
                             title: 'Login Required',
@@ -637,7 +758,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             heightAuto: false
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                window.location.href = '/signin';
+                                window.location.href = `/signin?returnUrl=${encodeURIComponent(currentUrl)}`;
                             }
                         });
                         return;
@@ -654,7 +775,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
             } catch (error) {
-                this.disabled = false;
                 this.innerHTML = originalHTML;
                 console.error('Error adding to wishlist:', error);
                 Toastify({

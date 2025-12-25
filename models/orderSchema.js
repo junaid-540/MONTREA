@@ -85,6 +85,10 @@ const orderItemSchema = new mongoose.Schema({
     },
     returnProcessedAt: {
         type: Date
+    },
+     adminNotes: {
+        type: String,
+        default: ''
     }
 }, { _id: true });
 
@@ -217,12 +221,30 @@ const orderSchema = new mongoose.Schema({
         min: 0
     },
     
-    // coupon details (for future implementation)
+    // coupon details (snapshot at time of order)
     couponApplied: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Coupon',
         default: null
     },
+    code:{
+        type: String,
+        default: null
+    },
+    discountType: {
+        type: String,
+        enum: ['percentage', 'fixed', null],
+        default: null
+    },
+    discountValue: {
+        type: Number,
+        default: null
+    },
+    discountAmount: {
+        type: Number,
+        default: 0
+    },
+    // wont be using much , this field
     couponDiscount: {
         type: Number,
         default: 0,

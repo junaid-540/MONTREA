@@ -106,7 +106,7 @@ document.getElementById('confirmReturnBtn').addEventListener('click', async () =
     }
 });
 
-// Download Invoice
+
 async function downloadInvoice(orderId) {
     
     if (window.orderStatus !== 'Delivered' && !window.hasReturn) {
@@ -163,7 +163,7 @@ function getOrderIdFromUrl() {
     return pathParts[pathParts.length - 1];
 }
 
-// Helper: Show Toast
+
 function showToast(type, message) {
     let bgColor;
     switch (type) {
@@ -202,7 +202,7 @@ document.getElementById('returnReason').addEventListener('input', function() {
 
 
 
-// Retry Payment Functionality (for failed payments)
+// Retry Payment Functionality
 const retryPaymentBtn = document.getElementById('retryPaymentBtn');
 if (retryPaymentBtn) {
     retryPaymentBtn.addEventListener('click', async function() {
@@ -224,8 +224,8 @@ if (retryPaymentBtn) {
                 throw new Error('Invalid order amount');
             }
 
-            // Create Razorpay order
-            const razorpayOrderResponse = await axios.post('/payment/create-razorpay-order', {
+            
+            const razorpayOrderResponse = await axios.post('/payment/create-razorpay-retry-order', {
                 orderId: orderId,
                 amount: amount
             }, {
@@ -235,7 +235,7 @@ if (retryPaymentBtn) {
             });
 
             if (!razorpayOrderResponse.data.success) {
-                throw new Error('Failed to create payment order');
+                throw new Error(razorpayOrderResponse.data.message || 'Failed to create payment order');
             }
 
             const razorpayData = razorpayOrderResponse.data.data;
@@ -243,7 +243,7 @@ if (retryPaymentBtn) {
             // Open Razorpay checkout
             const options = {
                 key: razorpayData.keyId,
-                amount: razorpayData.amount,
+                amount: Math.round(razorpayData.amount),
                 currency: razorpayData.currency,
                 name: 'Montrea',
                 description: 'Retry Order Payment',
@@ -275,7 +275,7 @@ if (retryPaymentBtn) {
                     }
                 },
                 theme: {
-                    color: '#111'
+                    color: '#c5a47e'
                 },
                 modal: {
                     ondismiss: function() {

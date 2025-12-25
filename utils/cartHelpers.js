@@ -161,9 +161,7 @@ export const enrichCartItems = (items, categoryMap) => {
             productId: product?._id,
             productVariantId: variant?._id,
             productName: product?.name || 'Unknown Product',
-            productImage: product?.coverImage?.url || 
-                         variant?.images?.[0]?.url || 
-                         '/images/placeholder.jpg',
+            productImage:  variant?.images?.[0]?.url|| product?.coverImage?.url || '/images/placeholder.jpg',
             color: variant?.color,
             size: variant?.size,
             quantity: item.quantity,

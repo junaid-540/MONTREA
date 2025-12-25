@@ -7,6 +7,8 @@ import statusCodes from "../../utils/statusCodes.js";
 import ProductVariant from "../../models/productVariantSchema.js";
 import { generateInvoice } from "../../utils/generateInvoice.js";
 import errorMessages from "../../utils/errorMessages.js";
+import { creditWallet, calculateRefundAmount, calculateItemRefundAmount } from "../../utils/walletHelper.js";
+import { decrementCouponUsage } from "../../utils/couponHelper.js";
 
 
 export const getOrderSuccessPage = async (req, res, next) => {
@@ -104,6 +106,7 @@ export const getOrderDetailsPage = async (req,res,next) =>{
         }
 
         order.hasReturn = order.items.some(item => item.returnRequested);
+        // const  
 
         const messages = req.session.messages || [];
         delete req.session.messages
@@ -139,7 +142,7 @@ export const cancelOrder = async (req,res,next) =>{
             });
         }
 
-        if(!['Placed', 'Processing'].includes(order.orderStatus)){
+        if(!['Placed', 'Processing','Partially Cancelled','Partially Delivered'].includes(order.orderStatus)){
             return sendResponse(res,{success:false,statusCode:statusCodes.BAD_REQUEST,message:'Order cannot be cancelled at this stage'});
         }
 
@@ -148,6 +151,10 @@ export const cancelOrder = async (req,res,next) =>{
             if(!item){
                 return sendResponse(res,{success:false,statusCode:statusCodes.NOT_FOUND,message:'Item not found in order'});
             }
+            if(!['Placed', 'Processing'].includes(item.itemStatus)){
+                return sendResponse(res,{success:false,statusCode:statusCodes.BAD_REQUEST,message:'This item cannot be cancelled at its current stage'});
+            }
+
             if(item.itemStatus === 'Cancelled'){
                 return sendResponse(res,{success:false,statusCode:statusCodes.BAD_REQUEST,message:'Item is already cancelled'});
             }
@@ -161,12 +168,29 @@ export const cancelOrder = async (req,res,next) =>{
                 {$inc: {stock: item.quantity}}
             );
 
+            const refundAmount = calculateItemRefundAmount(item, order);
+
+            if(refundAmount > 0){
+                await creditWallet (
+                    userId,
+                    refundAmount,
+                    `Refund for cancelled item: ${item.name}`,
+                    order._id,
+                    order.orderId
+                );
+            }
+
             const allCancelled = order.items.every(i => i.itemStatus === 'Cancelled');
             const someCancelled = order.items.some(i => i.itemStatus === 'Cancelled');
 
             if(allCancelled){
                 order.orderStatus = 'Cancelled';
                 order.cancelledAt = new Date()
+
+                if(order.couponApplied && order.couponApplied.couponId){
+                    await decrementCouponUsage(order.couponApplied.couponId, userId, order._id);
+                }
+
             }else if(someCancelled){
                 order.orderStatus = 'Partially Cancelled'
             }
@@ -176,9 +200,25 @@ export const cancelOrder = async (req,res,next) =>{
             return sendResponse(res,{
                 success: true,
                 statusCode: statusCodes.OK,
-                message: 'Item cancelled successfully'
+                message: refundAmount > 0 
+                        ? `item cancelled successfully. +₹${Math.round(refundAmount)} credited to wallet` 
+                        : 'Item cancelled successfully'
             });
         }else{
+            // full order cancellation
+
+            const cancellableItems = order.items.filter(item => 
+                ['Placed', 'Processing'].includes(item.itemStatus)
+            );
+            
+            if(cancellableItems.length === 0){
+                return sendResponse(res,{
+                    success:false,
+                    statusCode:statusCodes.BAD_REQUEST,
+                    message:'No items in this order can be cancelled at this stage'
+                });
+            }
+
             order.orderStatus = 'Cancelled';
             order.cancelledAt = new Date();
 
@@ -195,11 +235,28 @@ export const cancelOrder = async (req,res,next) =>{
                 );
             }
 
+            const refundAmount = calculateRefundAmount(order);
+            if(refundAmount > 0){
+                await creditWallet (
+                    userId,
+                    refundAmount,
+                    'Refund for cancelled order',
+                    order._id,
+                    order.orderId
+                );
+            }
+
+            if(order.couponApplied && order.couponApplied.couponId){
+                    await decrementCouponUsage(order.couponApplied.couponId, userId, order._id);
+            }
+
             await order.save()
             return sendResponse(res,{
                 success: true,
                 statusCode:statusCodes.OK,
-                message: 'Order cancelled successfully'
+                message: refundAmount > 0 
+                ? `Order cancelled successsfully. ${Math.round(refundAmount)} credited to walled` 
+                : 'Order cancelled successfully'
             });
         }
     } catch (err) {

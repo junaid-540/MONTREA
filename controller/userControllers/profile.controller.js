@@ -7,6 +7,8 @@ import Otp from "../../models/otpSchema.js";
 import { sendEmail } from "../../utils/email.js";
 import { generateSecureOTP } from "../../utils/otp.js";
 import bcrypt from 'bcrypt'
+import Wallet from "../../models/walletSchema.js";
+import { getReferralStats, generateReferralCode } from "../../utils/referralHelper.js";
 
 
 export const getProfile = async (req,res,next) =>{
@@ -398,3 +400,52 @@ export const getPasswordReset = async (req,res,next) =>{
     }
 }
 
+
+export const getReferralPage = async (req,res,next) =>{
+    try {
+        const userId = req.session.userId;
+        if(!userId){
+            return res.redirect('/signin');
+        }
+
+            // this will create the referralcode if its missing without the need of migration//
+        const user = await User.findById(userId);
+        if(!user.referralCode){
+            const newCode = await generateReferralCode();
+            user.referralCode = newCode;
+            user.referralCount = user.referralCount || 0;
+            user.referralEarnings = user.referralEarnings || 0;
+            user.referredUsers = user.referredUsers || [];
+            await user.save();
+            console.log(`Generated referralCode for ${user.name}: ${user.email}`);
+        }
+
+        const stats = await getReferralStats(userId);
+        const wallet = await Wallet.findOne({userId});
+        const referralTransactions = wallet?.transactions.filter(t =>
+            t.type === 'credit' && t.description.includes('Referral Reward')
+        ).sort((a, b)=> new Date(b.createdAt) - new Date(a.createdAt)) || [];
+
+
+        res.render('user/referral',{
+            Title: 'Referral',
+            activePage: 'refer',
+            user:{
+                name: user.name || '',
+                profileImage: user.profileImage || 'https://res.cloudinary.com/denu4amwx/image/upload/v1763464812/User_icon_ua556r.jpg',
+            },
+            is404: true,
+            referralCode: stats.referralCode,
+            totalReferrals: stats.totalReferrals,
+            totalEarnings: stats.totalEarnings,
+            referredUsers: stats.referredUsers,
+            referralTransactions: referralTransactions,
+            pageCss: '/public/css/user/referral.css',
+            pageJs: '/public/js/user/referral.js'
+        })
+
+    } catch (err) {
+        console.error('Error loading referral Page :',err);
+        next(err)
+    }
+}

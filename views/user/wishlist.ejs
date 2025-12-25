@@ -1,131 +1,159 @@
 <%- include('../partials/user/header') %>
 
-    <body>
-        <%- include('../partials/user/navbar') %>
-            <main>
-                <% if (wishlist.items && wishlist.items.length===0) { %>
+<body>
+    <%- include('../partials/user/navbar') %>
+        <main>
+            <% if (wishlist.items && wishlist.items.length===0) { %>
+                <section class="empty-state">
+                    <svg class="heart-icon" viewBox="0 0 100 100">
+                        <path
+                            d="M50 85 C50 85 20 65 20 40 Q20 25 30 20 Q40 15 50 25 Q60 15 70 20 Q80 25 80 40 C80 65 50 85 50 85 Z"
+                            stroke="#f59e0b" stroke-width="3" fill="none" />
+                    </svg>
+                    <h2>Your wishlist is empty</h2>
+                    <p>Save your favorite items here!</p>
+                    <a href="/shop" class="btn btn-secondary">Start Shopping</a>
+                </section>
+            <% } else { %>
+                <section class="populated">
+                    <div class="items-list">
+                        <h2>My Wishlist</h2>
+                        <a href="/shop" class="btn btn-continue-shopping">
+                            Continue Shopping
+                        </a>
 
-                    <section class="empty-state">
-                        <svg class="heart-icon" viewBox="0 0 100 100">
-                            <path
-                                d="M50 85 C50 85 20 65 20 40 Q20 25 30 20 Q40 15 50 25 Q60 15 70 20 Q80 25 80 40 C80 65 50 85 50 85 Z"
-                                stroke="#f59e0b" stroke-width="3" fill="none" />
-                        </svg>
-                        <h2>Your wishlist is empty</h2>
-                        <p>Save your favorite items here!</p>
-                        <a href="/shop" class="btn btn-secondary">Start Shopping</a>
-                    </section>
-                    <% } else { %>
+                        <!-- Wishlist Items -->
+                        <% wishlist.items.forEach((item)=> { %>
+                            <% 
+                                const product = item.productId; 
+                                const variant = item.productVariantId; 
+                                
+                                let displayPrice, originalPrice, saveAmount; 
+                                
+                                // Use calculated price data if available
+                                if (item.calculatedPriceData) {
+                                    const priceData = item.calculatedPriceData;
+                                    displayPrice = priceData.finalPrice;
+                                    originalPrice = (priceData.hasOffer || priceData.hasManualDiscount) ? priceData.originalPrice : null;
+                                } else if (variant) {
+                                    // Fallback to manual discount
+                                    displayPrice = variant.discountedPrice > 0 ? variant.discountedPrice : variant.price;
+                                    originalPrice = variant.discountedPrice > 0 ? variant.price : null;
+                                }
+                                
+                                if (originalPrice && displayPrice) {
+                                    saveAmount = originalPrice - displayPrice;
+                                }
+                                
+                                const isOutOfStock = !variant || variant.stock === 0;
+                                const isLowStock = variant && variant.stock > 0 && variant.stock < 5; 
+                                const isProductListed = product && product.isListed; 
+                                const isVariantListed = variant && variant.isListed; 
+                                const isAvailable = isProductListed && isVariantListed;
+                            %>
 
-                        <section class="populated">
-                            <div class="items-list">
-                                <h2>My Wishlist</h2>
-                                <a href="/shop" class="btn btn-continue-shopping">
-                                    Continue Shopping
+                            <div class="wishlist-item <%= !isAvailable ? 'item-unavailable' : '' %>"
+                                data-variant-id="<%= variant ? variant._id : '' %>"
+                                data-product-id="<%= product ? product._id : '' %>">
+
+                                <!-- Product Image -->
+                                <a href="/product/<%= product._id %>">
+                                    <img src="<%= variant?.images?.[0]?.url || product.coverImage?.url || 'https://via.placeholder.com/100?text=No+Image' %>"
+                                        alt="<%= product.name %>"
+                                        class="item-image <%= isOutOfStock ? 'out-of-stock-img' : '' %>"
+                                        onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
                                 </a>
 
-                                <!-- Wishlist Items -->
-                                <% wishlist.items.forEach((item)=> { %>
-                                    <% const product=item.productId; const variant=item.productVariantId; let
-                                        displayPrice, originalPrice, saveAmount; if (variant) {
-                                        displayPrice=variant.discountedPrice> 0 ? variant.discountedPrice :
-                                        variant.price;
-                                        originalPrice = variant.discountedPrice > 0 ? variant.price : null;
-                                        saveAmount = originalPrice ? (originalPrice - displayPrice) : 0;
-                                        }
+                                <div class="item-content">
+                                    <div class="item-details">
+                                        <h3>
+                                            <a href="/product/<%= product._id %>">
+                                                <%= product.name %>
+                                            </a>
+                                        </h3>
+                                        <div class="variant-info">
+                                            Size: <%= variant?.size || 'N/A' %> / Color: <%= variant?.color || 'N/A' %>
+                                        </div>
 
-
-                                        const isOutOfStock = !variant || variant.stock === 0;
-                                        const isLowStock = variant && variant.stock > 0 && variant.stock < 5; const
-                                            isProductListed=product && product.isListed; const isVariantListed=variant
-                                            && variant.isListed; const isAvailable=isProductListed && isVariantListed;
-                                            %>
-
-                                            <div class="wishlist-item <%= !isAvailable ? 'item-unavailable' : '' %>"
-                                                data-variant-id="<%= variant ? variant._id : '' %>"
-                                                data-product-id="<%= product ? product._id : '' %>">
-
-                                                <!-- Product Image -->
-                                                <a href="/product/<%= product._id %>">
-                                                    <img src="<%= product.coverImage?.url || variant?.images?.[0]?.url || 'https://via.placeholder.com/100?text=No+Image' %>"
-                                                        alt="<%= product.name %>"
-                                                        class="item-image <%= isOutOfStock ? 'out-of-stock-img' : '' %>"
-                                                        onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
-                                                </a>
-
-                                                <div class="item-content">
-                                                    <div class="item-details">
-                                                        <h3><a href="/product/<%= product._id %>">
-                                                                <%= product.name %>
-                                                            </a></h3>
-                                                        <div class="variant-info">
-                                                            Size: <%= variant?.size || 'N/A' %> / Color: <%=
-                                                                    variant?.color || 'N/A' %>
-                                                        </div>
-
-                                                        <% if (isAvailable && variant) { %>
-                                                            <div class="item-price">
-                                                                <span class="price">₹<%= displayPrice.toFixed(2) %>
-                                                                        </span>
-                                                                <% if (originalPrice) { %>
-                                                                    <span class="old-price">₹<%=
-                                                                            originalPrice.toFixed(2) %></span>
-                                                                    <span class="discount-badge">
-                                                                        <%= Math.round((saveAmount / originalPrice) *
-                                                                            100) %>% OFF
-                                                                    </span>
-                                                                    <% } %>
-                                                            </div>
-
-                                                            <!-- Stock Status -->
-                                                            <% if (isOutOfStock) { %>
-                                                                <div class="badge badge-out-of-stock">
-                                                                    <i class="fas fa-times-circle"></i> Out of Stock
-                                                                </div>
-                                                                <% } else if (isLowStock) { %>
-                                                                    <div class="badge badge-low-stock">
-                                                                        <i class="fas fa-exclamation-triangle"></i> Only
-                                                                        <%= variant.stock %> left in stock
-                                                                    </div>
-                                                                    <% } else { %>
-                                                                        <div class="badge badge-in-stock">
-                                                                            <i class="fas fa-check-circle"></i> In Stock
-                                                                        </div>
-                                                                        <% } %>
-                                                                            <% } else { %>
-                                                                                <div class="badge badge-unavailable">
-                                                                                    ❌ Currently Unavailable
-                                                                                </div>
-                                                                                <% } %>
-                                                    </div>
-
-                                                    <div class="item-actions">
-                                                        <% if (isAvailable && !isOutOfStock) { %>
-                                                            <button class="btn-move-to-cart"
-                                                                data-variant-id="<%= variant._id %>"
-                                                                data-product-id="<%= product._id %>">
-                                                                <i class="fas fa-shopping-cart"></i> Move to Cart
-                                                            </button>
-                                                            <% } else { %>
-                                                                <button class="btn-move-to-cart" disabled>
-                                                                    <i class="fas fa-shopping-cart"></i>
-                                                                    <%= isOutOfStock ? 'Out of Stock' : 'Unavailable' %>
-                                                                </button>
-                                                                <% } %>
-
-                                                                    <button class="btn-remove"
-                                                                        data-variant-id="<%= variant ? variant._id : '' %>">
-                                                                        <i class="fas fa-trash"></i> Remove
-                                                                    </button>
-                                                    </div>
-                                                </div>
+                                        <!-- Offer Badge -->
+                                        <% if (item.calculatedPriceData && item.calculatedPriceData.hasOffer && item.calculatedPriceData.discountPercentage > 0) { %>
+                                            <div class="offer-applied-badge">
+                                                <i class="fas fa-tag"></i>
+                                                <%= Math.round(item.calculatedPriceData.discountPercentage) %>% OFF
+                                                <% if (item.productOffers) { %>
+                                                    <span class="offer-name">
+                                                        (<%= item.productOffers.offerName %>)
+                                                    </span>
+                                                <% } %>
                                             </div>
-                                            <% }) %>
+                                        <% } else if (variant && variant.discountedPrice && variant.discountedPrice < variant.price) { %>
+                                            <div class="offer-applied-badge manual-discount">
+                                                <i class="fas fa-percentage"></i>
+                                                <%= Math.round(((variant.price - variant.discountedPrice) / variant.price) * 100) %>% OFF
+                                                <span class="offer-name"></span>
+                                            </div>
+                                        <% } %>
+
+                                        <% if (isAvailable && variant && displayPrice !== undefined) { %>
+                                            <div class="item-price">
+                                                <span class="price">₹<%= Math.round(displayPrice) %></span>
+                                                <% if (originalPrice && originalPrice > displayPrice) { %>
+                                                    <span class="old-price">₹<%= Math.round(originalPrice) %></span>
+                                                    <% if (!item.calculatedPriceData) { %>
+                                                        <span class="discount-badge">
+                                                            <%= Math.round(((originalPrice - displayPrice) / originalPrice) * 100) %>% OFF
+                                                        </span>
+                                                    <% } %>
+                                                <% } %>
+                                            </div>
+
+                                            <!-- Stock Status -->
+                                            <% if (isOutOfStock) { %>
+                                                <div class="badge badge-out-of-stock">
+                                                    <i class="fas fa-times-circle"></i> Out of Stock
+                                                </div>
+                                            <% } else if (isLowStock) { %>
+                                                <div class="badge badge-low-stock">
+                                                    <i class="fas fa-exclamation-triangle"></i> Only
+                                                    <%= variant.stock %> left in stock
+                                                </div>
+                                            <% } else { %>
+                                                <div class="badge badge-in-stock">
+                                                    <i class="fas fa-check-circle"></i> In Stock
+                                                </div>
+                                            <% } %>
+                                        <% } else { %>
+                                            <div class="badge badge-unavailable">
+                                                ❌ Currently Unavailable
+                                            </div>
+                                        <% } %>
+                                    </div>
+
+                                    <div class="item-actions">
+                                        <% if (isAvailable && !isOutOfStock) { %>
+                                            <button class="btn-move-to-cart"
+                                                data-variant-id="<%= variant._id %>"
+                                                data-product-id="<%= product._id %>">
+                                                <i class="fas fa-shopping-cart"></i> Move to Cart
+                                            </button>
+                                        <% } else { %>
+                                            <button class="btn-move-to-cart" disabled>
+                                                <i class="fas fa-shopping-cart"></i>
+                                                <%= isOutOfStock ? 'Out of Stock' : 'Unavailable' %>
+                                            </button>
+                                        <% } %>
+
+                                        <button class="btn-remove"
+                                            data-variant-id="<%= variant ? variant._id : '' %>">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+                        <% }) %>
+                    </div>
+                </section>
+            <% } %>
+        </main>
 
-                            
-                        </section>
-                        <% } %>
-            </main>
-
-            <%- include('../partials/user/footer') %>
+        <%- include('../partials/user/footer') %>

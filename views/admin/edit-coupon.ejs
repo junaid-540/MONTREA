@@ -1,0 +1,173 @@
+<html>
+<%- include('../partials/admin/header') %>
+
+<body>
+    <%- include('../partials/admin/sidebar') %>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+        <div class="edit-coupon-container">
+            <h2 class="page-title">Edit Coupon</h2>
+
+            <form id="editCouponForm" data-id="<%= coupon._id %>">
+
+                <!-- Coupon Code (Read-only) -->
+                <div class="mb-4">
+                    <label for="couponCode" class="form-label">Coupon Code</label>
+                    <input type="text" class="form-control" id="couponCode" value="<%= coupon.code %>" readonly
+                        style="background-color: #f0f0f0; cursor: not-allowed;">
+                    <small class="form-text text-muted">Code cannot be changed once created</small>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label for="couponDescription" class="form-label">Description <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="couponDescription" name="description"
+                        maxlength="200"><%= coupon.description %></textarea>
+                    <div class="invalid-feedback" id="couponDescriptionFeedback"></div>
+                </div>
+
+                <!-- Discount Type (Read-only) -->
+                <div class="mb-4">
+                    <label class="form-label">Discount Type</label>
+                    <div class="discount-type-display">
+                        <% if (coupon.discountType === 'percentage') { %>
+                            <div class="discount-type-badge">
+                                <i class="fas fa-percent"></i>
+                                <span>Percentage Discount</span>
+                            </div>
+                        <% } else { %>
+                            <div class="discount-type-badge">
+                                <i class="fas fa-rupee-sign"></i>
+                                <span>Fixed Amount Discount</span>
+                            </div>
+                        <% } %>
+                    </div>
+                    <small class="form-text text-muted">Discount type cannot be changed</small>
+                </div>
+
+                <!-- Discount Value (Read-only) -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="discountValue" class="form-label">
+                            <%= coupon.discountType === 'percentage' ? 'Discount Percentage' : 'Discount Amount' %>
+                        </label>
+                        <input type="number" class="form-control" id="discountValue" 
+                            value="<%= coupon.discountValue %>" readonly
+                            style="background-color: #f0f0f0; cursor: not-allowed;">
+                        <small class="form-text text-muted">Discount value cannot be changed</small>
+                    </div>
+
+                    <% if (coupon.discountType === 'percentage') { %>
+                        <div class="col-md-6 mb-4">
+                            <label for="maxDiscountAmount" class="form-label">Max Discount Amount</label>
+                            <input type="number" class="form-control" id="maxDiscountAmount" name="maxDiscountAmount"
+                                value="<%= coupon.maxDiscountAmount || '' %>" min="0" step="0.01">
+                            <small class="form-text text-muted">Optional cap for percentage discounts</small>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Min Purchase Amount (Editable) -->
+                <div class="mb-4">
+                    <label for="minPurchaseAmount" class="form-label">Minimum Purchase Amount</label>
+                    <input type="number" class="form-control" id="minPurchaseAmount" name="minPurchaseAmount"
+                        value="<%= coupon.minPurchaseAmount %>" min="0" step="0.01">
+                    <small class="form-text text-muted">Optional minimum cart value required</small>
+                </div>
+
+                <!-- Usage Limits (Editable) -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="usageLimit" class="form-label">Total Usage Limit <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="usageLimit" name="usageLimit"
+                            value="<%= coupon.usageLimit %>" min="<%= coupon.usageCount %>">
+                        <small class="form-text text-muted">Current usage: <%= coupon.usageCount %></small>
+                        <div class="invalid-feedback" id="usageLimitFeedback"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label for="perUserLimit" class="form-label">Per User Limit <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="perUserLimit" name="perUserLimit"
+                            value="<%= coupon.perUserLimit %>" min="1">
+                        <small class="form-text text-muted">Max uses per user</small>
+                        <div class="invalid-feedback" id="perUserLimitFeedback"></div>
+                    </div>
+                </div>
+
+                <!-- Validity Dates (Editable) -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="startDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="startDate" 
+                            value="<%= coupon.startDate.toISOString().split('T')[0] %>" readonly
+                            style="background-color: #f0f0f0; cursor: not-allowed;">
+                        <small class="form-text text-muted">Start date cannot be changed</small>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label for="endDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="endDate" name="endDate"
+                            value="<%= coupon.endDate.toISOString().split('T')[0] %>"
+                            min="<%= new Date().toISOString().split('T')[0] %>">
+                        <small class="form-text text-muted">You can extend the expiry date</small>
+                        <div class="invalid-feedback" id="endDateFeedback"></div>
+                    </div>
+                </div>
+
+                <!-- Active Status -->
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="isActive" name="isActive"
+                            <%= coupon.isActive ? 'checked' : '' %>>
+                        <label class="form-check-label" for="isActive">
+                            Active (Users can use this coupon)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Usage Statistics -->
+                <div class="usage-stats mb-4">
+                    <h5>Usage Statistics</h5>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Uses</span>
+                            <span class="stat-value"><%= coupon.usageCount %></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Remaining Uses</span>
+                            <span class="stat-value"><%= coupon.usageLimit - coupon.usageCount %></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Unique Users</span>
+                            <span class="stat-value"><%= coupon.usedBy ? coupon.usedBy.length : 0 %></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Created On</span>
+                            <span class="stat-value">
+                                <%= new Date(coupon.createdAt).toLocaleDateString('en-IN', { 
+                                    day: '2-digit', 
+                                    month: 'short', 
+                                    year: 'numeric' 
+                                }) %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <button type="submit" class="btn btn-save">Save Changes</button>
+                <button type="button" class="btn btn-cancel" onclick="window.history.back()">Cancel</button>
+            </form>
+
+        </div>
+    </main>
+
+    <script>
+        const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+    </script>
+
+    <%- include('../partials/admin/footer') %>
+</body>
+
+</html>

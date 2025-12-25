@@ -1,0 +1,132 @@
+<html>
+
+<%- include('../partials/admin/header') %>
+
+<body>
+
+    <%- include('../partials/admin/sidebar') %>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+        <div class="add-coupon-container">
+            <h2 class="page-title">Add Coupon</h2>
+
+            <form id="addCouponForm">
+                
+                <!-- Coupon Code -->
+                <div class="mb-4">
+                    <label for="couponCode" class="form-label">Coupon Code <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="couponCode" name="code"
+                        placeholder="e.g., SAVE20" maxlength="20" style="text-transform: uppercase;">
+                    <small class="form-text text-muted">4-20 characters, letters, numbers, hyphens, underscores only</small>
+                    <div class="invalid-feedback" id="couponCodeFeedback"></div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label for="couponDescription" class="form-label">Description <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="couponDescription" name="description"
+                        placeholder="e.g., Get 20% off on your purchase" maxlength="200"></textarea>
+                    <div class="invalid-feedback" id="couponDescriptionFeedback"></div>
+                </div>
+
+                <!-- Discount Type -->
+                <div class="mb-4">
+                    <label class="form-label">Discount Type <span class="text-danger">*</span></label>
+                    <div class="discount-type-selector">
+                        <div class="discount-type-option active" data-type="percentage">
+                            <i class="fas fa-percent"></i>
+                            <span>Percentage</span>
+                        </div>
+                        <div class="discount-type-option" data-type="fixed">
+                            <i class="fas fa-rupee-sign"></i>
+                            <span>Fixed Amount</span>
+                        </div>
+                    </div>
+                    <input type="hidden" name="discountType" id="discountType" value="percentage">
+                </div>
+
+                <!-- Discount Value -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="discountValue" class="form-label">
+                            <span id="discountValueLabel">Discount Percentage</span> 
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" class="form-control" id="discountValue" name="discountValue"
+                            placeholder="e.g., 20" min="0" step="0.01">
+                        <div class="invalid-feedback" id="discountValueFeedback"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-4" id="maxDiscountContainer">
+                        <label for="maxDiscountAmount" class="form-label">Max Discount Amount</label>
+                        <input type="number" class="form-control" id="maxDiscountAmount" name="maxDiscountAmount"
+                            placeholder="e.g., 500" min="0" step="0.01">
+                        <small class="form-text text-muted">Optional cap for percentage discounts</small>
+                    </div>
+                </div>
+
+                <!-- Min Purchase Amount -->
+                <div class="mb-4">
+                    <label for="minPurchaseAmount" class="form-label">Minimum Purchase Amount</label>
+                    <input type="number" class="form-control" id="minPurchaseAmount" name="minPurchaseAmount"
+                        placeholder="e.g., 500" min="0" step="0.01" value="0">
+                    <small class="form-text text-muted">Optional minimum cart value required</small>
+                </div>
+
+                <!-- Usage Limits -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="usageLimit" class="form-label">Total Usage Limit <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="usageLimit" name="usageLimit"
+                            placeholder="e.g., 100" min="1">
+                        <small class="form-text text-muted">Total times this coupon can be used</small>
+                        <div class="invalid-feedback" id="usageLimitFeedback"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label for="perUserLimit" class="form-label">Per User Limit <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="perUserLimit" name="perUserLimit"
+                            placeholder="e.g., 2" min="1">
+                        <small class="form-text text-muted">Max uses per user</small>
+                        <div class="invalid-feedback" id="perUserLimitFeedback"></div>
+                    </div>
+                </div>
+
+                <!-- Validity Dates -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="startDate" name="startDate">
+                        <div class="invalid-feedback" id="startDateFeedback"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label for="endDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="endDate" name="endDate">
+                        <div class="invalid-feedback" id="endDateFeedback"></div>
+                    </div>
+                </div>
+
+                <!-- Active Status -->
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                        <label class="form-check-label" for="isActive">
+                            Active (Users can use this coupon immediately)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <button type="submit" class="btn btn-add">Create Coupon</button>
+                <button type="button" class="btn btn-cancel" onclick="window.history.back()">Cancel</button>
+                
+            </form>
+        </div>
+    </main>
+
+    <%- include('../partials/admin/footer') %>
+</body>
+
+</html>

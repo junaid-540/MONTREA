@@ -16,10 +16,109 @@ function showToast(text, type = 'info') {
     }).showToast();
 }
 
+
+function checkWalletBalance() {
+    const totalAmount = parseFloat(window.totalAmount);
+    const walletBalance = parseFloat(window.walletBalance);
+    
+    const walletOption = document.querySelector('input[value="wallet"]')?.closest('.payment-method');
+    if (!walletOption) return;
+    
+    const walletBalanceInfo = document.getElementById('walletBalanceInfo');
+    
+    if (walletBalanceInfo) {
+        walletBalanceInfo.textContent = `(Balance: ₹${Math.round(walletBalance)})`;
+    }
+    
+    if (walletBalance < totalAmount) {
+        walletOption.classList.add('insufficient');
+        let insufficientMsg = walletOption.querySelector('.insufficient-wallet');
+        
+        if (!insufficientMsg) {
+            insufficientMsg = document.createElement('span');
+            insufficientMsg.className = 'insufficient-wallet';
+            walletOption.querySelector('.payment-details').appendChild(insufficientMsg);
+        }
+        
+        insufficientMsg.textContent = `Need ₹${Math.round((totalAmount - walletBalance))} more`;
+        walletOption.querySelector('input[type="radio"]').disabled = true;
+    } else {
+        walletOption.classList.remove('insufficient');
+        const insufficientMsg = walletOption.querySelector('.insufficient-wallet');
+        if (insufficientMsg) {
+            insufficientMsg.remove();
+        }
+        walletOption.querySelector('input[type="radio"]').disabled = false;
+    }
+}
+
+
+
+async function handleWalletPayment() {
+    const totalAmount = parseFloat(window.totalAmount);
+    const walletBalance = parseFloat(window.walletBalance);
+    
+    if (walletBalance < totalAmount) {
+        showToast(`Insufficient wallet balance. You need ₹${Math.round((totalAmount - walletBalance))} more.`, 'error');
+        return;
+    }
+    
+    const result = await Swal.fire({
+        title: 'Pay with Wallet',
+        text: `Confirm payment of ₹${Math.round(totalAmount)} from your wallet?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#111',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Pay Now',
+        cancelButtonText: 'Cancel',
+        scrollbarPadding: false,
+        heightAuto: false
+    });
+
+    if (!result.isConfirmed) return;
+
+    placeOrderBtn.disabled = true;
+    placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+
+    try {
+        const response = await axios.post('/payment/place-order', {
+            paymentMethod: 'Wallet'
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.data.success) {
+            showToast('Payment successful using wallet!', 'success');
+            
+            const orderId = response.data.orderId || response.data.data?.orderId;
+            
+            setTimeout(() => {
+                window.location.href = `/order-success/${orderId}`;
+            }, 1000);
+        } else {
+            showToast(response.data.message || 'Failed to process payment', 'error');
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.innerHTML = 'Place Order';
+        }
+    } catch (error) {
+        console.error('Error processing wallet payment:', error);
+        showToast(error.response?.data?.message || 'An error occurred', 'error');
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.innerHTML = 'Place Order';
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
     const placeOrderBtn = document.getElementById('placeOrderBtn');
-    
     const razorpayKeyId = document.body.dataset.razorpayKey || '';
+
+    
+    checkWalletBalance(); 
+    
 
     document.querySelectorAll('.payment-method:not(.disabled)').forEach(method => {
         method.addEventListener('click', function() {
@@ -36,8 +135,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    
+    document.querySelector('input[value="wallet"]')?.addEventListener('click', checkWalletBalance);
+   
+
     placeOrderBtn.addEventListener('click', async function() {
-        
         const selectedMethodInput = document.querySelector('input[name="payment_method"]:checked');
         
         if (!selectedMethodInput) {
@@ -51,6 +153,8 @@ document.addEventListener('DOMContentLoaded', function() {
             await handleCODPayment();
         } else if (paymentMethod === 'razorpay') {
             await handleRazorpayPayment();
+        } else if (paymentMethod === 'wallet') {
+            await handleWalletPayment();
         } else {
             showToast('This payment method is not available yet', 'warning');
         }
@@ -74,7 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        
         placeOrderBtn.disabled = true;
         placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
 
@@ -92,7 +195,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const orderId = response.data.orderId || response.data.data?.orderId;
 
-                
                 setTimeout(() => {
                     window.location.href = `/order-success/${orderId}`;
                 }, 1000);
@@ -104,19 +206,19 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error placing order:', error);
             showToast(error.response?.data?.message || 'An error occurred while placing the order', 'error');
+            setTimeout(() => {
+                window.location.href = '/cart'
+            },2000);
             placeOrderBtn.disabled = false;
             placeOrderBtn.innerHTML = 'Place Order';
         }
     }
 
-  
     async function handleRazorpayPayment() {
-        
         placeOrderBtn.disabled = true;
         placeOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Validating Order...';
 
         try {
-            
             const orderResponse = await axios.post('/payment/place-order', {
                 paymentMethod: 'Razorpay'
             }, {
@@ -143,11 +245,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                timeout: 10000 // 10 second timeout for network issues
+                timeout: 10000
             });
 
             if (!razorpayOrderResponse.data.success) {
-                // Check if it's a network error
                 if (razorpayOrderResponse.data.statusCode === 503) {
                     showToast('Payment service temporarily unavailable. Please check your internet and try again.', 'error');
                 } else {
@@ -159,30 +260,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const razorpayData = razorpayOrderResponse.data.data;
-            
             const dbOrderId = razorpayData.orderId;
             
             placeOrderBtn.innerHTML = '<i class="fas fa-lock me-2"></i> Opening Payment Gateway...';
             
-            
             const options = {
                 key: razorpayData.keyId,
-                amount: razorpayData.amount,
+                amount: Math.round(razorpayData.amount),
                 currency: razorpayData.currency,
                 name: 'Montrea',
                 description: 'Order Payment',
                 order_id: razorpayData.razorpayOrderId,
                 handler: async function(response) {
-                    // Payment success handler - use the actual DB orderId
                     await verifyPayment(response, dbOrderId);
                 },
                 prefill: {
-                    name: '', // You can get from user data
+                    name: '',
                     email: '',
                     contact: ''
                 },
                 theme: {
-                    color: '#111'
+                    color: '#c5a47e'
                 },
                 modal: {
                     ondismiss: function() {
@@ -199,25 +297,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
             rzp.open();
 
-            
             placeOrderBtn.disabled = false;
             placeOrderBtn.innerHTML = 'Place Order';
 
         } catch (error) {
             console.error('Error in Razorpay payment:', error);
             
-            
             if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
-                // Network error - no DB order was created, so nothing to cleanup
                 showToast('Network error. Please check your internet connection and try again.', 'error');
             } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-                // Timeout error - no DB order was created
                 showToast('Request timed out. Please try again.', 'error');
             } else if (error.response?.data?.message) {
-                // Server error message
                 showToast(error.response.data.message, 'error');
             } else {
-                // Generic error
                 showToast('Failed to initiate payment. Please try again.', 'error');
             }
             
@@ -226,7 +318,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Verify Payment
     async function verifyPayment(razorpayResponse, orderId) {
         try {
             placeOrderBtn.disabled = true;
@@ -261,10 +352,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Handle Payment Cancellation
     async function handlePaymentCancellation(orderId) {
         try {
-            // Only call if orderId exists (it will exist because DB order was created)
             if (orderId && !orderId.startsWith('TEMP-')) {
                 await axios.post('/payment/payment-failure', {
                     orderId: orderId,
@@ -274,13 +363,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             showToast('Payment cancelled', 'info');
             
-            // If we have a valid orderId, redirect to order failure page
             if (orderId && !orderId.startsWith('TEMP-')) {
                 setTimeout(() => {
                     window.location.href = `/order-failure/${orderId}?reason=Payment Cancelled`;
                 }, 1000);
             } else {
-                // If no order was created 
                 placeOrderBtn.disabled = false;
                 placeOrderBtn.innerHTML = 'Place Order';
             }
@@ -292,10 +379,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Handle Payment Failed
     async function handlePaymentFailed(orderId, reason) {
         try {
-            // Only update if order exists in DB
             if (orderId && !orderId.startsWith('TEMP-')) {
                 await axios.post('/payment/payment-failure', {
                     orderId: orderId,

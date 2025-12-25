@@ -7,6 +7,8 @@ import { sendResponse } from "../../utils/responseHandler.js";
 import statusCodes from "../../utils/statusCodes.js";
 import errorMessages from "../../utils/errorMessages.js";
 import Cart from "../../models/cartSchema.js";
+import { calculateVariantPrice, getProductOffers } from "../../utils/offerCalculator.js";
+
 
 export const getWishlist = async (req,res,next) =>{
     try {
@@ -38,20 +40,38 @@ export const getWishlist = async (req,res,next) =>{
             categoryMap[cat._id.toString()] = cat
         });
 
-        const validItems = wishlist.items.filter(item =>{
-            const product = item.productId;
-            const variant = item.productVariantId;
-            const category = product?.categoryId ? categoryMap[product.categoryId.toString()] : null;
+        const itemsWithOfferPrices = await Promise.all(
+            wishlist.items.map(async (item) =>{
+                const product = item.productId;
+                const variant = item.productVariantId;
+                const category = product?.categoryId ? categoryMap[product.categoryId.toString()] : null;
+                const isProductListed = product?.isListed;
+                const isVariantListed = variant?.isListed;
+                const isCategoryListed = category?.isListed;
 
-            const isProductListed = product?.isListed;
-            const isVariantListed = variant?.isListed;
-            const isCategoryListed = category?.isListed;
+                if(isProductListed && isVariantListed && isCategoryListed){
+                    let priceData = null;
+                    if(variant){
+                        priceData = await calculateVariantPrice(variant._id);
+                    }
 
-            return isProductListed && isVariantListed && isCategoryListed
-        });
+                    let productOffers = [];
+                    if(product){
+                        productOffers = await getProductOffers(product._id);
+                    }
 
-        wishlist.items = validItems;
+                    return {
+                        ...item.toObject(),
+                        calculatedPriceData: priceData,
+                        productOffers: productOffers.length > 0 ? productOffers[0] : null 
+                    };
+                }
+                return null
+            })
+        );
 
+        const validItems = itemsWithOfferPrices.filter( item => item !== null);
+        
         return res.render('user/wishlist',{
             Title: 'My wishlist',
             user: res.locals.user || null,
@@ -418,12 +438,20 @@ export const moveToCart = async (req,res,next) =>{
             const existingItem = cart.items[existingItemIndex];
             const newQuantity = existingItem.quantity + qty;
 
-            if (newQuantity > MAX_QUANTITY_PER_PRODUCT) {
+            if (newQuantity > variant.stock) {
                 return sendResponse(res, {
                     success: false,
                     statusCode: statusCodes.BAD_REQUEST,
-                    message: `Maximum ${MAX_QUANTITY_PER_PRODUCT} items allowed per product. You already have ${existingItem.quantity} in cart.`
+                    message: `Only ${variant.stock} stock available`
                 });
+            }
+
+            if (newQuantity > MAX_QUANTITY_PER_PRODUCT) {
+                 return sendResponse(res, {
+                     success: false,
+                     statusCode: statusCodes.BAD_REQUEST,
+                     message: `Maximum ${MAX_QUANTITY_PER_PRODUCT} items allowed per product. You already have ${existingItem.quantity} in cart.`
+                 });
             }
 
             existingItem.quantity = newQuantity;

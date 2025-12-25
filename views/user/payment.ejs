@@ -65,18 +65,23 @@
                                      style="height: 60px; opacity: 0.8;">
                             </div>
                         </div>
+                        <!-- <span class="coming-soon-badge">Coming Soon</span> -->
                     </label>
 
                     
-                    <label class="payment-method disabled">
-                        <input type="radio" name="payment_method" value="wallet" disabled>
+                    <label class="payment-method">
+                        <input type="radio" name="payment_method" value="wallet">
                         <span class="radio-indicator"></span>
-                        <i class="fas fa-wallet payment-icon" style="color: #ff6b6b;"></i>
+                        <i class="fas fa-wallet payment-icon" style="color: #000000;"></i>
                         <div class="payment-details">
                             <h4>Wallet</h4>
-                            <p>Use your digital wallet</p>
+                            <p>
+                                Use your digital wallet
+                                <span class="wallet-balance-info" id="walletBalanceInfo">
+                                    (Balance: ₹<%= walletBalance.toFixed(2) %>)
+                                </span>
+                            </p>
                         </div>
-                        <span class="coming-soon-badge">Coming Soon</span>
                     </label>
                 </div>
             </div>
@@ -100,10 +105,10 @@
                                 </div>
                                 <div class="price-wrapper">
                                     <% if (item.discountedPriceAtTime > 0 && item.discountedPriceAtTime < item.priceAtTime) { %>
-                                        <span class="original-price">₹<%= (item.priceAtTime * item.quantity).toFixed(2) %></span>
-                                        <span class="discounted-price">₹<%= (item.discountedPriceAtTime * item.quantity).toFixed(2) %></span>
+                                        <span class="original-price">₹<%= Math.round(item.priceAtTime * item.quantity) %></span>
+                                        <span class="discounted-price">₹<%= Math.round(item.discountedPriceAtTime * item.quantity) %></span>
                                     <% } else { %>
-                                        <span class="discounted-price">₹<%= (item.priceAtTime * item.quantity).toFixed(2) %></span>
+                                        <span class="discounted-price">₹<%= Math.round(item.priceAtTime * item.quantity) %></span>
                                     <% } %>
                                 </div>
                             </div>
@@ -115,22 +120,36 @@
                 <div style="margin-top: 20px;">
                     <div class="summary-row">
                         <span>Subtotal</span>
-                        <span>₹<%= subtotal.toFixed(2) %></span>
+                        <span>₹<%= Math.round(subtotal) %></span>
                     </div>
+
+                    <!-- Coupon Display -->
+                    <% if (appliedCoupon && couponDiscount > 0) { %>
+                        <div class="summary-row coupon-row">
+                            <span style="color: #22c55e; font-weight: 500;">
+                                <i class="fas fa-tag me-1"></i>
+                                Coupon (<%= appliedCoupon.code %>)
+                            </span>
+                            <span style="color: #22c55e; font-weight: 600;">
+                                -₹<%= Math.round(couponDiscount) %>
+                            </span>
+                        </div>
+                    <% } %>
+
                     <div class="summary-row">
                         <span>Delivery Charges</span>
                         <span style="<%= shippingCharge === 0 ? 'color: #28a745; font-weight: 600;' : '' %>">
-                            <%= shippingCharge === 0 ? 'Free' : '₹' + shippingCharge.toFixed(2) %>
+                            <%= shippingCharge === 0 ? 'Free' : '₹' + Math.round(shippingCharge) %>
                         </span>
                     </div>
                     <div class="summary-row">
                         <span>Tax (GST 18%)</span>
-                        <span>₹<%= tax.toFixed(2) %></span>
+                         <span>₹<%= Math.round(tax) %></span>
                     </div>
 
                     <div class="summary-row total">
                         <span>Total Amount</span>
-                        <span>₹<%= totalAmount.toFixed(2) %></span>
+                        <span>₹<%= Math.round(totalAmount) %></span>
                     </div>
                 </div>
 
@@ -179,5 +198,7 @@
             }).showToast();
         });
     </script>
-</body>
-</html>
+    <script>
+        window.walletBalance = '<%= Math.round(walletBalance) %>'
+        window.totalAmount = '<%= Math.round(totalAmount) %>'
+    </script>

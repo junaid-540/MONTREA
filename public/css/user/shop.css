@@ -215,6 +215,7 @@ body {
     font-size: 1rem;
     color: #333;
     font-weight: 700;
+    font-family: auto
 }
 
 .price-range-separator {
@@ -431,4 +432,145 @@ body {
 
 .product-image-container {
     position: relative;
+}
+
+/* =========================
+   OFFER BADGES (NEW ONLY)
+   ========================= */
+
+/* Offer Badge - Top Left */
+.offer-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 3;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
+    animation: fadeInBounce 0.5s ease;
+}
+
+/* Offer Badge Animation */
+@keyframes fadeInBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(-10px);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Offer Name Badge - Below Price */
+.offer-name-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 8px;
+    box-shadow: 0 2px 6px rgba(245, 87, 108, 0.3);
+    animation: fadeIn 0.3s ease;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.offer-name-badge i {
+    font-size: 0.65rem;
+    flex-shrink: 0;
+}
+
+/* Fade animation for offer name */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hover effects specific to offers */
+.product-card:hover .offer-badge {
+    transform: scale(1.05);
+}
+
+.product-card:hover .offer-name-badge {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(245, 87, 108, 0.4);
+}
+
+/* Highlight overlay for products with offers */
+.product-card.has-offer .product-image-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(102, 126, 234, 0.1) 0%,
+        transparent 30%
+    );
+    pointer-events: none;
+}
+
+/* =========================
+   RESPONSIVE – OFFERS ONLY
+   ========================= */
+
+@media (max-width: 768px) {
+    .offer-badge {
+        font-size: 0.7rem;
+        padding: 5px 10px;
+        top: 8px;
+        left: 8px;
+    }
+
+    .offer-name-badge {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+        margin-top: 6px;
+    }
+
+    .offer-name-badge i {
+        font-size: 0.6rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .offer-badge {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+        border-radius: 15px;
+    }
+
+    .offer-name-badge {
+        font-size: 0.6rem;
+        padding: 3px 7px;
+        margin-top: 5px;
+    }
+
+    .offer-name-badge i {
+        font-size: 0.55rem;
+    }
 }

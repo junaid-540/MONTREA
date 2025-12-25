@@ -1,0 +1,244 @@
+:root {
+    --accent-gold: #a47f5f;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+}
+
+.main-content {
+    background-color: #999;
+    padding: 30px;
+    min-height: calc(100vh - 140px);
+}
+
+.add-coupon-container {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 40px;
+    max-width: 800px;
+    margin: 0 auto;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid var(--accent-gold);
+    border-right: 4px solid var(--accent-gold);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.add-coupon-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.form-control {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 12px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #b8956a;
+    box-shadow: 0 0 0 0.2rem rgba(184, 149, 106, 0.25);
+    transform: translateY(-1px);
+}
+
+.form-control::placeholder {
+    color: #999;
+}
+
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Discount Type Selector */
+.discount-type-selector {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.discount-type-option {
+    flex: 1;
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.discount-type-option i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.discount-type-option span {
+    font-weight: 600;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.discount-type-option:hover {
+    border-color: var(--accent-gold);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.discount-type-option.active {
+    border-color: #000;
+    background: #000;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.discount-type-option.active i,
+.discount-type-option.active span {
+    color: #fff;
+}
+
+/* Form Text */
+.form-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Buttons */
+.btn-add {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.btn-add:hover {
+    background-color: #a47f5f;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-cancel {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-cancel:hover {
+    background-color: #a47f5f;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Validation */
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 15px;
+    }
+
+    .add-coupon-container {
+        padding: 25px 20px;
+    }
+
+    .page-title {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .discount-type-selector {
+        flex-direction: column;
+    }
+
+    .discount-type-option {
+        padding: 15px;
+    }
+
+    .discount-type-option i {
+        font-size: 1.5rem;
+    }
+
+    .btn-add,
+    .btn-cancel {
+        padding: 10px 30px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: 10px;
+        min-height: auto;
+    }
+
+    .add-coupon-container {
+        padding: 20px 15px;
+    }
+
+    .page-title {
+        font-size: 20px;
+    }
+
+    .form-control {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    textarea.form-control {
+        min-height: 80px;
+    }
+}

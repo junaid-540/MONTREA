@@ -421,7 +421,7 @@ function updateOrderSummary(data) {
 
     const subtotalElements = document.querySelectorAll('.summary-row span');
     if (subtotalElements.length >= 2) {
-        subtotalElements[1].textContent = `₹${data.subtotal.toFixed(2)}`;
+        subtotalElements[1].textContent = `₹${Math.round(data.subtotal)}`;
         console.log('✅ Updated subtotal to:', data.subtotal.toFixed(2));
     }
 

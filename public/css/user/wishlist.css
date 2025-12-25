@@ -9,7 +9,7 @@ body {
 main {
     max-width: 1200px;
     margin: 40px auto;
-    padding: 50px 20px;
+    padding: 90px 20px;
 }
 
 .empty-state {
@@ -450,3 +450,71 @@ main {
 }
 
 
+
+/* Offer Badges */
+.offer-applied-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 4px 0;
+    animation: pulse 2s infinite;
+    width: 45%;
+}
+
+.offer-applied-badge.manual-discount {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    width: 45%;
+}
+
+.offer-applied-badge i {
+    font-size: 10px;
+    margin-right: 5px;
+}
+
+.offer-name {
+    font-size: 11px;
+    opacity: 0.9;
+    margin-left: 3px;
+}
+
+.discount-badge {
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+    /* width: 20%; */
+}
+
+/* @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+} */
+
+/* Price styling */
+.item-price {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.item-price .price {
+    font-weight: 700;
+    color: #000;
+    font-size: 1.25rem;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.875rem;
+}

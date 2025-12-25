@@ -1,0 +1,131 @@
+<%- include('../partials/user/header') %>
+<link rel="stylesheet" href="/public/css/user/referral.css">
+<body>
+
+    <%- include('../partials/user/navbar') %>
+
+    <div class="container py-4">
+        <div class="row">
+            <%- include('../partials/user/sidebar') %>
+
+            <div class="col-lg-9">
+                <div class="referral-card">
+                    <h2 class="referral-title">🎁 Refer & Earn</h2>
+                    <p class="referral-subtitle">Invite friends and earn ₹300 in your wallet for each signup!</p>
+
+                    <!-- Referral Code Display -->
+                    <div class="referral-code-section">
+                        <div class="code-container">
+                            <label class="code-label">Your Referral Code</label>
+                            <div class="code-display-wrapper">
+                                <input 
+                                    type="text" 
+                                    id="referralCodeDisplay" 
+                                    class="code-display" 
+                                    value="<%= referralCode %>" 
+                                    readonly>
+                                <button class="btn-copy" id="copyCodeBtn" onclick="copyReferralCode()">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <p class="code-hint">Share this code with friends and earn ₹300 when they sign up!</p>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-section">
+                        <div class="row text-center">
+                            <div class="col-md-6 mb-3">
+                                <div class="stat-card">
+                                    <div class="stat-icon">👥</div>
+                                    <div class="stat-number"><%= totalReferrals %></div>
+                                    <div class="stat-label">Friends Referred</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="stat-card">
+                                    <div class="stat-icon">💰</div>
+                                    <div class="stat-number">₹<%= totalEarnings %></div>
+                                    <div class="stat-label">Total Earned</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- How It Works -->
+                    <div class="how-it-works">
+                        <h4>📖 How It Works</h4>
+                        <ol>
+                            <li><strong>Share your referral code</strong> with friends and family</li>
+                            <li>They enter your code during signup</li>
+                            <li>Once they verify their email, <strong>₹300 is credited to your wallet</strong> 🎉</li>
+                            <li>Use your wallet balance on your next purchase!</li>
+                        </ol>
+                    </div>
+
+                    <!-- Earnings History -->
+                    <% if (referralTransactions && referralTransactions.length > 0) { %>
+                    <div class="earnings-history">
+                        <h4>💰 Your Referral Earnings</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Amount</th>
+                                        <th>Description</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% referralTransactions.forEach(transaction => { %>
+                                    <tr>
+                                        <td class="earning-amount">+₹<%= transaction.amount %></td>
+                                        <td><%= transaction.description %></td>
+                                        <td><%= new Date(transaction.createdAt).toLocaleDateString('en-IN') %></td>
+                                        <td>
+                                            <span class="badge badge-success">
+                                                <%= transaction.status.toUpperCase() %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <% } %>
+
+                    <!-- Referred Friends -->
+                    <% if (referredUsers && referredUsers.length > 0) { %>
+                    <div class="referred-friends">
+                        <h4>👥 Friends You've Referred</h4>
+                        <ul class="friends-list">
+                            <% referredUsers.forEach(ref => { %>
+                            <li>
+                                <i class="fas fa-user-check"></i>
+                                <strong><%= ref.userId?.name || 'User' %></strong>
+                                <span class="text-muted">joined on <%= new Date(ref.referredAt).toLocaleDateString('en-IN') %></span>
+                            </li>
+                            <% }) %>
+                        </ul>
+                    </div>
+                    <% } %>
+
+                    <% if (totalReferrals === 0) { %>
+                    <div class="empty-state">
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <h5>No referrals yet</h5>
+                        <p>Start sharing your referral code to earn rewards!</p>
+                    </div>
+                    <% } %>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <span id="successMsg" style="display:none;"><%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %></span>
+    <span id="errorMsg" style="display:none;"><%= typeof errorMessage !== 'undefined' && errorMessage ? errorMessage : '' %></span>
+
+    <%- include('../partials/user/footer') %>

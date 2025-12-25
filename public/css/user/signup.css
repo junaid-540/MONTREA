@@ -54,6 +54,12 @@ body {
     margin-right: auto;
     display: flex;
 }
+.google-btn:hover{
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
 .google-icon {
     width: 20px;
     height: 20px;

@@ -5,11 +5,15 @@ import { getCustomersPage, toggleBlockUser } from '../controller/adminController
 import { adminAuth } from '../middleware/adminAuth.js';
 import { getCategories , addCategory , editCategory , toggleCategoryStatus, getAddCategoryPage , getEitCategoryPage} from '../controller/adminControllers/category.controller.js';
 import validateRequest from '../middleware/validateRequest.js';
-import { addCategoryValidation , addProductValidation, addVariantValidation, editCategoryValidation, editProductValidation, editVariantValidation} from '../validations/adminValidation.js';
+import { addCategoryValidation , addProductValidation, addVariantValidation,  editCategoryValidation,  editProductValidation, editVariantValidation} from '../validations/adminValidation.js';
 import { getProducts , getAddProductPage, addProduct, getEditProductPage, editProduct, toggleProductStatus} from '../controller/adminControllers/product.controller.js';
 import { addVariant, getProductVariants , toggleVariantStatus ,editVariant, getAddVariant, getEditVariant } from '../controller/adminControllers/variant.controller.js';
 import upload from '../middleware/multerConfig.js';
 import { getOrders, getUpdateOrder, updateItemStatus } from '../controller/adminControllers/order.controller.js';
+import { createCoupon, getAddCouponPage, getCouponList, getEditCouponPage, toggleCouponStatus, updateCoupon } from '../controller/adminControllers/coupon.controller.js';
+import { getReturnRequests, processRefund, updateReturnStatus } from '../controller/adminControllers/return.controller.js';
+import { addOffer, deleteOffer, getEditOffer, getFormData, getOffers, toggleOfferStatus, updateOffer } from '../controller/adminControllers/offer.controller.js';
+import { downloadSalesReportExcel, downloadSalesReportPDF, getSalesReportPage } from '../controller/adminControllers/salesReport.controller.js';
 // import { validateVariantImages } from '../middleware/validateVariantImages.js';
 
 
@@ -74,5 +78,46 @@ router.patch("/products/variants/toggle/:id", adminAuth, toggleVariantStatus);
 router.get('/order',adminAuth,getOrders)
 router.get('/order/:orderId',adminAuth,getUpdateOrder)
 router.patch('/order/:orderId/items/:itemId/status',adminAuth, updateItemStatus)
+
+
+
+
+// Coupon Routes //
+
+router.get('/coupon',adminAuth,getCouponList)
+router.get('/coupon/add',adminAuth,getAddCouponPage);
+router.post('/coupon/add',adminAuth,createCoupon);
+router.get('/coupon/edit/:id',adminAuth,getEditCouponPage);
+router.post('/coupon/edit/:id',adminAuth,updateCoupon);
+router.post('/coupon/toggle-status/:id',adminAuth,toggleCouponStatus);
+
+
+
+
+// return & refund routes //
+
+router.get('/refund-return',adminAuth,getReturnRequests)
+router.post('/refund-return/update-status',adminAuth,updateReturnStatus);
+router.post('/refund-return/process-refund',adminAuth,processRefund)
+
+
+
+// offers routes //
+
+router.get('/offers',adminAuth,getOffers);
+router.get('/offers/form-data',adminAuth,getFormData)
+router.post("/offers/add", adminAuth, addOffer);
+router.get("/offers/edit/:id", adminAuth, getEditOffer);
+router.post("/offers/edit/:id", adminAuth,updateOffer);
+router.post("/offers/toggle-status/:id", adminAuth, toggleOfferStatus);
+router.post("/offers/delete/:id", adminAuth, deleteOffer);
+
+
+
+// sales report //
+
+router.get('/sales-report',adminAuth,getSalesReportPage)
+router.get('/sales-report/download/pdf', downloadSalesReportPDF);
+router.get('/sales-report/download/excel', downloadSalesReportExcel);
 
 export default router

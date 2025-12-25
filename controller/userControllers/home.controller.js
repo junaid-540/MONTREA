@@ -2,6 +2,8 @@ import Product from "../../models/productSchema.js";
 import Category from "../../models/categorySchema.js";
 import { getPaginateData } from "../../utils/helpers.js";
 import ProductVariant from "../../models/productVariantSchema.js";
+import { calculateVariantPrice, getProductOffers } from "../../utils/offerCalculator.js";
+
 
 
 export const getHomePage = async (req, res, next) => {
@@ -78,11 +80,9 @@ export const getHomePage = async (req, res, next) => {
       category: product.categoryId?.name || 'Uncategorized',
     }));
 
-    const successMessage =  req.flash('success')[0] || req.session.successMessage || null;
-    
-    req.session.successMessage = null;
+    const successMessage = req.session.successMessage || null;
 
-    
+    req.session.successMessage = null;
 
     res.render('user/index', {
       newArrivals,
@@ -112,11 +112,11 @@ export const getShopPage = async (req, res, next) => {
 
     // Category filter
     if (categories.length > 0) {
-      const categoryDocs = await Category.find({ 
-        name: { $in: categories.map(c => c.toUpperCase()) }, 
-        isListed: true 
+      const categoryDocs = await Category.find({
+        name: { $in: categories.map(c => c.toUpperCase()) },
+        isListed: true
       }).lean();
-      
+
       if (categoryDocs.length > 0) {
         filters.categoryId = { $in: categoryDocs.map(c => c._id) };
       } else {
@@ -135,18 +135,18 @@ export const getShopPage = async (req, res, next) => {
       else if (priceRange === '1000-2000') { min = 1000; max = 2000; }
       else if (priceRange === '2000-3000') { min = 2000; max = 3000; }
       else if (priceRange === '3000-max') { min = 3000; max = Infinity; }
-      
+
       variantMatch.$or = [
-        { 
+        {
           discountedPrice: { $exists: true, $ne: null },
-          $expr: { 
+          $expr: {
             $and: [
               { $gte: ['$discountedPrice', min] },
               max !== Infinity ? { $lte: ['$discountedPrice', max] } : { $gte: ['$discountedPrice', 0] }
             ]
           }
         },
-        { 
+        {
           $or: [
             { discountedPrice: { $exists: false } },
             { discountedPrice: null }
@@ -167,7 +167,7 @@ export const getShopPage = async (req, res, next) => {
     const limit = 12;
     const skip = (page - 1) * limit;
 
-    
+
     const pipeline = [
       { $match: filters },
       {
@@ -178,7 +178,7 @@ export const getShopPage = async (req, res, next) => {
           as: "variants",
           pipeline: [
             { $match: variantMatch },
-            { $project: { color: 1, size: 1, price: 1, discountedPrice: 1, images: 1 } }
+            { $project: { color: 1, size: 1, price: 1, discountedPrice: 1, images: 1, _id: 1 } }
           ]
         }
       },
@@ -206,7 +206,7 @@ export const getShopPage = async (req, res, next) => {
                 as: "variant",
                 in: {
                   $cond: {
-                    if: { 
+                    if: {
                       $and: [
                         { $ne: ["$$variant.discountedPrice", null] },
                         { $gt: ["$$variant.discountedPrice", 0] }
@@ -224,7 +224,7 @@ export const getShopPage = async (req, res, next) => {
     ];
 
     if (search) {
-      pipeline.splice(1, 0, { // Add at position 1 (after initial match)
+      pipeline.splice(1, 0, {
         $match: {
           $or: [
             { name: { $regex: search, $options: "i" } }
@@ -235,7 +235,7 @@ export const getShopPage = async (req, res, next) => {
     }
 
     // Add sorting
-    let sortStage = { createdAt: -1 }; 
+    let sortStage = { createdAt: -1 };
     switch (sort) {
       case 'priceLow':
         sortStage = { minPrice: 1 };
@@ -263,13 +263,55 @@ export const getShopPage = async (req, res, next) => {
 
     const products = await Product.aggregate(pipeline);
 
+    const productWithOffers = await Promise.all(products.map(async (product) => {
+      if (!product.variants || product.variants.length === 0) {
+        return { ...product, offerData: null };
+      }
+
+      const variantsWithCalculatedPrices = await Promise.all(product.variants.map( async (variant)=>{
+        const priceData = await calculateVariantPrice(variant._id);
+        return {
+          ...variant,
+          calculatedPriceData: priceData,
+          finalPrice: priceData.finalPrice,
+          originalPrice: priceData.originalPrice,
+          discountPercentage: priceData.discountPercentage,
+          hasOffer: priceData.hasOffer
+        };
+      })
+    );
+
+      const offers = await getProductOffers(product._id);
+
+      const finalPrice = variantsWithCalculatedPrices.map(v => v.finalPrice);
+      const minPrice = finalPrice.length > 0 ? Math.min(...finalPrice) : 0;
+      const maxPrice = finalPrice.length > 0  ? Math.max(...finalPrice) : 0;
+
+      const hasManualDiscount = variantsWithCalculatedPrices.some(
+        v => v.discountedPrice && v.discountedPrice < v.price
+      );
+
+      return {
+        ...product,
+        variants: variantsWithCalculatedPrices,
+        offerData: {
+          hasOffer: variantsWithCalculatedPrices.some(v => v.hasOffer),
+          hasManualDiscount: hasManualDiscount,
+          discountPercentage: variantsWithCalculatedPrices.length > 0 ? Math.max(...variantsWithCalculatedPrices.map(v => v.discountPercentage || 0)) : 0,
+          minPrice: minPrice,
+          maxPrice: maxPrice,
+          offerDetails: offers.length > 0 ? offers[0] : null
+        }
+      };
+    }));
+
     // Get filter options
     const allCategories = await Category.find({ isListed: true }).lean();
     const allColors = await ProductVariant.distinct('color', { isListed: true });
     const allSizes = await ProductVariant.distinct('size', { isListed: true });
 
     res.render("user/shop", {
-      products: products,
+      products : productWithOffers,
       Title: "Shop",
       pageCss: "/public/css/user/shop.css",
       pageJs: "/public/js/user/shop.js",
@@ -308,7 +350,6 @@ export const getProductDetails = async (req, res, next) => {
     if (!product || !product.isListed) {
       return res.status(404).render('user/404', {
         Title: "Product Not Found",
-        // pageCss: "/public/css/user/404.css",
         user: res.locals.user || null
       });
     }
@@ -322,7 +363,30 @@ export const getProductDetails = async (req, res, next) => {
       isListed: true,
     }).sort({ createdAt: -1 }).limit(4).populate('categoryId', 'name').lean()
 
-    const defaultVariant = product.variants[0] || null
+    const defaultVariant = product.variants[0] || null;
+
+    // Calculate price with offers for default variant
+    let defaultPriceData = null;
+    if (defaultVariant) {
+      defaultPriceData = await calculateVariantPrice(defaultVariant._id);
+    }
+
+    // Get all active offers for this product
+    const productOffers = await getProductOffers(product._id);
+
+    // Calculate prices for all variants
+    const variantsWithPrices = await Promise.all(
+      product.variants.map(async (variant) => {
+        const priceData = await calculateVariantPrice(variant._id);
+        return {
+          ...variant.toObject(),
+          calculatedPrice: priceData
+        };
+      })
+    );
+
+    const successMessage = req.session.successMessage || null;
+    delete req.session.successMessage;
 
     res.render('user/product-details', {
       product,
@@ -333,7 +397,11 @@ export const getProductDetails = async (req, res, next) => {
       availableColors,
       availableSizes,
       relatedProducts,
-      defaultVariant
+      defaultVariant,
+      successMessage,
+      variantsWithPrices,
+      productOffers,
+      defaultPriceData,
     });
   } catch (err) {
     console.error('Error loading product details:', err);

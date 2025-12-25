@@ -1,282 +1,322 @@
 <%- include('../partials/user/header') %>
-    <%- include('../partials/user/navbar') %>
+<%- include('../partials/user/navbar') %>
 
-        <div class="container">
-            <nav aria-label="breadcrumb" class="mt-3">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="/">Home</a>
-                </li>
-                <li class="breadcrumb-item">
-                    <a href="/shop">Shop</a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    <%= product.name %>
-                </li>
-            </ol>
-        </nav>
-        </div>
+<div class="container">
+    <nav aria-label="breadcrumb" class="mt-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="/">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="/shop">Shop</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <%= product.name %>
+            </li>
+        </ol>
+    </nav>
+</div>
 
-        <body>
-
-            <!-- Product Section -->
-            <div class="container mt-5">
-                <div class="row">
-                    <!-- Product Images -->
-                    <div class="col-md-6">
-                        <% if (defaultVariant && defaultVariant.images && defaultVariant.images.length> 0) { %>
-                            <div class="image-zoom-container">
-                                <img src="<%= defaultVariant.images[0].url %>" alt="<%= product.name %>"
-                                    class="product-image" id="mainImage">
-                                <div class="zoom-lens" id="zoomLens"></div>
-                                <div class="zoom-result" id="zoomResult"></div>
-                            </div>
-
-                            <div class="thumbnail-images">
-                                <% defaultVariant.images.forEach((image, index)=> { %>
-                                    <img src="<%= image.url %>" alt="<%= product.name %> - Image <%= index + 1 %>"
-                                        class="thumbnail <%= index === 0 ? 'active' : '' %>"
-                                        onclick="changeImage('<%= image.url %>', this)"
-                                        data-image-url="<%= image.url %>">
-                                    <% }) %>
-                            </div>
-                            <% } else { %>
-                                <img src="/public/images/placeholder.jpg" alt="No image available"
-                                    class="product-image">
-                                <% } %>
+<body>
+    <!-- Product Section -->
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Product Images -->
+            <div class="col-md-6">
+                <% if (defaultVariant && defaultVariant.images && defaultVariant.images.length > 0) { %>
+                    <div class="image-zoom-container">
+                        <img src="<%= defaultVariant.images[0].url %>" alt="<%= product.name %>"
+                            class="product-image" id="mainImage">
+                        <div class="zoom-lens" id="zoomLens"></div>
+                        <div class="zoom-result" id="zoomResult"></div>
                     </div>
 
-                    <!-- Product Details -->
-                    <div class="col-md-6">
-                        <h1 class="h3">
-                            <%= product.name %>
-                        </h1>
+                    <div class="thumbnail-images">
+                        <% defaultVariant.images.forEach((image, index) => { %>
+                            <img src="<%= image.url %>" alt="<%= product.name %> - Image <%= index + 1 %>"
+                                class="thumbnail <%= index === 0 ? 'active' : '' %>"
+                                onclick="changeImage('<%= image.url %>', this)"
+                                data-image-url="<%= image.url %>">
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <img src="/public/images/placeholder.jpg" alt="No image available"
+                        class="product-image">
+                <% } %>
+            </div>
 
-                        <% if (product.categoryId) { %>
-                            <p class="text-muted text-uppercase">
-                                <small>
-                                    <%= product.categoryId.name %>
-                                </small>
-                            </p>
-                            <% } %>
+            <!-- Product Details -->
+            <div class="col-md-6">
+                <h1 class="h3">
+                    <%= product.name %>
+                </h1>
 
-                                <!-- Color Selection -->
-                                <div class="mt-3">
-                                    <label class="fw-bold">COLOR:</label>
-                                    <div class="color-selector">
-                                        <% availableColors.forEach((color, index)=> { %>
-                                            <button class="color-btn <%= index === 0 ? 'active' : '' %>"
-                                                data-color="<%= color %>" onclick="selectColor('<%= color %>', this)">
-                                                <%= color.toUpperCase() %>
-                                            </button>
-                                            <% }) %>
-                                    </div>
-                                    <input type="hidden" id="selectedColor" value="<%= availableColors[0] || '' %>">
-                                </div>
+                <% if (product.categoryId) { %>
+                    <p class="text-muted text-uppercase">
+                        <small>
+                            <%= product.categoryId.name %>
+                        </small>
+                    </p>
+                <% } %>
 
-                                <!-- Size Selection -->
-                                <div class="mt-3">
-                                    <label class="fw-bold">SIZE:</label>
-                                    <div class="size-selector">
-                                        <% availableSizes.forEach((size, index)=> { %>
-                                            <button class="size-btn <%= index === 0 ? 'active' : '' %>"
-                                                data-size="<%= size %>" onclick="selectSize('<%= size %>', this)">
-                                                <%= size %>
-                                            </button>
-                                            <% }) %>
-                                    </div>
-                                    <input type="hidden" id="selectedSize" value="<%= availableSizes[0] || '' %>">
-                                </div>
+                <!-- Show Active Offers -->
+                <% if (productOffers && productOffers.length > 0) { %>
+                    <div class="active-offers-section mb-3">
+                        <% productOffers.forEach(offer => { %>
+                            <div class="offer-banner <%= offer.type %>-offer-banner">
+                                <i class="fas fa-tag me-2"></i>
+                                <strong><%= offer.offerName %></strong>
+                                <span class="offer-discount-text">- <%= Math.round(offer.percentage) %>% OFF</span>
+                                <% if (offer.type === 'category') { %>
+                                    <span class="offer-type-badge">Category Offer</span>
+                                <% } else { %>
+                                    <span class="offer-type-badge">Product Offer</span>
+                                <% } %>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } %>
 
-                                <!-- Stock Information -->
-                                <% if (defaultVariant) { %>
-                                    <div
-                                        class="stock-info <%= defaultVariant.stock === 0 ? 'out-of-stock' : defaultVariant.stock < 10 ? 'low-stock' : 'in-stock' %>">
-                                        <% if (defaultVariant.stock===0) { %>
-                                            <i class="fas fa-times-circle me-2"></i>Out of Stock
-                                            <% } else if (defaultVariant.stock < 10) { %>
-                                                <i class="fas fa-exclamation-triangle me-2"></i>Only <%=
-                                                    defaultVariant.stock %> left in stock
-                                                    <% } else { %>
-                                                        <i class="fas fa-check-circle me-2"></i>In Stock
-                                                        <% } %>
-                                    </div>
-                                    <% } %>
+                <!-- Color Selection -->
+                <div class="mt-3">
+                    <label class="fw-bold">COLOR:</label>
+                    <div class="color-selector">
+                        <% availableColors.forEach((color, index) => { %>
+                            <button class="color-btn <%= index === 0 ? 'active' : '' %>"
+                                data-color="<%= color %>" onclick="selectColor('<%= color %>', this)">
+                                <%= color.toUpperCase() %>
+                            </button>
+                        <% }) %>
+                    </div>
+                    <input type="hidden" id="selectedColor" value="<%= availableColors[0] || '' %>">
+                </div>
 
-                                        <!-- Price Section -->
-                                        <div class="price-section">
-                                            <% if (defaultVariant) { %>
-                                                <% if (defaultVariant.discountedPrice> 0 &&
-                                                    defaultVariant.discountedPrice < defaultVariant.price) { %>
-                                                        <span class="text-muted">MRP</span>
-                                                        <span class="original-price">₹<%=
-                                                                defaultVariant.price.toFixed(2) %></span>
-                                                        <span class="current-price" id="currentPrice">₹<%=
-                                                                defaultVariant.discountedPrice.toFixed(2) %></span>
-                                                        <span class="discount-badge">
-                                                            <%= Math.round(((defaultVariant.price -
-                                                                defaultVariant.discountedPrice) / defaultVariant.price)
-                                                                * 100) %>% OFF
-                                                        </span>
-                                                        <% } else { %>
-                                                            <span class="current-price" id="currentPrice">₹<%=
-                                                                    defaultVariant.price.toFixed(2) %></span>
-                                                            <% } %>
-                                                                <% } %>
-                                        </div>
+                <!-- Size Selection -->
+                <div class="mt-3">
+                    <label class="fw-bold">SIZE:</label>
+                    <div class="size-selector">
+                        <% availableSizes.forEach((size, index) => { %>
+                            <button class="size-btn <%= index === 0 ? 'active' : '' %>"
+                                data-size="<%= size %>" onclick="selectSize('<%= size %>', this)">
+                                <%= size %>
+                            </button>
+                        <% }) %>
+                    </div>
+                    <input type="hidden" id="selectedSize" value="<%= availableSizes[0] || '' %>">
+                </div>
 
-                                        
-                                        <div class="d-flex gap-2 mb-3">
-                                            <button class="btn-add-cart" id="addToCartBtn" <%=defaultVariant &&
-                                                defaultVariant.stock===0 ? 'disabled' : '' %>>
-                                                <%= defaultVariant && defaultVariant.stock===0 ? 'OUT OF STOCK'
-                                                    : 'ADD TO CART' %>
-                                            </button>
-                                            <button class="btn-wishlist" id="addToWishlistBtn">
-                                                <i class="far fa-heart me-2"></i>WISHLIST
-                                            </button>
-                                        </div>
-
-                                        <div class="tab-section-inline mt-4">
-                                            <ul class="nav nav-tabs" id="productTabs" role="tablist">
-                                                <li class="nav-item" role="presentation">
-                                                    <button class="nav-link active" id="description-tab"
-                                                        data-bs-toggle="tab" data-bs-target="#description"
-                                                        type="button">DESCRIPTION</button>
-                                                </li>
-                                                <li class="nav-item" role="presentation">
-                                                    <button class="nav-link" id="review-tab" data-bs-toggle="tab"
-                                                        data-bs-target="#review" type="button">REVIEWS</button>
-                                                </li>
-                                            </ul>
-                                            <div class="tab-content" id="productTabContent">
-                                                <!-- Description Tab -->
-                                                <div class="tab-pane fade show active" id="description" role="tabpanel">
-                                                    <div class="p-3">
-                                                        <p>
-                                                            <%= product.description %>
-                                                        </p>
-
-                                                        <% if (product.highlights && product.highlights.length> 0) { %>
-                                                            <h6 class="mt-3 fw-bold">PRODUCT HIGHLIGHTS</h6>
-                                                            <ul class="highlights-list">
-                                                                <% product.highlights.forEach(highlight=> { %>
-                                                                    <li>
-                                                                        <%= highlight %>
-                                                                    </li>
-                                                                    <% }) %>
-                                                            </ul>
-                                                            <% } %>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Review Tab (Static for now) -->
-                                                <div class="tab-pane fade" id="review" role="tabpanel">
-                                                    <div class="p-3">
-                                                        <div class="review-summary-compact mb-3">
-                                                            <div class="d-flex align-items-center gap-3">
-                                                                <div class="review-rating-large">4.0</div>
-                                                                <div>
-                                                                    <div class="stars">
-                                                                        <i class="fas fa-star"></i>
-                                                                        <i class="fas fa-star"></i>
-                                                                        <i class="fas fa-star"></i>
-                                                                        <i class="fas fa-star"></i>
-                                                                        <i class="far fa-star"></i>
-                                                                    </div>
-                                                                    <p class="text-muted mb-0 small">Based on customer
-                                                                        reviews</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="review-list">
-                                                            <div class="review-card-compact">
-                                                                <div class="review-header">
-                                                                    <div class="reviewer-icon-small">
-                                                                        <i class="fas fa-user"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <h6 class="mb-0 small fw-bold">Aarav</h6>
-                                                                        <div class="stars small">
-                                                                            <i class="fas fa-star"></i>
-                                                                            <i class="fas fa-star"></i>
-                                                                            <i class="fas fa-star"></i>
-                                                                            <i class="fas fa-star"></i>
-                                                                            <i class="fas fa-star"></i>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <p class="mb-0 small">This shirt is incredibly
-                                                                    comfortable and has an amazing fit. Perfect for both
-                                                                    work and weekend outings</p>
-                                                            </div>
-
-                                                            <div class="review-card-compact">
-                                                                <div class="review-header">
-                                                                    <div class="reviewer-icon-small">
-                                                                        <i class="fas fa-user"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <h6 class="mb-0 small fw-bold">Roshan</h6>
-                                                                        <div class="stars small">
-                                                                            <i class="fas fa-star"></i>
-                                                                            <i class="fas fa-star"></i>
-                                                                            <i class="fas fa-star"></i>
-                                                                            <i class="fas fa-star"></i>
-                                                                            <i class="far fa-star"></i>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <p class="mb-0 small">The material feels soft and
-                                                                    breathable looks stylish and feels great!</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                <!-- Quantity Selection -->
+                <div class="mt-3">
+                    <label class="fw-bold">QUANTITY:</label>
+                    <div class="quantity-selector">
+                        <button class="qty-btn decrease-btn" onclick="decreaseQty()" type="button">-</button>
+                        <input type="number" id="quantity" value="1" min="1" class="qty-input" readonly>
+                        <button class="qty-btn increase-btn" onclick="increaseQty()" type="button">+</button>
                     </div>
                 </div>
 
-                <!-- Related Products -->
-                <% if (relatedProducts && relatedProducts.length> 0) { %>
-                    <div class="recommended-products">
-                        <h2 class="text-center mb-4">You Might Also Like</h2>
-                        <div class="row">
-                            <% relatedProducts.forEach(relatedProduct=> { %>
-                                <div class="col-md-3 col-sm-6 mb-4">
-                                    <a href="/product/<%= relatedProduct._id %>" class="product-card">
-                                        <% if (relatedProduct.coverImage && relatedProduct.coverImage.url) { %>
-                                            <img src="<%= relatedProduct.coverImage.url %>"
-                                                alt="<%= relatedProduct.name %>">
-                                            <% } else { %>
-                                                <img src="/public/images/placeholder.jpg"
-                                                    alt="<%= relatedProduct.name %>">
-                                                <% } %>
-                                                    <p class="product-category">
-                                                        <%= relatedProduct.categoryId ? relatedProduct.categoryId.name
-                                                            : 'Product' %>
-                                                    </p>
-                                                    <h6 class="product-title">
-                                                        <%= relatedProduct.name %>
-                                                    </h6>
-                                                    <% if (relatedProduct.basePrice) { %>
-                                                        <p class="product-price">₹ <%=
-                                                                relatedProduct.basePrice.toFixed(2) %>
-                                                        </p>
-                                                        <% } %>
-                                    </a>
+                <!-- Stock Information -->
+                <% if (defaultVariant) { %>
+                    <div
+                        class="stock-info <%= defaultVariant.stock === 0 ? 'out-of-stock' : defaultVariant.stock < 10 ? 'low-stock' : 'in-stock' %>">
+                        <% if (defaultVariant.stock <= 0) { %>
+                            <i class="fas fa-times-circle me-2"></i>Out of Stock
+                        <% } else if (defaultVariant.stock < 10) { %>
+                            <i class="fas fa-exclamation-triangle me-2"></i>Only <%= defaultVariant.stock %> left in stock
+                        <% } else { %>
+                            <i class="fas fa-check-circle me-2"></i>In Stock
+                        <% } %>
+                    </div>
+                <% } %>
+
+                <!-- Price Section with Offer Calculation -->
+                <div class="price-section">
+                    <% if (defaultPriceData) { %>
+                        <% if (defaultPriceData.hasOffer || defaultPriceData.hasManualDiscount) { %>
+                            <span class="text-muted">MRP</span>
+                            <span class="original-price">₹<%= Math.round(defaultPriceData.originalPrice) %></span>
+                            <span class="current-price" id="currentPrice">₹<%= Math.round(defaultPriceData.finalPrice) %></span>
+                            <span class="discount-badge">
+                                <%= Math.round(defaultPriceData.discountPercentage) %>% OFF
+                            </span>
+                            <% if (defaultPriceData.hasOffer) { %>
+                                <span class="offer-applied-text">
+                                    <i class="fas fa-check-circle"></i>
+                                    <%= defaultPriceData.discountType === 'product' ? 'Product' : 'Category' %> Offer Applied
+                                </span>
+                            <% } %>
+                        <% } else { %>
+                            <span class="current-price" id="currentPrice">₹<%= Math.round(defaultPriceData.finalPrice) %></span>
+                        <% } %>
+                    <% } else if (defaultVariant) { %>
+                        <% if (defaultVariant.discountedPrice > 0 && defaultVariant.discountedPrice < defaultVariant.price) { %>
+                            <span class="text-muted">MRP</span>
+                            <span class="original-price">₹<%= Math.round(defaultVariant.price) %></span>
+                            <span class="current-price" id="currentPrice">₹<%= Math.round(defaultVariant.discountedPrice) %></span>
+                            <span class="discount-badge">
+                                <%= Math.round(((defaultVariant.price - defaultVariant.discountedPrice) / defaultVariant.price) * 100) %>% OFF
+                            </span>
+                        <% } else { %>
+                            <span class="current-price" id="currentPrice">₹<%= Math.round(defaultVariant.price) %></span>
+                        <% } %>
+                    <% } %>
+                </div>
+
+                <div class="d-flex gap-2 mb-3">
+                    <button class="btn-add-cart" id="addToCartBtn" <%= defaultVariant &&
+                        defaultVariant.stock === 0 ? 'disabled' : '' %>>
+                        <%= defaultVariant && defaultVariant.stock === 0 ? 'OUT OF STOCK'
+                            : 'ADD TO CART' %>
+                    </button>
+                    <button class="btn-wishlist" id="addToWishlistBtn">
+                        <i class="far fa-heart me-2"></i>WISHLIST
+                    </button>
+                </div>
+
+                <div class="tab-section-inline mt-4">
+                    <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="description-tab"
+                                data-bs-toggle="tab" data-bs-target="#description"
+                                type="button">DESCRIPTION</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="review-tab" data-bs-toggle="tab"
+                                data-bs-target="#review" type="button">REVIEWS</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="productTabContent">
+                        <!-- Description Tab -->
+                        <div class="tab-pane fade show active" id="description" role="tabpanel">
+                            <div class="p-3">
+                                <p>
+                                    <%= product.description %>
+                                </p>
+
+                                <% if (product.highlights && product.highlights.length > 0) { %>
+                                    <h6 class="mt-3 fw-bold">PRODUCT HIGHLIGHTS</h6>
+                                    <ul class="highlights-list">
+                                        <% product.highlights.forEach(highlight => { %>
+                                            <li>
+                                                <%= highlight %>
+                                            </li>
+                                        <% }) %>
+                                    </ul>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <!-- Review Tab -->
+                        <div class="tab-pane fade" id="review" role="tabpanel">
+                            <div class="p-3">
+                                <div class="review-summary-compact mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="review-rating-large">4.0</div>
+                                        <div>
+                                            <div class="stars">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="far fa-star"></i>
+                                            </div>
+                                            <p class="text-muted mb-0 small">Based on customer reviews</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <% }) %>
+
+                                <div class="review-list">
+                                    <div class="review-card-compact">
+                                        <div class="review-header">
+                                            <div class="reviewer-icon-small">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 small fw-bold">Aarav</h6>
+                                                <div class="stars small">
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="mb-0 small">This shirt is incredibly
+                                            comfortable and has an amazing fit. Perfect for both
+                                            work and weekend outings</p>
+                                    </div>
+
+                                    <div class="review-card-compact">
+                                        <div class="review-header">
+                                            <div class="reviewer-icon-small">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0 small fw-bold">Roshan</h6>
+                                                <div class="stars small">
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="fas fa-star"></i>
+                                                    <i class="far fa-star"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p class="mb-0 small">The material feels soft and
+                                            breathable looks stylish and feels great!</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <% } %>
+                </div>
             </div>
+        </div>
 
-            <script>
-                window.variants = <%- JSON.stringify(product.variants || []) %>;
-                window.productId = "<%= product._id %>";
-            </script>
+        <!-- Related Products -->
+        <% if (relatedProducts && relatedProducts.length > 0) { %>
+            <div class="recommended-products">
+                <h2 class="text-center mb-4">You Might Also Like</h2>
+                <div class="row">
+                    <% relatedProducts.forEach(relatedProduct => { %>
+                        <div class="col-md-3 col-sm-6 mb-4">
+                            <a href="/product/<%= relatedProduct._id %>" class="product-card">
+                                <% if (relatedProduct.coverImage && relatedProduct.coverImage.url) { %>
+                                    <img src="<%= relatedProduct.coverImage.url %>"
+                                        alt="<%= relatedProduct.name %>">
+                                <% } else { %>
+                                    <img src="/public/images/placeholder.jpg"
+                                        alt="<%= relatedProduct.name %>">
+                                <% } %>
+                                <p class="product-category">
+                                    <%= relatedProduct.categoryId ? relatedProduct.categoryId.name
+                                        : 'Product' %>
+                                </p>
+                                <h6 class="product-title">
+                                    <%= relatedProduct.name %>
+                                </h6>
+                                <% if (relatedProduct.basePrice) { %>
+                                    <p class="product-price">₹ <%=
+                                            Math.round(relatedProduct.basePrice) %>
+                                    </p>
+                                <% } %>
+                            </a>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        <% } %>
+    </div>
 
-            <%- include('../partials/user/footer') %>
+    <script>
+        const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
+        const errorMessage = "<%= typeof errorMessage !== 'undefined' && errorMessage ? errorMessage : '' %>";
+    </script>
+    <script>
+        window.variantsWithPrices = <%- JSON.stringify(variantsWithPrices || []) %>;
+        window.variants = <%- JSON.stringify(product.variants || []) %>;
+        window.productId = "<%= product._id %>";
+    </script>
+
+<%- include('../partials/user/footer') %>

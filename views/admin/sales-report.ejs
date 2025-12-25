@@ -1,0 +1,295 @@
+<html>
+
+<%- include('../partials/admin/header') %>
+
+<body>
+
+    <%- include('../partials/admin/sidebar') %>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+        <div class="sales-report-container">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="report-title">Sales Report</h2>
+                    <p class="report-subtitle">Track your sales performance and metrics</p>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <form method="GET" action="/admin/sales-report" class="filter-form">
+                    <div class="filter-group">
+                        <label>Filter Period:</label>
+                        <div class="filter-buttons">
+                            <button type="submit" name="filterType" value="day" 
+                                    class="filter-btn <%= filterType === 'day' ? 'active' : '' %>">
+                                Today
+                            </button>
+                            <button type="submit" name="filterType" value="week" 
+                                    class="filter-btn <%= filterType === 'week' ? 'active' : '' %>">
+                                This Week
+                            </button>
+                            <button type="submit" name="filterType" value="month" 
+                                    class="filter-btn <%= filterType === 'month' ? 'active' : '' %>">
+                                This Month
+                            </button>
+                            <button type="submit" name="filterType" value="all" 
+                                    class="filter-btn <%= filterType === 'all' || !filterType ? 'active' : '' %>">
+                                All Time
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="custom-date-section">
+                        <label>Custom Date Range:</label>
+                        <div class="date-inputs">
+                            <input type="date" name="startDate" class="date-input" 
+                                   value="<%= startDate %>" placeholder="Start Date">
+                            <span>to</span>
+                            <input type="date" name="endDate" class="date-input" 
+                                   value="<%= endDate %>" placeholder="End Date">
+                            <button type="submit" name="filterType" value="custom" class="apply-btn">Apply</button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Download Buttons -->
+                <div class="download-section">
+                    <button class="download-btn pdf-btn" onclick="downloadPDF()">
+                        <i class="bi bi-file-pdf"></i> Download PDF
+                    </button>
+                    <button class="download-btn excel-btn" onclick="downloadExcel()">
+                        <i class="bi bi-file-excel"></i> Download Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card card-green">
+                    <div class="card-icon">
+                        <i class="bi bi-cart-check"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value"><%= totalOrders %></h3>
+                        <p class="card-label">Total Orders</p>
+                    </div>
+                </div>
+
+                <div class="summary-card card-blue">
+                    <div class="card-icon">
+                        <i class="bi bi-currency-rupee"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value">₹<%= totalSales %></h3>
+                        <p class="card-label">Total Sales</p>
+                    </div>
+                </div>
+
+                <div class="summary-card card-orange">
+                    <div class="card-icon">
+                        <i class="bi bi-tag"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value">₹<%= totalDiscount %></h3>
+                        <p class="card-label">Total Discount</p>
+                    </div>
+                </div>
+
+                <div class="summary-card card-red">
+                    <div class="card-icon">
+                        <i class="bi bi-ticket-perforated"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value">₹<%= totalCouponDiscount %></h3>
+                        <p class="card-label">Coupon Discount</p>
+                    </div>
+                </div>
+
+                <div class="summary-card card-purple">
+                    <div class="card-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value"><%= totalItemsSold %></h3>
+                        <p class="card-label">Items Sold</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Breakdown Section -->
+            <div class="breakdown-section">
+                <h3 class="section-title">
+                    <i class="bi bi-calculator"></i> Financial Breakdown
+                </h3>
+                <div class="breakdown-grid">
+                    <div class="breakdown-card">
+                        <div class="breakdown-label">Product Subtotal</div>
+                        <div class="breakdown-value">₹<%= totalSubtotal %></div>
+                    </div>
+                    <!-- <div class="breakdown-card">
+                        <div class="breakdown-label">Product Discounts</div>
+                        <div class="breakdown-value text-danger">-₹<%= totalDiscount %></div>
+                    </div> -->
+                    <div class="breakdown-card">
+                        <div class="breakdown-label">Coupon Discounts</div>
+                        <div class="breakdown-value text-danger">-₹<%= totalCouponDiscount %></div>
+                    </div>
+                    <div class="breakdown-card">
+                        <div class="breakdown-label">Shipping Charges</div>
+                        <div class="breakdown-value">+₹<%= totalShipping %></div>
+                    </div>
+                    <div class="breakdown-card">
+                        <div class="breakdown-label">Tax (GST 18%)</div>
+                        <div class="breakdown-value">+₹<%= totalTax %></div>
+                    </div>
+                    <div class="breakdown-card highlight">
+                        <div class="breakdown-label">Net Revenue</div>
+                        <div class="breakdown-value">₹<%= totalSales %></div>
+                    </div>
+                </div>
+                
+                <!-- Calculation Formula -->
+                <!-- <div class="calculation-formula">
+                    <p><strong>Revenue Formula:</strong> Product Subtotal - Product Discounts - Coupon Discounts + Shipping + Tax (18%) = Net Revenue</p>
+                </div> -->
+            </div>
+
+            <!-- Payment Method Breakdown Section -->
+            <div class="payment-breakdown-section">
+                <h3 class="section-title">
+                    <i class="bi bi-credit-card"></i> Payment Method Breakdown
+                </h3>
+                <div class="payment-grid">
+                    <% 
+                    const paymentMethods = ['COD', 'Wallet', 'Razorpay'];
+                    paymentMethods.forEach(method => {
+                        const data = paymentBreakdown[method];
+                        const percentage = totalOrders > 0 ? ((data.count / totalOrders) * 100).toFixed(1) : 0;
+                    %>
+                        <div class="payment-card">
+                            <div class="payment-header">
+                                <div class="payment-icon <%= method.toLowerCase() %>">
+                                    <% if (method === 'COD') { %>
+                                        <i class="bi bi-cash-coin"></i>
+                                    <% } else if (method === 'Wallet') { %>
+                                        <i class="bi bi-wallet2"></i>
+                                    <% } else { %>
+                                        <i class="bi bi-credit-card-2-front"></i>
+                                    <% } %>
+                                </div>
+                                <div class="payment-method-name"><%= method %></div>
+                            </div>
+                            <div class="payment-stats">
+                                <div class="stat-row">
+                                    <span class="stat-label">Orders:</span>
+                                    <span class="stat-value"><%= data.count %></span>
+                                </div>
+                                <div class="stat-row">
+                                    <span class="stat-label">Transaction Amount:</span>
+                                    <span class="stat-value amount">₹<%= Math.round(data.amount) %></span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: <%= percentage %>%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="table-section">
+                <h3 class="table-title">Order Details</h3>
+                <div class="table-responsive">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Items</th>
+                                <th>Discount</th>
+                                <th>Coupon</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (orders.length === 0) { %>
+                                <tr>
+                                    <td colspan="10" class="text-center no-data">
+                                        <i class="bi bi-inbox" style="font-size: 48px; color: #9ca3af;"></i>
+                                        <p>No orders found for the selected period</p>
+                                    </td>
+                                </tr>
+                            <% } else { %>
+                                <% orders.forEach((order, index) => { 
+                                    const cancelledItemsTotal = order.items
+                                        .filter(item => item.itemStatus === 'Cancelled')
+                                        .reduce((sum, item) => sum + item.itemTotal, 0);
+                                    const actualAmount = order.totalAmount - cancelledItemsTotal;
+                                    const validItems = order.items.filter(item => item.itemStatus !== 'Cancelled');
+                                    const itemsSold = validItems.reduce((sum, item) => sum + item.quantity, 0);
+                                %>
+                                    <tr>
+                                        <td><%= index + 1 %></td>
+                                        <td><strong><%= order.orderId %></strong></td>
+                                        <td><%= new Date(order.placedAt).toLocaleDateString('en-IN') %></td>
+                                        <td><%= order.userId?.name || 'N/A' %></td>
+                                        <td>
+                                            <span class="badge badge-payment">
+                                                <%= order.paymentMethod %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-status badge-<%= order.orderStatus.toLowerCase().replace(/\s+/g, '-') %>">
+                                                <%= order.orderStatus %>
+                                            </span>
+                                        </td>
+                                        <td><%= itemsSold %></td>
+                                        <td>₹<%= order.discount || 0 %></td>
+                                        <td>₹<%= order.discountAmount || 0 %></td>
+                                        <td class="amount-cell">₹<%= Math.round(actualAmount) %></td>
+                                    </tr>
+                                <% }); %>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <%- include('../partials/admin/footer') %>
+
+    <script>
+        const filterType = "<%= filterType %>";
+        const startDate = "<%= startDate %>";
+        const endDate = "<%= endDate %>";
+
+        function downloadPDF() {
+            let url = `/admin/sales-report/download/pdf?filterType=${filterType}`;
+            if (filterType === 'custom' && startDate && endDate) {
+                url += `&startDate=${startDate}&endDate=${endDate}`;
+            }
+            window.location.href = url;
+        }
+
+        function downloadExcel() {
+            let url = `/admin/sales-report/download/excel?filterType=${filterType}`;
+            if (filterType === 'custom' && startDate && endDate) {
+                url += `&startDate=${startDate}&endDate=${endDate}`;
+            }
+            window.location.href = url;
+        }
+    </script>
+
+</body>
+
+</html>

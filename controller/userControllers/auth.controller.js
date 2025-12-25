@@ -7,7 +7,17 @@ import { generateSecureOTP } from '../../utils/otp.js'
 import errorMessages from '../../utils/errorMessages.js'
 import statusCodes from '../../utils/statusCodes.js'
 import { sendResponse } from '../../utils/responseHandler.js'
+import { generateReferralCode, validateReferralCode, processReferral } from '../../utils/referralHelper.js'
 
+
+// function for the user to return to the old page when signin 
+function isValidReturnUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    if (!url.startsWith('/') || url.startsWith('//')) return false;
+    const blockedPaths = ['/admin', '/api'];
+    if (blockedPaths.some(path => url.startsWith(path))) return false;
+    return true;
+}
 
 export const getSignup = (req, res) => {
 
@@ -31,7 +41,25 @@ export const postSignup = async (req, res, next) => {
             })
         }
 
-        const { name, email, phone, password } = req.body
+        const { name, email, phone, password, referralCode } = req.body
+        
+        let referrerUser = null;
+        if (referralCode && referralCode.trim()) {
+            referrerUser = await validateReferralCode(referralCode);
+            
+            if (!referrerUser) {
+                return res.status(statusCodes.BAD_REQUEST).render('user/signup', {
+                    errorMessage: 'Invalid referral code. Please check and try again or leave it empty.'
+                });
+            }
+
+            // Prevent self-referral
+            if (referrerUser.email === email) {
+                return res.status(statusCodes.BAD_REQUEST).render('user/signup', {
+                    errorMessage: 'You cannot use your own referral code.'
+                });
+            }
+        }
 
         const existingUser = await User.findOne({ email })
 
@@ -42,8 +70,8 @@ export const postSignup = async (req, res, next) => {
 
         }
 
-
         const hashPassword = await bcrypt.hash(password, 10);
+        const newUserReferralCode = await generateReferralCode();
 
         if (existingUser && !existingUser.isVerified) {
             await User.updateOne(
@@ -53,6 +81,7 @@ export const postSignup = async (req, res, next) => {
                         name,
                         phone,
                         password: hashPassword,
+                        referralCode: newUserReferralCode,
                         unverifiedCreatedAt: Date.now()
                     }
                 })
@@ -65,9 +94,15 @@ export const postSignup = async (req, res, next) => {
                 email,
                 phone,
                 password: hashPassword,
+                referralCode: newUserReferralCode,
                 unverifiedCreatedAt: Date.now(),
                 isVerified: false
             })
+        }
+
+        if (referrerUser) {
+            req.session.pendingReferrerId = referrerUser._id.toString();
+            console.log(` Pending referral: ${referrerUser.referralCode} → ${email}`);
         }
 
         const otp = generateSecureOTP();
@@ -136,6 +171,16 @@ export const postVerifyOtp = async (req, res, next) => {
         const verifiedUser = await User.findOneAndUpdate({ email }, { $set: { isVerified: true, unverifiedCreatedAt: null } }, { new: true })
 
         await Otp.deleteOne({ email })
+
+        const pendingReferrerId = req.session.pendingReferrerId;
+        if(pendingReferrerId){
+            try {
+                await processReferral(verifiedUser._id, pendingReferrerId);
+                delete req.session.pendingReferrerId;
+            } catch (referralError) {
+                console.error('Error processing referral reward :',referralError)
+            }
+        }
 
         req.session.signupEmail = null;
 
@@ -211,7 +256,17 @@ export const getSignin = (req, res) => {
         querySuccess = 'Password reset successfully! Please sign in with your new password.';
     }
 
-    res.render('user/signin', { resetPasswordSuccess, successMessage, querySuccess ,error });
+    if(req.query.returnUrl){
+        req.session.returnUrl = req.query.returnUrl;
+    }
+
+    res.render('user/signin', {
+        resetPasswordSuccess,
+        successMessage,
+        querySuccess ,
+        error,
+        returnUrl: req.session.returnUrl || null
+    });
 };
 
 export const postSignin = async (req, res, next) => {
@@ -222,37 +277,52 @@ export const postSignin = async (req, res, next) => {
         const { error } = signinValidation.validate(req.body, { abortEarly: false })
         if (error) {
             const message = error.details.map(e => e.message).join(', ');
-            return res.status(statusCodes.BAD_REQUEST).render('user/signin', { errorMessage: message })
+            return res.status(statusCodes.BAD_REQUEST).render('user/signin', {
+                 errorMessage: message,
+                 returnUrl: req.session.returnUrl || null
+            });
         }
 
         const user = await User.findOne({ email });
 
         if (!user) {
             return res.status(statusCodes.NOT_FOUND).render('user/signin', {
-                errorMessage: errorMessages.EMAIL_NOT_REGISTERED
-            })
+                errorMessage: errorMessages.EMAIL_NOT_REGISTERED,
+                returnUrl: req.session.returnUrl || null
+            });
         }
 
         if (user.status === 'blocked') {
-            return res.render('user/signin', { error: 'Your account has been blocked by the admin. Please contact support.' })
+            return res.render('user/signin', {
+                 error: 'Your account has been blocked by the admin. Please contact support.',
+                 returnUrl: req.session.returnUrl || null
+            })
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
             return res.status(statusCodes.UNAUTHORIZED).render('user/signin', {
-                errorMessage: errorMessages.INVALID_PASSWORD
+                errorMessage: errorMessages.INVALID_PASSWORD,
+                returnUrl: req.session.returnUrl || null
             });
         }
 
         if (!user.isVerified) {
             return res.status(statusCodes.FORBIDDEN).render('user/signin', {
-                errorMessage: "Please verify your email before signing in."
+                errorMessage: "Please verify your email before signing in.",
+                returnUrl: req.session.returnUrl || null
             });
         }
+        const returnUrl = req.session.returnUrl
+        delete req.session.returnUrl
 
         req.session.userId = user._id;
         req.session.successMessage = `Welcome back, ${user.name}! 🎉`;
+
+        if(returnUrl && isValidReturnUrl(returnUrl)){
+            return res.redirect(returnUrl);
+        }
 
         res.redirect('/')
     } catch (err) {
@@ -270,9 +340,15 @@ export const oauthCallbackController = async (req, res) => {
     // if(user.status === 'blocked'){
     //     res.render('user/signin',{error: "Your account has been blocked by admin."})
     // }
+    const returnUrl = req.session.returnUrl;
+    delete req.session.returnUrl;
     req.session.userId = req.user._id;
-    req.session.successMessage = `Welcome, ${req.user.name}! 🎉`,
+    req.session.successMessage = `Welcome, ${req.user.name}! 🎉`;
 
+
+    if (returnUrl && isValidReturnUrl(returnUrl)) {
+        return res.redirect(returnUrl);
+    }
         res.redirect("/")
 
 }
@@ -295,9 +371,9 @@ export const userLogout = (req, res, next) => {
         res.set('Pragma', 'no-cache');
         res.set('Expires', '0');
 
-        req.flash('success', 'You have logged out successfully!')
-        console.log(req.flash())
-        console.log(req.flash()[0])
+        // req.flash('success', 'You have logged out successfully!')
+        // console.log(req.flash())
+        // console.log(req.flash()[0])
 
         return res.redirect('/')
     } catch (err) {
