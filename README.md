@@ -78,19 +78,6 @@ It supports:
 
 ---
 
-## 📁 Project Structure
-
-config/ # DB, OAuth configuration
-controllers/ # Admin & User controllers
-models/ # MongoDB schemas
-routes/ # Express routes
-middlewares/ # Auth, error handling, uploads
-validations/ # Joi validation schemas
-utils/ # Helpers, OTP, email
-public/ # Static assets
-views/ # EJS templates
-app.js # Application entry point
-
 
 ## 🔐 Environment Variables
 
@@ -132,6 +119,7 @@ Wallet & refund workflows
 Admin dashboards & reporting
 
 Real-world e-commerce logic handling
+```
 
 📄 License
 Educational project for learning purposes.
