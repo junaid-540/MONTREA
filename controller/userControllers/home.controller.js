@@ -268,18 +268,18 @@ export const getShopPage = async (req, res, next) => {
         return { ...product, offerData: null };
       }
 
-      const variantsWithCalculatedPrices = await Promise.all(product.variants.map( async (variant)=>{
-        const priceData = await calculateVariantPrice(variant._id);
-        return {
-          ...variant,
-          calculatedPriceData: priceData,
-          finalPrice: priceData.finalPrice,
-          originalPrice: priceData.originalPrice,
-          discountPercentage: priceData.discountPercentage,
-          hasOffer: priceData.hasOffer
-        };
-      })
-    );
+        const variantsWithCalculatedPrices = await Promise.all(product.variants.map( async (variant)=>{
+          const priceData = await calculateVariantPrice(variant._id);
+          return {
+            ...variant,
+            calculatedPriceData: priceData,
+            finalPrice: priceData.finalPrice,
+            originalPrice: priceData.originalPrice,
+            discountPercentage: priceData.discountPercentage,
+            hasOffer: priceData.hasOffer
+          };
+        })
+      );
 
       const offers = await getProductOffers(product._id);
 

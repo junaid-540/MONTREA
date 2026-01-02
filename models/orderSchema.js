@@ -58,6 +58,10 @@ const orderItemSchema = new mongoose.Schema({
         enum: ['Placed', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Returned'],
         default: 'Placed'
     },
+    hasReviewed: {
+        type: Boolean,
+        default: false
+    },
     // Cancellation details
     cancelReason: {
         type: String,

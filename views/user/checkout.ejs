@@ -30,9 +30,6 @@
                                                         <span class="address-tag ms-3">
                                                             <%= address.addressType %>
                                                         </span>
-                                                        <!-- <% if (address.isDefault) { %>
-                                                            <span class="badge bg-success ms-2">Default</span>
-                                                            <% } %> -->
                                                     </div>
                                                 </div>
                                                 <div class="ps-4 ms-2">
@@ -70,38 +67,59 @@
 
                             <% if (cart.items && cart.items.length> 0) { %>
                                 <% cart.items.forEach(item=> { %>
+                                    <% 
+                                        let displayPrice, originalPrice, hasDiscount = false;
+                                        
+                                        // Use calculated price if available (includes offers)
+                                        if (item.calculatedPrice) {
+                                            displayPrice = item.calculatedPrice.displayPrice;
+                                            originalPrice = item.calculatedPrice.hasDiscount ? item.calculatedPrice.originalPrice : null;
+                                            hasDiscount = item.calculatedPrice.hasDiscount;
+                                        } else {
+                                            displayPrice = item.discountedPriceAtTime > 0 ? item.discountedPriceAtTime : item.priceAtTime;
+                                            originalPrice = item.discountedPriceAtTime > 0 ? item.priceAtTime : null;
+                                            hasDiscount = originalPrice !== null;
+                                        }
+                                    %>
                                     <div class="product-item">
                                         <img src="<%= item.productImage %>" alt="<%= item.productName %>"
                                             class="product-img"
                                             onerror="this.src='https://via.placeholder.com/70x85/eee/ccc?text=No+Image'">
                                         <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between mb-1">
+                                            <div class="d-flex justify-content-between" style="margin-bottom: -6px;">
                                                 <span class="fw-medium">
                                                     <%= item.productName %>
                                                 </span>
                                             </div>
-                                            <div class="d-flex justify-content-between align-items-end">
+                                            
+                                            <div class="d-flex justify-content-between align-items-end mt-2">
                                                 <small class="text-muted">
                                                     <%= item.size %> / <%= item.color %> | Qty: <%= item.quantity %>
                                                 </small>
 
                                                 <div class="price-wrapper text-end">
-                                                    <% if (item.discountedPriceAtTime> 0 && item.discountedPriceAtTime <
-                                                            item.priceAtTime) { %>
-                                                            <span class="text-muted original-price me-2">
-                                                                ₹<%= Math.round(item.priceAtTime) %>
-                                                            </span>
-                                                            <span class="fw-bold discounted-price">
-                                                                ₹<%= Math.round(item.discountedPriceAtTime) %>
-                                                            </span>
-                                                            <% } else { %>
-                                                                <span class="fw-bold">
-                                                                    ₹<%= Math.round(item.priceAtTime) %>
-                                                                </span>
-                                                                <% } %>
+                                                    <% if (hasDiscount && originalPrice) { %>
+                                                        <span class="text-muted original-price me-2">
+                                                            ₹<%= Math.round(originalPrice) %>
+                                                        </span>
+                                                        <span class="fw-bold discounted-price">
+                                                            ₹<%= Math.round(displayPrice) %>
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="fw-bold">
+                                                            ₹<%= Math.round(displayPrice) %>
+                                                        </span>
+                                                    <% } %>
                                                 </div>
-
                                             </div>
+                                            
+                                            <!-- Offer Badge -->
+                                            <% if (item.calculatedPrice && item.calculatedPrice.hasOffer) { %>
+                                                <div class="offer-applied-badge-small">
+                                                    <i class="fas fa-tag"></i>
+                                                    <%= Math.round(item.calculatedPrice.discountedPercentage) %>% OFF
+                                                </div>
+                                            <% } %>
                                         </div>
                                     </div>
                                     <% }); %>
@@ -379,3 +397,4 @@
                         }).showToast();
                     });
                 </script>
+    </body>

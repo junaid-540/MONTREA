@@ -75,9 +75,9 @@ export const calculateVariantPrice = async (variantId) => {
 
         return {
             variantId,
-            originalPrice,
-            finalPrice: parseFloat(finalPrice.toFixed(2)),
-            discountPercentage: parseFloat(discountPercentage.toFixed(2)),
+            originalPrice: Math.round(originalPrice),
+            finalPrice: Math.round(finalPrice),
+            discountPercentage: Math.round(discountPercentage),
             discountType,
             hasOffer: discountType === 'product' || discountType === 'category',
             hasManualDiscount: discountType === 'manual',
@@ -98,34 +98,6 @@ export const calculateVariantPrice = async (variantId) => {
 }
 
 
-// export const getProductDisplayPrice = async (productId) => {
-//     try {
-//         const variants = await ProductVariant.find({ 
-//             productId, 
-//             isListed: true 
-//         }).sort({ price: 1 }).limit(1);
-
-//         if (!variants.length) {
-//             return null;
-//         }
-
-//         const priceData = await calculateVariantPrice(variants[0]._id);
-        
-//         return {
-//             productId,
-//             startingAt: priceData.finalPrice,
-//             originalPrice: priceData.originalPrice,
-//             discountPercentage: priceData.discountPercentage,
-//             hasDiscount: priceData.discountPercentage > 0,
-//             discountType: priceData.discountType,
-//             hasOffer: priceData.hasOffer,
-//             variantId: variants[0]._id
-//         };
-//     } catch (error) {
-//         console.error("Error getting product display price:", error);
-//         return null;
-//     }
-// };
 
 /**
  * Get all active offers for a product (for display purposes)

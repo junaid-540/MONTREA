@@ -105,6 +105,41 @@ body {
     border-color: #0c0d0d;
 }
 
+/* .clear-filter-section {
+    margin-top: 15px;
+    text-align: center;
+} */
+
+.clear-filter-btn {
+    padding: 10px 20px;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.clear-filter-btn:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+.clear-filter-btn:active {
+    transform: translateY(0);
+}
+
+.clear-filter-btn i {
+    font-size: 16px;
+}
+
 .apply-btn {
     padding: 10px 25px;
     background: #0c0d0d;
@@ -208,6 +243,15 @@ body {
     border-left-color: #8b5cf6;
 }
 
+/* NEW: Added card colors for returns and refunds */
+.card-cyan {
+    border-left-color: #06b6d4;
+}
+
+.card-pink {
+    border-left-color: #ec4899;
+}
+
 .card-icon {
     width: 60px;
     height: 60px;
@@ -241,6 +285,17 @@ body {
 .card-purple .card-icon {
     background: #ede9fe;
     color: #8b5cf6;
+}
+
+/* NEW: Icon styles for new cards */
+.card-cyan .card-icon {
+    background: #cffafe;
+    color: #06b6d4;
+}
+
+.card-pink .card-icon {
+    background: #fce7f3;
+    color: #ec4899;
 }
 
 .card-content {
@@ -455,6 +510,78 @@ body {
     transition: width 0.5s ease;
 }
 
+/* NEW: Order Status Breakdown */
+.status-breakdown-section {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.status-card {
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.status-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+}
+
+.status-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.status-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.status-info {
+    flex: 1;
+}
+
+.status-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+}
+
+.status-count {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.status-progress {
+    margin-top: 10px;
+}
+
+.status-percentage {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 5px;
+    text-align: right;
+}
+
 /* Table Section */
 .table-section {
     background: #fff;
@@ -617,6 +744,10 @@ body {
     }
 
     .payment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .status-grid {
         grid-template-columns: 1fr;
     }
 

@@ -41,13 +41,20 @@
                     <h2 class="section-title">Select Payment Method</h2>
 
                     <!-- Cash on Delivery -->
-                    <label class="payment-method active">
-                        <input type="radio" name="payment_method" value="cod" checked>
+                     <% const isCODDisabled = Math.round(totalAmount) > 1000 %>
+                    <label class="payment-method <%= isCODDisabled ? 'disabled' : '' %>">
+                        <input type="radio" name="payment_method" value="cod" <%= isCODDisabled ? 'disabled' : '' %> >
                         <span class="radio-indicator"></span>
                         <i class="fas fa-money-bill-wave payment-icon" style="color: #28a745;"></i>
                         <div class="payment-details">
                             <h4>Cash on Delivery</h4>
                             <p>Pay with cash when your order arrives</p>
+                            <% if (isCODDisabled) { %>
+                                <span class="cod-restriction-msg">
+                                    <i class="fas fa-info-circle"></i>
+                                    COD not available for orders above ₹1000
+                                </span>
+                          <% } %>
                         </div>
                     </label>
 
@@ -95,20 +102,39 @@
                     <% cart.items.forEach(item => { %>
                         <div class="product-item">
                             <img src="<%= item.productImage %>" 
-                                 alt="<%= item.productName %>" 
-                                 class="product-img"
-                                 onerror="this.src='https://via.placeholder.com/60x88/f5f5f5/ccc?text=Product'">
+                                alt="<%= item.productName %>" 
+                                class="product-img"
+                                onerror="this.src='https://via.placeholder.com/60x88/f5f5f5/ccc?text=Product'">
                             <div class="product-details">
                                 <div class="product-name"><%= item.productName %></div>
                                 <div class="product-meta">
                                     <%= item.size %> / <%= item.color %> | Qty: <%= item.quantity %>
                                 </div>
                                 <div class="price-wrapper">
-                                    <% if (item.discountedPriceAtTime > 0 && item.discountedPriceAtTime < item.priceAtTime) { %>
-                                        <span class="original-price">₹<%= Math.round(item.priceAtTime * item.quantity) %></span>
-                                        <span class="discounted-price">₹<%= Math.round(item.discountedPriceAtTime * item.quantity) %></span>
+                                    <% 
+                                        let displayPrice, originalPrice, hasDiscount = false;
+                                        
+                                        // Use calculated price if available (includes offers)
+                                        if (item.calculatedPrice) {
+                                            displayPrice = item.calculatedPrice.displayPrice;
+                                            originalPrice = item.calculatedPrice.hasDiscount ? item.calculatedPrice.originalPrice : null;
+                                            hasDiscount = item.calculatedPrice.hasDiscount;
+                                        } else {
+                                            // Fallback to stored prices
+                                            displayPrice = item.discountedPriceAtTime > 0 ? item.discountedPriceAtTime : item.priceAtTime;
+                                            originalPrice = item.discountedPriceAtTime > 0 ? item.priceAtTime : null;
+                                            hasDiscount = originalPrice !== null;
+                                        }
+                                        
+                                        const itemTotal = displayPrice * item.quantity;
+                                        const originalTotal = originalPrice ? originalPrice * item.quantity : null;
+                                    %>
+                                    
+                                    <% if (hasDiscount && originalTotal) { %>
+                                        <span class="original-price">₹<%= Math.round(originalTotal) %></span>
+                                        <span class="discounted-price">₹<%= Math.round(itemTotal) %></span>
                                     <% } else { %>
-                                        <span class="discounted-price">₹<%= Math.round(item.priceAtTime * item.quantity) %></span>
+                                        <span class="discounted-price">₹<%= Math.round(itemTotal) %></span>
                                     <% } %>
                                 </div>
                             </div>

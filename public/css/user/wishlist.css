@@ -462,12 +462,12 @@ main {
     font-weight: 600;
     margin: 4px 0;
     animation: pulse 2s infinite;
-    width: 45%;
+    width: 35%;
 }
 
 .offer-applied-badge.manual-discount {
     background: linear-gradient(135deg, #28a745, #20c997);
-    width: 45%;
+    width: 35%;
 }
 
 .offer-applied-badge i {

@@ -9,6 +9,10 @@ import statusCodes from "../../utils/statusCodes.js";
 import errorMessages from "../../utils/errorMessages.js";
 import { calculateCartTotals, validateCoupon } from "../../utils/couponHelper.js";
 import Coupon from "../../models/couponSchema.js";
+import { calculateCartItemsPrice, calculateCartSubtotalWithOffers, enrichCartItemsWithPrices } from "../../utils/cartPriceHelper.js";
+import { adjustCartQuantitiesToStock } from "../../utils/cartHelpers.js";
+
+
 
 // Helper to set session messages
 const setSessionError = (req, message) => {
@@ -29,6 +33,17 @@ export const getCheckoutPage = async (req,res,next) =>{
         if(!cart || cart.items.length === 0){
             setSessionError(req,'Your cart is empty');
             return res.redirect('/cart')
+        }
+
+        const { adjustedItems, hasStockChanges } = await adjustCartQuantitiesToStock(cart.items);
+        
+        if (hasStockChanges) {
+            // Save adjusted quantities
+            cart.items = adjustedItems;
+            await cart.save();
+            
+            setSessionError(req, 'Some item quantities were adjusted due to stock changes. Please review your cart.');
+            return res.redirect('/cart');
         }
 
         const categoryIds = cart.items.map(item => item.productId?.categoryId).filter(Boolean);
@@ -59,7 +74,7 @@ export const getCheckoutPage = async (req,res,next) =>{
 
             enrichedItems.push({
                 productId: product?._id,
-                productVariantId: variant?._id,
+                productVariantId: variant,
                 productName: product?.name || 'Unknown Product',
                 productImage:  variant?.images?.[0]?.url|| product?.coverImage?.url || '/images/placeholder.jpg',
                 color: variant?.color,
@@ -67,7 +82,14 @@ export const getCheckoutPage = async (req,res,next) =>{
                 quantity: item.quantity,
                 priceAtTime: item.priceAtTime,
                 discountedPriceAtTime: item.discountedPriceAtTime || 0,
-                isInvalid
+                isInvalid,
+                variantData: variant ? {
+                    _id: variant._id,
+                    price: variant.price,
+                    discountedPrice: variant.discountedPrice,
+                    isListed: true,
+                    stock: variant.stock
+                } : null
             });
         }
 
@@ -76,10 +98,7 @@ export const getCheckoutPage = async (req,res,next) =>{
             return res.redirect('/cart');
         }
 
-        const subtotal = enrichedItems.reduce((sum, item)=>{
-            const price = item.discountedPriceAtTime > 0 ? item.discountedPriceAtTime : item.priceAtTime;
-            return sum +(price * item.quantity);
-        },0)
+        const subtotal = await calculateCartSubtotalWithOffers(cart.items)
 
         let couponDiscount = 0;
         let appliedCoupon = null;
@@ -106,9 +125,7 @@ export const getCheckoutPage = async (req,res,next) =>{
 
         const totals = calculateCartTotals(subtotal, couponDiscount)
 
-        // const shippingCharge = subtotal >= 1000 ? 0 : 50; 
-        // const tax = subtotal * 0.18  
-        // const totalAmount = subtotal + shippingCharge + tax;
+        const itemsWithPrices = await enrichCartItemsWithPrices(enrichedItems)
 
         const addresses = await Address.find({userId}).sort({isDefault: -1 , createdAt: -1}).lean();
 
@@ -118,7 +135,7 @@ export const getCheckoutPage = async (req,res,next) =>{
         res.render('user/checkout',{
             Title: 'Checkout',
             cart:{
-                items: enrichedItems,
+                items: itemsWithPrices,
                 subtotal: Math.round(subtotal),
                 itemsCount: enrichedItems.length
             },
@@ -217,11 +234,7 @@ export const continueToPayment = async (req,res,next) =>{
             const cart = await Cart.findOne({userId})
                         .populate('items.productVariantId', 'price discountedPrice');
 
-            const subtotal = cart.items.reduce((sum, item)=>{
-                const price = item.discountedPriceAtTime > 0
-                            ? item.discountedPriceAtTime : item.priceAtTime
-                return sum + (price * item.quantity)
-            },0);
+            const subtotal = await calculateCartSubtotalWithOffers(cart.items)
             
             const coupon = await Coupon.findById(req.session.appliedCoupon.couponId);
             if(coupon){

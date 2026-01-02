@@ -5,23 +5,47 @@ export const generateSalesReportPDF = (reportData, stream) => {
         try {
             const doc = new PDFDocument({ 
                 margin: 50,
-                size: 'A4'
+                size: 'A4',
+                bufferPages: true
             });
 
             doc.pipe(stream);
 
+            // Color scheme
+            const colors = {
+                primary: '#0c0d0d',
+                secondary: '#a47f5f',
+                success: '#10b981',
+                danger: '#ef4444',
+                warning: '#f59e0b',
+                info: '#3b82f6',
+                lightGray: '#f3f4f6',
+                mediumGray: '#9ca3af',
+                darkGray: '#374151',
+                white: '#ffffff'
+            };
+
+            // ========== HEADER SECTION ==========
+            // Draw header background
+            doc.rect(0, 0, 595, 150)
+               .fill(colors.primary);
+
+            // Company name
+            doc.fontSize(28)
+               .font('Helvetica-Bold')
+               .fillColor(colors.white)
+               .text('MONTRÉA', 50, 45);
+
+            doc.fontSize(11)
+               .font('Helvetica')
+               .fillColor(colors.secondary)
+               .text('Fashion E-commerce', 50, 80);
+
+            // Report title on right
             doc.fontSize(24)
                .font('Helvetica-Bold')
-               .text('MONTRÉA', 50, 50)
-               .fontSize(10)
-               .font('Helvetica')
-               .text('Fashion E-commerce', 50, 80)
-               .text('Sales Report', 50, 95);
-
-            // Report Title
-            doc.fontSize(20)
-               .font('Helvetica-Bold')
-               .text('SALES REPORT', 350, 49, { align: 'right' });
+               .fillColor(colors.white)
+               .text('SALES REPORT', 300, 50, { align: 'right', width: 245 });
 
             // Date Range
             let dateRangeText = '';
@@ -39,140 +63,367 @@ export const generateSalesReportPDF = (reportData, stream) => {
 
             doc.fontSize(10)
                .font('Helvetica')
-               .text(`Period: ${dateRangeText}`, 400, 80, { align: 'right' })
-               .text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 400, 95, { align: 'right' });
+               .fillColor(colors.lightGray)
+               .text(`Period: ${dateRangeText}`, 300, 85, { align: 'right', width: 245 })
+               .text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 300, 100, { align: 'right', width: 245 });
 
-            // Line
-            doc.moveTo(50, 120)
-               .lineTo(550, 120)
-               .stroke();
+            // ========== SUMMARY CARDS SECTION ==========
+            let currentY = 170;
 
-            // Summary Section
-            const summaryY = 140;
-            doc.fontSize(14)
+            // Summary Section Header
+            doc.fontSize(16)
                .font('Helvetica-Bold')
-               .text('Summary', 50, summaryY);
+               .fillColor(colors.primary)
+               .text('Overview Summary', 50, currentY);
 
-            doc.fontSize(11)
+            currentY += 30;
+
+            // Draw 3 summary cards in a row
+            const cardWidth = 155;
+            const cardHeight = 70;
+            const cardGap = 15;
+
+            // Card 1: Total Orders
+            doc.rect(50, currentY, cardWidth, cardHeight)
+               .fill(colors.lightGray);
+            
+            doc.fontSize(10)
                .font('Helvetica')
-               .text(`Total Orders: ${reportData.totalOrders}`, 50, summaryY + 25)
-               .text(`Total Sales:  ${reportData.totalSales.toFixed(2)}`, 200, summaryY + 25)
-               .text(`Items Sold: ${reportData.totalItemsSold}`, 380, summaryY + 25);
-
-            doc.text(`Product Discount:  ${reportData.totalDiscount}`, 50, summaryY + 45)
-               .text(`Coupon Discount:  ${reportData.totalCouponDiscount}`, 200, summaryY + 45)
-               .text(`Avg Order:  ${reportData.totalOrders > 0 ? Math.round(reportData.totalSales / reportData.totalOrders).toFixed(2) : 0}`, 380, summaryY + 45);
-
-            // Financial Breakdown Section
-            const financialY = summaryY + 80;
-            doc.fontSize(14)
+               .fillColor(colors.mediumGray)
+               .text('Total Orders', 60, currentY + 15, { width: cardWidth - 20 });
+            
+            doc.fontSize(24)
                .font('Helvetica-Bold')
-               .text('Financial Breakdown', 50, financialY);
+               .fillColor(colors.primary)
+               .text(reportData.totalOrders.toString(), 60, currentY + 35, { width: cardWidth - 20 });
 
-            doc.fontSize(11)
+            // Card 2: Total Sales
+            doc.rect(50 + cardWidth + cardGap, currentY, cardWidth, cardHeight)
+               .fill(colors.lightGray);
+            
+            doc.fontSize(10)
                .font('Helvetica')
-               .text(`Product Subtotal:  ${reportData.totalSubtotal.toFixed(2)}`, 50, financialY + 25)
-               .text(`Coupon Discounts:  ${reportData.totalCouponDiscount}`, 200, financialY + 25)
-               .text(`Shipping Charges:  ${reportData.totalShipping.toFixed(2)}`, 380, financialY + 25);
-
-            doc.text(`Tax (GST 18%):  ${reportData.totalTax}`, 50, financialY + 45)
-               .text(`Net Revenue:  ${reportData.totalSales.toFixed(2)}`, 200, financialY + 45)
-            //    .text(`:  ${}`, 380, financialY + 45);
-
-            // Payment Method Breakdown Section
-            const paymentY = financialY + 80;
-            doc.fontSize(14)
+               .fillColor(colors.mediumGray)
+               .text('Total Sales', 60 + cardWidth + cardGap, currentY + 15, { width: cardWidth - 20 });
+            
+            doc.fontSize(24)
                .font('Helvetica-Bold')
-               .text('Payment Method Breakdown', 50, paymentY);
+               .fillColor(colors.success)
+               .text(`Rs.${reportData.totalSales.toLocaleString('en-IN')}`, 60 + cardWidth + cardGap, currentY + 35, { width: cardWidth - 20 });
 
-            let paymentRowY = paymentY + 25;
-            doc.fontSize(11)
-               .font('Helvetica');
+            // Card 3: Items Sold
+            doc.rect(50 + (cardWidth + cardGap) * 2, currentY, cardWidth, cardHeight)
+               .fill(colors.lightGray);
+            
+            doc.fontSize(10)
+               .font('Helvetica')
+               .fillColor(colors.mediumGray)
+               .text('Items Sold', 60 + (cardWidth + cardGap) * 2, currentY + 15, { width: cardWidth - 20 });
+            
+            doc.fontSize(24)
+               .font('Helvetica-Bold')
+               .fillColor(colors.info)
+               .text(reportData.totalItemsSold.toString(), 60 + (cardWidth + cardGap) * 2, currentY + 35, { width: cardWidth - 20 });
+
+            currentY += cardHeight + 30;
+
+            // ========== FINANCIAL BREAKDOWN ==========
+            doc.fontSize(16)
+               .font('Helvetica-Bold')
+               .fillColor(colors.primary)
+               .text('Financial Breakdown', 50, currentY);
+
+            currentY += 25;
+
+            // Financial breakdown box
+            const financialBoxHeight = 110;
+            doc.rect(50, currentY, 495, financialBoxHeight)
+               .fillAndStroke(colors.lightGray, colors.mediumGray);
+
+            const financialData = [
+                { label: 'Product Subtotal', value: `Rs.${reportData.totalSubtotal.toLocaleString('en-IN')}`, color: colors.darkGray },
+                { label: 'Product Discounts', value: `-Rs.${reportData.totalDiscount.toLocaleString('en-IN')}`, color: colors.danger },
+                { label: 'Coupon Discounts', value: `-Rs.${reportData.totalCouponDiscount.toLocaleString('en-IN')}`, color: colors.danger },
+                { label: 'Shipping Charges', value: `+Rs.${reportData.totalShipping.toLocaleString('en-IN')}`, color: colors.darkGray },
+                { label: 'Tax (GST 18%)', value: `+Rs.${reportData.totalTax.toLocaleString('en-IN')}`, color: colors.darkGray }
+            ];
+
+            let financialY = currentY + 15;
+            financialData.forEach((item, index) => {
+                doc.fontSize(10)
+                   .font('Helvetica')
+                   .fillColor(colors.mediumGray)
+                   .text(item.label, 65, financialY);
+                
+                doc.fontSize(11)
+                   .font('Helvetica-Bold')
+                   .fillColor(item.color)
+                   .text(item.value, 350, financialY, { align: 'right', width: 180 });
+                
+                financialY += 18;
+            });
+
+            // Net Revenue (highlighted)
+            currentY += financialBoxHeight + 10;
+            doc.rect(50, currentY, 495, 40)
+               .fill(colors.success);
+            
+            doc.fontSize(12)
+               .font('Helvetica-Bold')
+               .fillColor(colors.white)
+               .text('Net Revenue', 65, currentY + 12);
+            
+            doc.fontSize(18)
+               .font('Helvetica-Bold')
+               .fillColor(colors.white)
+               .text(`Rs.${reportData.totalSales.toLocaleString('en-IN')}`, 350, currentY + 10, { align: 'right', width: 180 });
+
+            currentY += 60;
+
+            // Add new page for rest of content
+            doc.addPage();
+            currentY = 50;
+
+            // ========== RETURNS & CANCELLATIONS ==========
+            doc.fontSize(16)
+               .font('Helvetica-Bold')
+               .fillColor(colors.primary)
+               .text('Returns & Cancellations', 50, currentY);
+
+            currentY += 25;
+
+            const returnsBoxHeight = 110;
+            doc.rect(50, currentY, 495, returnsBoxHeight)
+               .fillAndStroke('#fee2e2', colors.danger);
+
+            const returnsData = [
+                { label: 'Cancelled Items', value: reportData.totalCancellations.toString() },
+                { label: 'Cancellation Refunds', value: `Rs.${reportData.totalCancellationAmount.toLocaleString('en-IN')}` },
+                { label: 'Returned Items', value: reportData.totalReturns.toString() },
+                { label: 'Return Refunds', value: `Rs.${reportData.totalReturnAmount.toLocaleString('en-IN')}` },
+                { label: 'Total Refunds', value: `Rs.${reportData.totalRefunds.toLocaleString('en-IN')}` }
+            ];
+
+            let returnsY = currentY + 15;
+            returnsData.forEach((item) => {
+                doc.fontSize(10)
+                   .font('Helvetica')
+                   .fillColor(colors.danger)
+                   .text(item.label, 65, returnsY);
+                
+                doc.fontSize(11)
+                   .font('Helvetica-Bold')
+                   .fillColor(colors.danger)
+                   .text(item.value, 350, returnsY, { align: 'right', width: 180 });
+                
+                returnsY += 18;
+            });
+
+            currentY += returnsBoxHeight + 30;
+
+            // ========== PAYMENT METHOD BREAKDOWN ==========
+            doc.fontSize(16)
+               .font('Helvetica-Bold')
+               .fillColor(colors.primary)
+               .text('Payment Method Breakdown', 50, currentY);
+
+            currentY += 25;
 
             Object.entries(reportData.paymentBreakdown).forEach(([method, data]) => {
                 const percentage = reportData.totalOrders > 0 
                     ? ((data.count / reportData.totalOrders) * 100).toFixed(1) 
                     : 0;
+
+                // Payment method card
+                doc.rect(50, currentY, 495, 35)
+                   .fill(colors.lightGray);
                 
-                doc.text(`${method}:`, 50, paymentRowY)
-                   .text(`${data.count} orders`, 150, paymentRowY)
-                   .text(` ${Math.round(data.amount).toFixed(2)}`, 300, paymentRowY);
+                doc.fontSize(12)
+                   .font('Helvetica-Bold')
+                   .fillColor(colors.primary)
+                   .text(method, 65, currentY + 10);
                 
-                paymentRowY += 20;
+                doc.fontSize(10)
+                   .font('Helvetica')
+                   .fillColor(colors.mediumGray)
+                   .text(`${data.count} orders (${percentage}%)`, 200, currentY + 12);
+                
+                doc.fontSize(12)
+                   .font('Helvetica-Bold')
+                   .fillColor(colors.success)
+                   .text(`Rs.${Math.round(data.amount).toLocaleString('en-IN')}`, 400, currentY + 10, { align: 'right', width: 130 });
+                
+                currentY += 45;
             });
 
-            
-            doc.moveTo(50, paymentRowY + 10)
-               .lineTo(550, paymentRowY + 10)
-               .stroke();
+            currentY += 10;
 
-            // Orders Table
-            const tableTop = paymentRowY + 30;
-            doc.fontSize(14)
+            // ========== ORDER STATUS BREAKDOWN ==========
+            doc.fontSize(16)
                .font('Helvetica-Bold')
-               .text('Order Details', 50, tableTop);
+               .fillColor(colors.primary)
+               .text('Order Status Breakdown', 50, currentY);
 
-            const tableHeaderY = tableTop + 30;
+            currentY += 25;
+
+            const statusColors = {
+                'Placed': colors.warning,
+                'Processing': colors.info,
+                'Shipped': '#8b5cf6',
+                'Out for Delivery': '#06b6d4',
+                'Delivered': colors.success,
+                'Cancelled': colors.danger,
+                'Partially Cancelled': '#f97316',
+                'Partially Delivered': '#84cc16'
+            };
+
+            Object.entries(reportData.statusBreakdown).forEach(([status, count]) => {
+                if (count > 0) {
+                    const percentage = reportData.totalOrders > 0 
+                        ? ((count / reportData.totalOrders) * 100).toFixed(1) 
+                        : 0;
+
+                    const statusColor = statusColors[status] || colors.mediumGray;
+
+                    doc.rect(50, currentY, 495, 30)
+                       .fill(colors.lightGray);
+                    
+                    // Status indicator dot
+                    doc.circle(65, currentY + 15, 5)
+                       .fill(statusColor);
+                    
+                    doc.fontSize(11)
+                       .font('Helvetica-Bold')
+                       .fillColor(colors.primary)
+                       .text(status, 80, currentY + 9);
+                    
+                    doc.fontSize(10)
+                       .font('Helvetica')
+                       .fillColor(colors.mediumGray)
+                       .text(`${count} orders`, 250, currentY + 10);
+                    
+                    doc.fontSize(10)
+                       .font('Helvetica-Bold')
+                       .fillColor(statusColor)
+                       .text(`${percentage}%`, 480, currentY + 10, { align: 'right', width: 50 });
+                    
+                    currentY += 35;
+                }
+            });
+
+            // Add new page for order details table
+            doc.addPage();
+            currentY = 50;
+
+            // ========== ORDER DETAILS TABLE ==========
+            doc.fontSize(16)
+               .font('Helvetica-Bold')
+               .fillColor(colors.primary)
+               .text('Order Details', 50, currentY);
+
+            currentY += 30;
+
+            // Table header
+            doc.rect(50, currentY, 495, 30)
+               .fill(colors.primary);
+
+            const headerColumns = [
+                { text: 'Order ID', x: 55, width: 85 },
+                { text: 'Date', x: 145, width: 65 },
+                { text: 'Customer', x: 215, width: 75 },
+                { text: 'Payment', x: 295, width: 65 },
+                { text: 'Status', x: 365, width: 70 },
+                { text: 'Items', x: 440, width: 35 },
+                { text: 'Amount', x: 480, width: 60 }
+            ];
+
             doc.fontSize(9)
-               .font('Helvetica-Bold');
+               .font('Helvetica-Bold')
+               .fillColor(colors.white);
 
-            doc.text('Order ID', 50, tableHeaderY)
-               .text('Date', 140, tableHeaderY)
-               .text('Customer', 210, tableHeaderY)
-               .text('Payment', 300, tableHeaderY)
-               .text('Status', 370, tableHeaderY)
-               .text('Items', 440, tableHeaderY)
-               .text('Amount', 480, tableHeaderY, { width: 70, align: 'right' });
+            headerColumns.forEach(col => {
+                doc.text(col.text, col.x, currentY + 10, { width: col.width });
+            });
 
-            doc.moveTo(50, tableHeaderY + 15)
-               .lineTo(550, tableHeaderY + 15)
-               .stroke();
+            currentY += 35;
 
-            // Table Rows
-            let yPosition = tableHeaderY + 25;
-            doc.font('Helvetica').fontSize(8);
+            // Table rows
+            doc.fontSize(8)
+               .font('Helvetica');
 
-            const maxOrders = 15; // Reduced to fit new sections
-            reportData.orders.slice(0, maxOrders).forEach((order) => {
-                // Calculate actual amount (exclude cancelled items)
-                const cancelledItemsTotal = order.items
-                    .filter(item => item.itemStatus === 'Cancelled')
-                    .reduce((sum, item) => sum + item.itemTotal, 0);
+            const maxOrders = 15;
+            reportData.orders.slice(0, maxOrders).forEach((order, index) => {
+                // Calculate actual values
+                const validItems = order.items.filter(item => 
+                    item.itemStatus !== 'Cancelled' && item.itemStatus !== 'Returned'
+                );
                 
-                const actualAmount = order.totalAmount - cancelledItemsTotal;
+                const actualSubtotal = order.subtotal - 
+                    order.items.filter(i => i.itemStatus === 'Cancelled').reduce((s, i) => s + i.itemTotal, 0) -
+                    order.items.filter(i => i.itemStatus === 'Returned').reduce((s, i) => s + i.itemTotal, 0);
                 
-                const validItems = order.items.filter(item => item.itemStatus !== 'Cancelled');
+                let actualAmount = 0;
+                if (validItems.length > 0) {
+                    const actualCouponDiscount = order.couponApplied && order.discountAmount > 0 
+                        ? Math.round(order.discountAmount * (actualSubtotal / order.subtotal))
+                        : 0;
+                    const subtotalAfterCoupon = actualSubtotal - actualCouponDiscount;
+                    const actualShipping = subtotalAfterCoupon >= 1000 ? 0 : 50;
+                    const actualTax = Math.round(subtotalAfterCoupon * 0.18);
+                    actualAmount = subtotalAfterCoupon + actualShipping + actualTax;
+                }
+                
                 const itemsSold = validItems.reduce((sum, item) => sum + item.quantity, 0);
 
-                doc.text(order.orderId, 50, yPosition, { width: 80 })
-                   .text(new Date(order.placedAt).toLocaleDateString('en-IN'), 140, yPosition, { width: 60 })
-                   .text(order.userId?.name || 'N/A', 210, yPosition, { width: 80 })
-                   .text(order.paymentMethod, 300, yPosition, { width: 60 })
-                   .text(order.orderStatus, 370, yPosition, { width: 60 })
-                   .text(itemsSold.toString(), 440, yPosition, { width: 30 })
-                   .text(`${Math.round(actualAmount).toFixed(2)}`, 480, yPosition, { width: 70, align: 'right' });
+                // Alternate row colors
+                if (index % 2 === 0) {
+                    doc.rect(50, currentY - 5, 495, 20)
+                       .fill(colors.lightGray);
+                }
 
-                yPosition += 18;
+                doc.fillColor(colors.darkGray)
+                   .text(order.orderId, 55, currentY, { width: 85 })
+                   .text(new Date(order.placedAt).toLocaleDateString('en-IN'), 145, currentY, { width: 65 })
+                   .text(order.userId?.name || 'N/A', 215, currentY, { width: 75, ellipsis: true })
+                   .text(order.paymentMethod, 295, currentY, { width: 65 })
+                   .text(order.orderStatus, 365, currentY, { width: 70, ellipsis: true })
+                   .text(itemsSold.toString(), 440, currentY, { width: 35 });
 
-                if (yPosition > 720) {
+                doc.font('Helvetica-Bold')
+                   .fillColor(actualAmount > 0 ? colors.success : colors.danger)
+                   .text(`Rs.${Math.round(actualAmount).toLocaleString('en-IN')}`, 480, currentY, { width: 60, align: 'right' });
+
+                currentY += 20;
+                doc.font('Helvetica');
+
+                if (currentY > 750) {
                     doc.addPage();
-                    yPosition = 50;
+                    currentY = 50;
                 }
             });
 
             if (reportData.orders.length > maxOrders) {
-                yPosition += 10;
-                doc.fontSize(8)
-                   .fillColor('#666666')
-                   .text(`... and ${reportData.orders.length - maxOrders} more orders`, 50, yPosition, { align: 'center', width: 500 });
+                currentY += 10;
+                doc.fontSize(9)
+                   .fillColor(colors.mediumGray)
+                   .text(`... and ${reportData.orders.length - maxOrders} more orders`, 50, currentY, { align: 'center', width: 495 });
             }
 
-            // Footer
-            const footerY = 750;
-            doc.fontSize(8)
-               .fillColor('#666666')
-               .text('MONTRÉA - Fashion E-commerce', 50, footerY, { align: 'center', width: 500 })
-               .text('© 2025 All Rights Reserved', 50, footerY + 12, { align: 'center', width: 500 });
+            // ========== FOOTER ==========
+            const pageCount = doc.bufferedPageRange().count;
+            for (let i = 0; i < pageCount; i++) {
+                doc.switchToPage(i);
+                
+                // Footer background
+                doc.rect(0, 792 - 40, 595, 40)
+                   .fill(colors.lightGray);
+                
+                doc.fontSize(8)
+                   .fillColor(colors.mediumGray)
+                   .text('MONTRÉA - Fashion E-commerce | © 2025 All Rights Reserved', 50, 792 - 25, { align: 'center', width: 495 });
+                
+                doc.text(`Page ${i + 1} of ${pageCount}`, 50, 792 - 25, { align: 'right', width: 495 });
+            }
 
             doc.end();
 

@@ -1,6 +1,6 @@
 import express from 'express'
 import { getHomePage, getProductDetails, getShopPage } from '../controller/userControllers/home.controller.js';
-import { getSignup , postSignup , postVerifyOtp , getResendOtp , getSignin , postSignin , oauthCallbackController , userLogout, loadForgetPassword, postForgetPassword, getVeriyForgotOtp, getResendForgotOtp, postVerifyForgotOtp, LoadResetPassword, resetPassword} from '../controller/userControllers/auth.controller.js';
+import { getSignup , postSignup , postVerifyOtp , getResendOtp , getSignin , postSignin , oauthCallbackController , userLogout, loadForgetPassword, postForgetPassword, getVeriyForgotOtp, getResendForgotOtp, postVerifyForgotOtp, LoadResetPassword, resetPassword, getVerifyOtp} from '../controller/userControllers/auth.controller.js';
 import passport from 'passport';
 import { userFinder } from '../middleware/userfinder.js';
 import { preventCache, redirectIfLoggedIn } from '../middleware/preventcache.js';
@@ -18,6 +18,7 @@ import { cancelOrder, downloadInvoice, getMyOrdersPage, getOrderDetailsPage, get
 import { addToWishlist, checkVariantInWishlist, getWishlist, moveToCart, removeFromWishlist } from '../controller/userControllers/wishlist.controller.js';
 import { createWalletTopUpOrder, getTransactionHistory, getWalletBalance, getWalletPage, verifyWalletTopUp } from '../controller/userControllers/wallet.controller.js';
 import { applyCouponToCart, getAvailableCouponsForUser, removeCoupon, validateCouponBeforePayment } from '../controller/userControllers/coupon.controller.js';
+import { deleteReview, getProductReviews, submitReview } from '../controller/userControllers/review.controller.js';
 
 
 const router = express.Router()
@@ -30,6 +31,7 @@ router.use(checkBlockedUser)
 router.get("/", getHomePage);
 router.get('/signup',preventCache,redirectIfLoggedIn,getSignup)
 router.post('/signup',postSignup)
+router.get('/verify-otp',preventCache,getVerifyOtp)
 router.post('/verify-otp',preventCache,postVerifyOtp);
 router.get('/resend-otp',preventCache,getResendOtp);
 router.get('/signin',preventCache,redirectIfLoggedIn,getSignin)
@@ -43,7 +45,7 @@ router.get('/auth/google/callback',passport.authenticate("google",{
     failureRedirect:'/signin',
     failureMessage:true,
 }), oauthCallbackController)
-router.get('/logout',userLogout)
+router.post('/logout',userLogout)
 router.get('/forgot-password',preventCache,loadForgetPassword)
 router.post('/forgot-password',preventCache,postForgetPassword);
 router.get('/verify-forgot-otp',preventCache,getVeriyForgotOtp)
@@ -150,5 +152,10 @@ router.get('/checkout/validate-coupon', checkSession, validateCouponBeforePaymen
 // referral route //
 router.get('/refer',checkSession,getReferralPage)
 
+
+// review routes //
+router.post('/review/submit',checkSession,submitReview);
+router.delete('/review/:reviewId',checkSession,deleteReview);
+router.get('/review/product/:productId', getProductReviews);
 
 export default router

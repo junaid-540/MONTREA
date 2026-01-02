@@ -39,21 +39,36 @@
                                     class="filter-btn <%= filterType === 'all' || !filterType ? 'active' : '' %>">
                                 All Time
                             </button>
+                            <button type="button" class="clear-filter-btn" onclick="clearAllFilters()">
+                                <i class="bi bi-x-circle"></i> Clear Filter
+                            </button>
                         </div>
                     </div>
 
                     <div class="custom-date-section">
                         <label>Custom Date Range:</label>
                         <div class="date-inputs">
-                            <input type="date" name="startDate" class="date-input" 
-                                   value="<%= startDate %>" placeholder="Start Date">
+                            <input type="date" 
+                                id="startDate" 
+                                name="startDate" 
+                                class="date-input" 
+                                value="<%= startDate %>" 
+                                max="<%= new Date().toISOString().split('T')[0] %>"
+                                placeholder="Start Date">
                             <span>to</span>
-                            <input type="date" name="endDate" class="date-input" 
-                                   value="<%= endDate %>" placeholder="End Date">
+                            <input type="date" 
+                                id="endDate" 
+                                name="endDate" 
+                                class="date-input" 
+                                value="<%= endDate %>" 
+                                max="<%= new Date().toISOString().split('T')[0] %>"
+                                placeholder="End Date">
                             <button type="submit" name="filterType" value="custom" class="apply-btn">Apply</button>
                         </div>
                     </div>
+                    
                 </form>
+            </div>
 
                 <!-- Download Buttons -->
                 <div class="download-section">
@@ -67,6 +82,7 @@
             </div>
 
             <!-- Summary Cards -->
+            <!--  returns and refunds -->
             <div class="summary-cards">
                 <div class="summary-card card-green">
                     <div class="card-icon">
@@ -117,6 +133,28 @@
                         <p class="card-label">Items Sold</p>
                     </div>
                 </div>
+
+                <!--  Returns Card -->
+                <div class="summary-card card-cyan">
+                    <div class="card-icon">
+                        <i class="bi bi-arrow-return-left"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value"><%= totalReturns %></h3>
+                        <p class="card-label">Total Returns</p>
+                    </div>
+                </div>
+
+                <!--  Refunds Card -->
+                <div class="summary-card card-pink">
+                    <div class="card-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-value">₹<%= totalRefunds %></h3>
+                        <p class="card-label">Total Refunds</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Financial Breakdown Section -->
@@ -129,10 +167,10 @@
                         <div class="breakdown-label">Product Subtotal</div>
                         <div class="breakdown-value">₹<%= totalSubtotal %></div>
                     </div>
-                    <!-- <div class="breakdown-card">
+                    <div class="breakdown-card">
                         <div class="breakdown-label">Product Discounts</div>
                         <div class="breakdown-value text-danger">-₹<%= totalDiscount %></div>
-                    </div> -->
+                    </div>
                     <div class="breakdown-card">
                         <div class="breakdown-label">Coupon Discounts</div>
                         <div class="breakdown-value text-danger">-₹<%= totalCouponDiscount %></div>
@@ -150,11 +188,44 @@
                         <div class="breakdown-value">₹<%= totalSales %></div>
                     </div>
                 </div>
+            </div>
+
+            <!--  Returns & Cancellations Breakdown Section -->
+            <div class="breakdown-section">
+                <h3 class="section-title">
+                    <i class="bi bi-arrow-counterclockwise"></i> Returns & Cancellations Breakdown
+                </h3>
+                <div class="breakdown-grid">
+                    <div class="breakdown-card">
+                        <div class="breakdown-label">Total Cancelled Items</div>
+                        <div class="breakdown-value"><%= totalCancellations %></div>
+                    </div>
+                    <div class="breakdown-card">
+                        <div class="breakdown-label">Cancellation Refunds</div>
+                        <div class="breakdown-value text-danger">₹<%= totalCancellationAmount %></div>
+                    </div>
+                    <div class="breakdown-card">
+                        <div class="breakdown-label">Total Returned Items</div>
+                        <div class="breakdown-value"><%= totalReturns %></div>
+                    </div>
+                    <div class="breakdown-card">
+                        <div class="breakdown-label">Return Refunds</div>
+                        <div class="breakdown-value text-danger">₹<%= totalReturnAmount %></div>
+                    </div>
+                    <div class="breakdown-card highlight">
+                        <div class="breakdown-label">Total Refunds Issued</div>
+                        <div class="breakdown-value">₹<%= totalRefunds %></div>
+                    </div>
+                    <div class="breakdown-card">
+                        <div class="breakdown-label">Net Revenue (After Refunds)</div>
+                        <div class="breakdown-value" style="color: #10b981;">₹<%= totalSales %></div>
+                    </div>
+                </div>
                 
-                <!-- Calculation Formula -->
-                <!-- <div class="calculation-formula">
-                    <p><strong>Revenue Formula:</strong> Product Subtotal - Product Discounts - Coupon Discounts + Shipping + Tax (18%) = Net Revenue</p>
-                </div> -->
+                <div class="calculation-formula">
+                    <p><strong>Note:</strong> Total Refunds = Cancellation Refunds (₹<%= totalCancellationAmount %>) + Return Refunds (₹<%= totalReturnAmount %>) = ₹<%= totalRefunds %></p>
+                    <p><strong>Revenue Calculation:</strong> Net Revenue already excludes cancelled and returned items, so actual revenue = ₹<%= totalSales %></p>
+                </div>
             </div>
 
             <!-- Payment Method Breakdown Section -->
@@ -200,6 +271,49 @@
                 </div>
             </div>
 
+            <!--  Order Status Breakdown Section -->
+            <div class="status-breakdown-section">
+                <h3 class="section-title">
+                    <i class="bi bi-diagram-3"></i> Order Status Breakdown
+                </h3>
+                <div class="status-grid">
+                    <% 
+                    const statusConfig = {
+                        'Placed': { color: '#f59e0b', icon: 'bi-cart-plus' },
+                        'Processing': { color: '#3b82f6', icon: 'bi-gear' },
+                        'Shipped': { color: '#8b5cf6', icon: 'bi-box-seam' },
+                        'Out for Delivery': { color: '#06b6d4', icon: 'bi-truck' },
+                        'Delivered': { color: '#10b981', icon: 'bi-check-circle' },
+                        'Cancelled': { color: '#ef4444', icon: 'bi-x-circle' },
+                        'Partially Cancelled': { color: '#f97316', icon: 'bi-dash-circle' },
+                        'Partially Delivered': { color: '#84cc16', icon: 'bi-check2-circle' }
+                    };
+
+                    Object.entries(statusBreakdown).forEach(([status, count]) => {
+                        const config = statusConfig[status] || { color: '#6b7280', icon: 'bi-circle' };
+                        const percentage = totalOrders > 0 ? ((count / totalOrders) * 100).toFixed(1) : 0;
+                    %>
+                        <div class="status-card" style="border-left: 4px solid <%= config.color %>">
+                            <div class="status-header">
+                                <div class="status-icon" style="background: <%= config.color %>20; color: <%= config.color %>">
+                                    <i class="bi <%= config.icon %>"></i>
+                                </div>
+                                <div class="status-info">
+                                    <div class="status-name"><%= status %></div>
+                                    <div class="status-count"><%= count %> orders</div>
+                                </div>
+                            </div>
+                            <div class="status-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: <%= percentage %>%; background: <%= config.color %>"></div>
+                                </div>
+                                <div class="status-percentage"><%= percentage %>%</div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
             <!-- Orders Table -->
             <div class="table-section">
                 <h3 class="table-title">Order Details</h3>
@@ -229,11 +343,45 @@
                                 </tr>
                             <% } else { %>
                                 <% orders.forEach((order, index) => { 
+                                    const validItems = order.items.filter(item => 
+                                        item.itemStatus !== 'Cancelled' && item.itemStatus !== 'Returned'
+                                    );
+                                    
                                     const cancelledItemsTotal = order.items
                                         .filter(item => item.itemStatus === 'Cancelled')
                                         .reduce((sum, item) => sum + item.itemTotal, 0);
-                                    const actualAmount = order.totalAmount - cancelledItemsTotal;
-                                    const validItems = order.items.filter(item => item.itemStatus !== 'Cancelled');
+                                    
+                                    const returnedItemsTotal = order.items
+                                        .filter(item => item.itemStatus === 'Returned')
+                                        .reduce((sum, item) => sum + item.itemTotal, 0);
+                                    
+                                    // Calculate actual amount (excluding cancelled and returned items)
+                                    const actualSubtotal = order.subtotal - cancelledItemsTotal - returnedItemsTotal;
+                                    
+                                    // Calculate proportional coupon discount for valid items only
+                                    let actualCouponDiscount = 0;
+                                    if (order.couponApplied && order.discountAmount > 0 && actualSubtotal > 0) {
+                                        const validItemsRatio = actualSubtotal / order.subtotal;
+                                        actualCouponDiscount = Math.round(order.discountAmount * validItemsRatio);
+                                    }
+                                    
+                                    // Calculate proportional product discount for valid items
+                                    let actualProductDiscount = 0;
+                                    if (order.discount && actualSubtotal > 0) {
+                                        const validItemsRatio = actualSubtotal / order.subtotal;
+                                        actualProductDiscount = Math.round(order.discount * validItemsRatio);
+                                    }
+                                    
+                                    // Calculate final amount only if there are valid items
+                                    let actualAmount = 0;
+                                    if (validItems.length > 0) {
+                                        const subtotalAfterCoupon = actualSubtotal - actualCouponDiscount;
+                                        const actualShipping = subtotalAfterCoupon >= 1000 ? 0 : 50;
+                                        const actualTax = Math.round(subtotalAfterCoupon * 0.18);
+                                        actualAmount = subtotalAfterCoupon + actualShipping + actualTax;
+                                    }
+                                    
+                                    // Count items sold (only valid items)
                                     const itemsSold = validItems.reduce((sum, item) => sum + item.quantity, 0);
                                 %>
                                     <tr>
@@ -252,8 +400,8 @@
                                             </span>
                                         </td>
                                         <td><%= itemsSold %></td>
-                                        <td>₹<%= order.discount || 0 %></td>
-                                        <td>₹<%= order.discountAmount || 0 %></td>
+                                        <td>₹<%= actualProductDiscount %></td>
+                                        <td>₹<%= actualCouponDiscount %></td>
                                         <td class="amount-cell">₹<%= Math.round(actualAmount) %></td>
                                     </tr>
                                 <% }); %>
@@ -269,26 +417,127 @@
     <%- include('../partials/admin/footer') %>
 
     <script>
-        const filterType = "<%= filterType %>";
-        const startDate = "<%= startDate %>";
-        const endDate = "<%= endDate %>";
+    const filterType = "<%= filterType %>";
+    const startDate = "<%= startDate %>";
+    const endDate = "<%= endDate %>";
 
-        function downloadPDF() {
-            let url = `/admin/sales-report/download/pdf?filterType=${filterType}`;
-            if (filterType === 'custom' && startDate && endDate) {
-                url += `&startDate=${startDate}&endDate=${endDate}`;
+    function showToast(message, type = 'error') {
+        const backgroundColor = type === 'error' ? 'linear-gradient(to right, #ef4444, #dc2626)' : 
+                               type === 'success' ? 'linear-gradient(to right, #10b981, #059669)' : 
+                               type === 'warning' ? 'linear-gradient(to right, #f59e0b, #d97706)' : 
+                               'linear-gradient(to right, #3b82f6, #2563eb)';
+        
+        Toastify({
+            text: message,
+            duration: 4000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true,
+            style: {
+                background: backgroundColor,
+                borderRadius: "8px",
+                padding: "16px 24px",
+                fontSize: "14px",
+                fontWeight: "500",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)"
             }
-            window.location.href = url;
-        }
+        }).showToast();
+    }
 
-        function downloadExcel() {
-            let url = `/admin/sales-report/download/excel?filterType=${filterType}`;
-            if (filterType === 'custom' && startDate && endDate) {
-                url += `&startDate=${startDate}&endDate=${endDate}`;
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const today = new Date().toISOString().split('T')[0];
+
+    startDateInput.max = today;
+    endDateInput.max = today;
+
+    startDateInput.addEventListener('change', function() {
+        const selectedStartDate = this.value;
+        if (selectedStartDate) {
+            endDateInput.min = selectedStartDate;
+            
+            if (endDateInput.value && endDateInput.value < selectedStartDate) {
+                endDateInput.value = '';
+                showToast('End date cleared - it was before the start date', 'error');
             }
-            window.location.href = url;
+        } else {
+            endDateInput.min = '';
         }
-    </script>
+    });
+
+    endDateInput.addEventListener('change', function() {
+        const selectedEndDate = this.value;
+        
+        if (startDateInput.value && startDateInput.value > selectedEndDate) {
+            startDateInput.value = '';
+            showToast('Start date cleared - it was after the end date', 'warning');
+        }
+    });
+
+    // Initialize min/max on page load if dates are already selected
+    if (startDate) {
+        endDateInput.min = startDate;
+    }
+
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        const filterTypeValue = e.submitter?.value;
+        
+        if (filterTypeValue === 'custom') {
+            const start = startDateInput.value;
+            const end = endDateInput.value;
+            
+            if (!start || !end) {
+                e.preventDefault();
+                showToast('Please select both start and end dates for custom range', 'error');
+                return;
+            }
+            
+            if (start > end) {
+                e.preventDefault();
+                showToast('Start date cannot be after end date', 'error');
+                return;
+            }
+            
+            if (start > today || end > today) {
+                e.preventDefault();
+                showToast('Dates cannot be in the future', 'error');
+                return;
+            }
+        }
+    });
+
+    <% if (messages && messages.length > 0) { %>
+        <% messages.forEach(msg => { %>
+            showToast("<%= msg.text %>", "<%= msg.type %>");
+        <% }); %>
+    <% } %>
+
+    function clearAllFilters() {
+        // showToast('Filter cleared successfully', 'success');
+        setTimeout(() => {
+            window.location.href = '/admin/sales-report';
+        },0);
+    }
+
+    function downloadPDF() {
+        let url = `/admin/sales-report/download/pdf?filterType=${filterType}`;
+        if (filterType === 'custom' && startDate && endDate) {
+            url += `&startDate=${startDate}&endDate=${endDate}`;
+        }
+        showToast('Generating PDF...', 'info');
+        window.location.href = url;
+    }
+
+    function downloadExcel() {
+        let url = `/admin/sales-report/download/excel?filterType=${filterType}`;
+        if (filterType === 'custom' && startDate && endDate) {
+            url += `&startDate=${startDate}&endDate=${endDate}`;
+        }
+        showToast('Generating Excel...', 'info');
+        window.location.href = url;
+    }
+</script>
 
 </body>
 

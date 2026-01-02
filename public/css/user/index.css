@@ -475,7 +475,7 @@ body {
     }
 
     .product-image {
-        height: 250px;
+        height: auto;
     }
 
     .promo-title {
@@ -500,10 +500,11 @@ body {
     .carousel-caption {
         padding: 1rem;
         bottom: 10%;
+        margin-left: 14px;
     }
 
     .carousel-heading {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         margin: 0.5rem 0;
     }
 

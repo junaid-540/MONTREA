@@ -190,6 +190,31 @@ body {
     transform: translateY(-2px);
 }
 
+
+/* Offer Badge in Checkout */
+.offer-applied-badge-small {
+    display: inline-block;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    margin: 2px 0 6px 0;
+    animation: pulse 2s infinite;
+    width: fit-content;
+}
+
+.offer-applied-badge-small i {
+    font-size: 9px;
+    margin-right: 3px;
+}
+
+/* @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+} */
+
 .product-item {
     display: flex;
     gap: 15px;

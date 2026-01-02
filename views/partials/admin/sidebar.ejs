@@ -44,20 +44,22 @@
             <i class="bi bi-percent"></i>
             <span>Offers</span>
         </a>
-        <a href="/admin/banners" class="nav-button <%= activePage === 'banners' ? 'active' : '' %>">
+        <!-- <a href="/admin/banners" class="nav-button <%= activePage === 'banners' ? 'active' : '' %>">
             <i class="bi bi-image"></i>
             <span>Banners</span>
-        </a>
+        </a> -->
         
         <!-- <a href="/admin/referrals" class="nav-button <%= activePage === 'referrals' ? 'active' : '' %>">
                 <i class="bi bi-person-plus"></i>
                 <span>Referrals</span>
             </a> -->
 
-        <a href="/admin/logout" class="nav-button">
-            <i class="bi bi-box-arrow-left"></i>
-            <span>Sign Out</span>
-        </a>
+        <form id="adminLogoutForm" action="/admin/logout" method="POST">
+            <button type="submit" class="nav-button" style="width: 100%;">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Sign Out</span>
+            </button>
+        </form>
     </aside>
     
     <!-- Content Area -->

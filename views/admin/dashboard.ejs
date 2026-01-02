@@ -1,26 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <%- include ('../partials/admin/header') %>
+<%- include('../partials/admin/header') %>
 
 <body>
-    <!-- Sidebar Overlay -->
-    
-    
-    <!-- Main Container -->
-    <%- include ('../partials/admin/sidebar') %>
+    <%- include('../partials/admin/sidebar') %>
 
+    <!-- Main Content Area -->
     <main class="content-area">
-        <!-- Your dashboard content goes here -->
-        <h2>Welcome to Dashboard</h2>
-        <p>Select a menu item to view content.</p>
+        <div class="dashboard-container">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">📊 Admin Dashboard</h2>
+                <p class="dashboard-subtitle">Monitor your business performance and insights</p>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <form method="GET" action="/admin/dashboard" class="filter-form">
+                    <div class="filter-group">
+                        <label for="timeFilter">Time Period:</label>
+                        <select id="timeFilter" name="timeFilter" class="filter-select" onchange="this.form.submit()">
+                            <option value="daily" <%= currentFilter === 'daily' ? 'selected' : '' %>>Daily</option>
+                            <option value="weekly" <%= currentFilter === 'weekly' ? 'selected' : '' %>>Weekly</option>
+                            <option value="monthly" <%= currentFilter === 'monthly' ? 'selected' : '' %>>Monthly</option>
+                            <option value="quarterly" <%= currentFilter === 'quarterly' ? 'selected' : '' %>>Quarterly</option>
+                            <option value="yearly" <%= currentFilter === 'yearly' ? 'selected' : '' %>>Yearly</option>
+                        </select>
+                    </div>
+
+                    <!-- <div class="filter-group">
+                        <label for="yearFilter">Year:</label>
+                        <select id="yearFilter" name="year" class="filter-select" onchange="this.form.submit()">
+                            <option value="2023" <%= currentYear === 2023 ? 'selected' : '' %>>2023</option>
+                            <option value="2024" <%= currentYear === 2024 ? 'selected' : '' %>>2024</option>
+                            <option value="2025" <%= currentYear === 2025 ? 'selected' : '' %>>2025</option>
+                        </select>
+                    </div> -->
+                </form>
+            </div>
+
+            <!-- Sales Chart -->
+            <div class="chart-container">
+                <h3 class="chart-title">Sales Overview</h3>
+                <canvas id="salesChart"></canvas>
+            </div>
+
+            <!-- Top Lists Grid -->
+            <div class="top-lists-grid">
+                <!-- Top 10 Products -->
+                <div class="list-card">
+                    <h3 class="list-title">🏆 Top 10 Best Selling Products</h3>
+                    <div class="list-content">
+                        <% if (topProducts && topProducts.length > 0) { %>
+                            <% topProducts.forEach((product, index) => { %>
+                                <div class="list-item">
+                                    <span class="rank">#<%= index + 1 %></span>
+                                    <span class="name"><%= product.name %></span>
+                                    <span class="value">₹<%= product.revenue.toLocaleString('en-IN') %></span>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="no-data">No product sales data available</div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Top 10 Categories -->
+                <div class="list-card">
+                    <h3 class="list-title">📦 Top 10 Best Selling Categories</h3>
+                    <div class="list-content">
+                        <% if (topCategories && topCategories.length > 0) { %>
+                            <% topCategories.forEach((category, index) => { %>
+                                <div class="list-item">
+                                    <span class="rank">#<%= index + 1 %></span>
+                                    <span class="name"><%= category.name %></span>
+                                    <span class="value">₹<%= category.revenue.toLocaleString('en-IN') %></span>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="no-data">No category sales data available</div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Top 10 Customers -->
+                <div class="list-card">
+                    <h3 class="list-title">👥 Top 10 Customers</h3>
+                    <div class="list-content">
+                        <% if (topCustomers && topCustomers.length > 0) { %>
+                            <% topCustomers.forEach((customer, index) => { %>
+                                <div class="list-item">
+                                    <span class="rank">#<%= index + 1 %></span>
+                                    <div class="customer-info">
+                                        <span class="name"><%= customer.name %></span>
+                                        <span class="customer-email"><%= customer.email %></span>
+                                    </div>
+                                    <span class="value">₹<%= customer.sales.toLocaleString('en-IN') %></span>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="no-data">No customer data available</div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
-</div>
-    <!-- Footer -->
-     <%- include('../partials/admin/footer') %>
+
+    <%- include('../partials/admin/footer') %>
+
+    <!-- Dashboard JavaScript -->
     <script>
-        const successMessage = "<%= typeof successMessage !== 'undefined' && successMessage ? successMessage : '' %>";
-    </script> 
-    
+        // Parse sales data from server
+        const salesData = <%- salesData %>;
+
+        // Create Chart.js chart
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: salesData.labels,
+                datasets: [{
+                    label: 'Sales Revenue (₹)',
+                    data: salesData.data,
+                    borderColor: '#a47f5f',
+                    backgroundColor: 'rgba(164, 127, 95, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#a47f5f',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        borderColor: '#a47f5f',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Revenue: ₹' + context.parsed.y.toLocaleString('en-IN');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value.toLocaleString('en-IN');
+                            },
+                            font: {
+                                size: 12
+                            },
+                            color: '#666'
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#666'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Show success message if available
+        <% if (successMessage) { %>
+            Toastify({
+                text: "<%= successMessage %>",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#28a745",
+                stopOnFocus: true
+            }).showToast();
+        <% } %>
+    </script>
 </body>
+
 </html>

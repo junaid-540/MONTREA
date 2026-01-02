@@ -796,3 +796,105 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+
+// Load reviews
+async function loadProductReviews() {
+    try {
+        const response = await axios.get(`/review/product/${window.productId}`);
+        
+        if (response.data.success) {
+            const data = response.data.data;
+            displayReviews(data);
+        } else {
+            showNoReviews();
+        }
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        showNoReviews();
+    }
+}
+
+function displayReviews(data) {
+    const container = document.getElementById('reviewsContainer');
+    
+    if (!data.ratingSummary || data.ratingSummary.totalReviews === 0) {
+        showNoReviews();
+        return;
+    }
+    
+    let html = `
+        <div class="review-summary mb-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="review-rating-large">${data.ratingSummary.averageRating.toFixed(1)}</div>
+                <div>
+                    <div class="stars">
+                        ${getStarsHTML(data.ratingSummary.averageRating)}
+                    </div>
+                    <p class="text-muted mb-0 small">Based on ${data.ratingSummary.totalReviews} review${data.ratingSummary.totalReviews !== 1 ? 's' : ''}</p>
+                </div>
+            </div>
+        </div>
+        <div class="review-list">
+    `;
+    
+    data.reviews.forEach(review => {
+        const date = new Date(review.createdAt).toLocaleDateString('en-IN');
+        html += `
+            <div class="review-card-compact mb-3">
+                <div class="review-header">
+                    <div class="reviewer-icon-small">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 small fw-bold">${review.user.name}</h6>
+                        <div class="stars small">
+                            ${getStarsHTML(review.rating)}
+                        </div>
+                    </div>
+                    <small class="text-muted ms-auto">${date}</small>
+                </div>
+                ${review.reviewText ? `<p class="mb-0 small mt-2">${review.reviewText}</p>` : ''}
+                ${review.isVerifiedPurchase ? 
+                    '<small class="text-success mt-2 d-block"><i class="fas fa-check-circle"></i> Verified Purchase</small>' : 
+                    ''}
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function getStarsHTML(rating) {
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= Math.floor(rating)) {
+            stars += '<i class="fas fa-star"></i>';
+        } else if (i === Math.ceil(rating) && rating % 1 !== 0) {
+            stars += '<i class="fas fa-star-half-alt"></i>';
+        } else {
+            stars += '<i class="far fa-star"></i>';
+        }
+    }
+    return stars;
+}
+
+function showNoReviews() {
+    const container = document.getElementById('reviewsContainer');
+    container.innerHTML = `
+        <div class="text-center py-5">
+            <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+            <h5>No Reviews Yet</h5>
+            <p class="text-muted">Be the first to review this product!</p>
+        </div>
+    `;
+}
+
+// Load reviews when page loads
+document.addEventListener('DOMContentLoaded', loadProductReviews);
+
+// Also reload when the review tab is clicked (in case user just submitted a review from order page)
+document.getElementById('review-tab')?.addEventListener('click', function() {
+    loadProductReviews();
+});

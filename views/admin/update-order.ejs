@@ -48,7 +48,7 @@
                     </div>
                     <div class="info-item">
                         <div class="info-label">Total Amount</div>
-                        <div class="info-value total-amount">₹<%= order.totalAmount.toFixed(2) %></div>
+                        <div class="info-value total-amount">₹<%= Math.round(order.totalAmount) %></div>
                         <div class="info-sub"><%= order.items.length %> item(s)</div>
                     </div>
                 </div>
@@ -155,7 +155,7 @@
 
                                         <div class="item-total">
                                             <span class="price-label">Item Total:</span>
-                                            <span class="total-price">₹<%= item.itemTotal.toFixed(2) %></span>
+                                            <span class="total-price">₹<%= Math.round(item.itemTotal) %></span>
                                         </div>
                                     </div>
                                 </div>
@@ -272,7 +272,7 @@
                         <div class="price-breakdown">
                             <div class="price-row">
                                 <span>Subtotal</span>
-                                <span>₹<%= order.subtotal.toFixed(2) %></span>
+                                <span>₹<%= Math.round(order.subtotal) %></span>
                             </div>
                             <% if (order.couponApplied && order.discountAmount > 0) { %>
                             <div class="price-row discount-row">
@@ -287,17 +287,17 @@
                             <% } %>
                             <div class="price-row">
                                 <span>Tax (GST)</span>
-                                <span>₹<%= order.tax.toFixed(2) %></span>
+                                <span>₹<%= Math.round(order.tax) %></span>
                             </div>
                             <div class="price-row">
                                 <span>Shipping</span>
                                 <span class="<%= order.shippingCharge === 0 ? 'text-success' : '' %>">
-                                    <%= order.shippingCharge === 0 ? 'FREE' : '₹' + order.shippingCharge.toFixed(2) %>
+                                    <%= order.shippingCharge === 0 ? 'FREE' : '₹' + Math.round(order.shippingCharge) %>
                                 </span>
                             </div>
                             <div class="price-row total-row">
                                 <span>Total Amount</span>
-                                <span>₹<%= order.totalAmount.toFixed(2) %></span>
+                                <span>₹<%= Math.round(order.totalAmount) %></span>
                             </div>
                         </div>
                     </div>

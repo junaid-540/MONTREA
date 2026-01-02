@@ -1,4 +1,3 @@
-// pagination + search (flexible: simple find() by default, optional aggregation with lookup)
 export const getPaginateData = async (Model, req, options = {}) => {
     try {
         const {

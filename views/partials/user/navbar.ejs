@@ -62,7 +62,9 @@
                         <% if (user) { %>
                             
                             <a href="/profile" class="btn btn-dark">PROFILE</a>
-                            <a href="/logout" class="btn btn-dark">LOGOUT</a>
+                           <form id="logoutForm" action="/logout" method="POST" style="margin: 0;">
+                              <button type="submit" class="btn btn-dark" >LOGOUT</button>
+                          </form>
                         <% } else { %>
                            
                             <a href="/signup" class="btn btn-dark">SIGN UP</a>

@@ -1,9 +1,3 @@
-/**
- * validateRequest - Middleware to validate request body using Joi schema
- *
- * @param {Joi.Schema} schema - Joi validation schema
- * @returns {Function} Middleware function
- */
 
 
 const validateRequest = (schema) => (req, res, next) => {

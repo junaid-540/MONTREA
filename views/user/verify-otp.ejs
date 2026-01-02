@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,12 +27,12 @@
           <div class="form-content">
             <h1 class="otp-title">OTP</h1>
             <p class="otp-subtitle">Enter the OTP sent to your email:</p>
-            <p><%=email%></p>
+            <p id="emailDisplay"><%= email %></p>
             <div class="timer-text">
               <span id="timer">Remaining: 00:60s</span>
             </div>
 
-            <form action="/verify-otp" method="POST">
+            <form id="verifyOtpForm">
               <div class="mb-3">
                 <label for="otp" class="form-label">Confirmation Code</label>
                 <input 
@@ -41,16 +40,18 @@
                   maxlength="6" 
                   name="otp" 
                   id="otp" 
-                  class="form-control" 
-                  required 
-                  autocomplete="off">
+                  class="form-control"
+                  autocomplete="off"
+                  placeholder="Enter 6-digit OTP">
+                <div id="otpFeedback" class="invalid-feedback" style="display: none;"></div>
               </div>
 
               <button type="submit" class="verify-btn">Verify Email</button>
             </form>
 
             <p class="resend-text">
-              Didn't receive an OTP? <a class="resend-link" href="/resend-otp">Resend Now</a>
+              Didn't receive an OTP? 
+              <button type="button" id="resendOtpBtn" class="btn btn-link p-0 resend-link">Resend Now</button>
             </p>
           </div>
 
@@ -62,13 +63,9 @@
   </div>
 </div>
 
-<script>
-  const successMessage = "<%= typeof message !== 'undefined' ? message : '' %>";
-  const errorMessage = "<%= typeof error !== 'undefined' ? error : '' %>";
-</script>
-
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script src="/public/js/user/verify-otp.js" ></script>
+<script src="/public/js/user/verify-otp.js"></script>
 </body>
 </html>

@@ -63,7 +63,8 @@
                             <label for="maxDiscountAmount" class="form-label">Max Discount Amount</label>
                             <input type="number" class="form-control" id="maxDiscountAmount" name="maxDiscountAmount"
                                 value="<%= coupon.maxDiscountAmount || '' %>" min="0" step="0.01">
-                            <small class="form-text text-muted">Optional cap for percentage discounts</small>
+                            <!-- <small class="form-text text-muted">Optional cap for percentage discounts</small> -->
+                             <div class="invalid-feedback" id="maxDiscountAmountFeedback"></div>
                         </div>
                     <% } %>
                 </div>
@@ -73,7 +74,8 @@
                     <label for="minPurchaseAmount" class="form-label">Minimum Purchase Amount</label>
                     <input type="number" class="form-control" id="minPurchaseAmount" name="minPurchaseAmount"
                         value="<%= coupon.minPurchaseAmount %>" min="0" step="0.01">
-                    <small class="form-text text-muted">Optional minimum cart value required</small>
+                    <!-- <small class="form-text text-muted">Optional minimum cart value required</small> -->
+                     <div class="invalid-feedback" id="minPurchaseAmountFeedback"></div>
                 </div>
 
                 <!-- Usage Limits (Editable) -->

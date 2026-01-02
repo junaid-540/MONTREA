@@ -9,6 +9,8 @@ import { generateInvoice } from "../../utils/generateInvoice.js";
 import errorMessages from "../../utils/errorMessages.js";
 import { creditWallet, calculateRefundAmount, calculateItemRefundAmount } from "../../utils/walletHelper.js";
 import { decrementCouponUsage } from "../../utils/couponHelper.js";
+import Review from "../../models/reviewSchema.js";
+
 
 
 export const getOrderSuccessPage = async (req, res, next) => {
@@ -53,7 +55,7 @@ export const getMyOrdersPage = async (req, res, next) => {
             filters:{userId},
             searchFields: ['orderId', 'items.name'],
             sort: {createdAt: -1},
-            limit: 10,
+            limit: 8,
         });
 
         // Get total count for pagination
@@ -105,8 +107,27 @@ export const getOrderDetailsPage = async (req,res,next) =>{
             return res.redirect('/orders');
         }
 
+        const reviews = await Review.find({
+            orderId: order.orderId,
+            userId
+        }).lean()
+
+        const reviewMap = new Map();
+        reviews.forEach(review => {
+            reviewMap.set(review.orderItemId.toString(), review);
+        });
+
+        const itemsWithReviewStatus = order.items.map(item =>{
+            const review = reviewMap.get(item._id.toString());
+            return {
+                ...item,
+                review: review|| null,
+                hasReviewed: !!review
+            };
+        });
+
+        order.items = itemsWithReviewStatus;
         order.hasReturn = order.items.some(item => item.returnRequested);
-        // const  
 
         const messages = req.session.messages || [];
         delete req.session.messages

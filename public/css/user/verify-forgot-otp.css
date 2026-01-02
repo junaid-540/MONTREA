@@ -198,3 +198,41 @@ body {
         font-size: 1.3rem;
     }
 }
+
+.recover-btn:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+    background-color: #666 !important;
+}
+
+/* Resend link loading state */
+.resend-link a.disabled-link {
+    pointer-events: none !important;
+    opacity: 0.6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+}
+
+/* Small spinner for inline buttons/links */
+.spinner-border-sm {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-width: 0.125em;
+    vertical-align: middle;
+}
+
+/* Spinner animation keyframes */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Prevent text selection on disabled elements */
+button[disabled],
+a.disabled-link {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}

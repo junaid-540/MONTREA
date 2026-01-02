@@ -20,24 +20,23 @@ function isValidReturnUrl(url) {
 }
 
 export const getSignup = (req, res) => {
-
     res.render('user/signup')
 }
 
-export const postSignup = async (req, res, next) => {
 
+export const postSignup = async (req, res, next) => {
     try {
-        //data from signup//
         console.log(req.body)
 
         const { error } = signupValidation.validate(req.body, { abortEarly: false })
         if (error) {
             const message = error.details.map(e => e.message);
-
             console.log("User Validation Error", message)
 
-            return res.status(statusCodes.BAD_REQUEST).render('user/signup', {
-                errorMessage: message.join(', ') // it will combine multiple messages
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: message.join(', ')
             })
         }
 
@@ -48,26 +47,39 @@ export const postSignup = async (req, res, next) => {
             referrerUser = await validateReferralCode(referralCode);
             
             if (!referrerUser) {
-                return res.status(statusCodes.BAD_REQUEST).render('user/signup', {
-                    errorMessage: 'Invalid referral code. Please check and try again or leave it empty.'
-                });
+                return sendResponse(res, {
+                    success: false,
+                    statusCode: statusCodes.BAD_REQUEST,
+                    message: "Unable to apply referral code. Please try again."
+                })
             }
 
             // Prevent self-referral
             if (referrerUser.email === email) {
-                return res.status(statusCodes.BAD_REQUEST).render('user/signup', {
-                    errorMessage: 'You cannot use your own referral code.'
-                });
+                return sendResponse(res, {
+                    success: false,
+                    statusCode: statusCodes.BAD_REQUEST,
+                    message: 'You cannot use your own referral code.'
+                })
             }
         }
 
-        const existingUser = await User.findOne({ email })
+        const existingUser = await User.findOne({ $or: [{email},{phone}] })
+
+        if(existingUser && existingUser.isVerified && existingUser.phone === phone){
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.CONFLICT,
+                message: 'Unable to complete signup. Please verify your details and try again.'
+            })
+        }
 
         if (existingUser && existingUser.isVerified) {
-            return res.status(statusCodes.CONFLICT).render('user/signup', {
-                errorMessage: errorMessages.EMAIL_ALREADY_REGISTERED
-            });
-
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.CONFLICT,
+                message: errorMessages.EMAIL_ALREADY_REGISTERED
+            })
         }
 
         const hashPassword = await bcrypt.hash(password, 10);
@@ -120,14 +132,32 @@ export const postSignup = async (req, res, next) => {
 
         req.session.signupEmail = email;
 
-        // console.log("Email save in session", email)
-
-        res.status(statusCodes.CREATED).render('user/verify-otp', {
-            email,
-        });
+        return sendResponse(res, {
+            success: true,
+            statusCode: statusCodes.CREATED,
+            message: "OTP sent successfully! Redirecting to verification...",
+            data: { redirect: '/verify-otp' }
+        })
 
     } catch (err) {
         console.error("Error in signup:", err);
+        next(err)
+    }
+}
+
+
+export const getVerifyOtp = async (req,res,next) =>{
+    try {
+        
+        const email = req.session.signupEmail;
+        if(!email){
+            return res.redirect('/signup');
+        }
+        res.render('user/verify-otp',{
+            email
+        });
+    } catch (err) {
+        console.error('Error loading verify OTP page :',err);
         next(err)
     }
 }
@@ -137,33 +167,54 @@ export const postVerifyOtp = async (req, res, next) => {
 
     try {
         const { otp } = req.body;
-
         const email = req.session.signupEmail;
 
         if (!email) {
-            return res.status(statusCodes.BAD_REQUEST).render('user/verify-otp', {
-                email: null,
-                error: errorMessages.SESSION_EXPIRED || "Session expired. Please sign up again."
-            })
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: 'Session expired. Please sign up again.'
+            });
         }
 
+        if(!otp || !otp.trim()){
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: 'Please enter the OTP.'
+            });
+        }
 
-        const otpRecord = await Otp.findOne({ email, otp });
+        const OTP_EXPIRE_MS = 60 * 1000 ; // 1 minute
+
+        const otpRecord = await Otp.findOne({ email });
         console.log("OTP Details :", otpRecord)
 
 
         if (!otpRecord) {
-            return res.status(statusCodes.NOT_FOUND).render('user/verify-otp', {
-                email,
-                error: errorMessages.OTP_NOT_FOUND || "OTP expired or not found. Please resend OTP."
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.NOT_FOUND,
+                message: errorMessages.OTP_NOT_FOUND || 'OTP expired or not found. Please resend OTP.'
+            });
+        }
+
+        const isExpired = Date.now() - otpRecord.createdAt.getTime() > OTP_EXPIRE_MS
+        if(isExpired){
+            await Otp.deleteOne({email})
+            console.log('OTP time out')
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.NOT_FOUND,
+                message: 'Invalid or expired OTP.'
             })
         }
 
-
         if (otpRecord.otp !== otp) {
-            return res.status(statusCodes.BAD_REQUEST).render('user/verify-otp', {
-                email,
-                error: errorMessages.OTP_INVALID || "Invalid OTP. Please try again."
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: errorMessages.OTP_INVALID || "Invalid OTP. Please try again."
             })
         }
 
@@ -183,17 +234,18 @@ export const postVerifyOtp = async (req, res, next) => {
         }
 
         req.session.signupEmail = null;
-
         req.session.userId = verifiedUser._id;
 
         console.log("OTP verified and User Activated :", email);
 
-        req.session.successMessage = `Welcome to MONTRÉA, ${verifiedUser.name}! Your email has been verified successfully 🎉`;
-
-        res.redirect('/')
+        return sendResponse(res,{
+            success: true,
+            statusCode: statusCodes.OK,
+            message: `Welcome to MONTRÉA, ${verifiedUser.name}! Your email has been verified successfully 🎉`,
+            data: { redirect: '/'}
+        })
 
     } catch (err) {
-
         console.error("Error veifying OTP:", err)
         next(err)
     }
@@ -205,9 +257,10 @@ export const getResendOtp = async (req, res, next) => {
         const email = req.session.signupEmail;
 
         if (!email) {
-            return res.status(statusCodes.BAD_REQUEST).render('user/verify-otp', {
-                email: null,
-                error: errorMessages.SESSION_EXPIRED || "Session expired. Please sign up again."
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: "Session expired. Please sign up again."
             });
         }
 
@@ -218,16 +271,13 @@ export const getResendOtp = async (req, res, next) => {
 
         await Otp.create({ email, otp: newOtp });
 
-
-
         await sendEmail(email, "Your New MONTRÉA OTP", newOtp);
 
-        res.render('user/verify-otp', {
-            email,
+        return sendResponse(res, {
             success: true,
-            message: "New OTP sent successfully"
+            statusCode: statusCodes.OK,
+            message: "New OTP sent successfully! Please check your email."
         })
-
     } catch (err) {
         console.error("Error resending OTP :", err)
         next(err)
@@ -260,6 +310,7 @@ export const getSignin = (req, res) => {
         req.session.returnUrl = req.query.returnUrl;
     }
 
+
     res.render('user/signin', {
         resetPasswordSuccess,
         successMessage,
@@ -277,54 +328,64 @@ export const postSignin = async (req, res, next) => {
         const { error } = signinValidation.validate(req.body, { abortEarly: false })
         if (error) {
             const message = error.details.map(e => e.message).join(', ');
-            return res.status(statusCodes.BAD_REQUEST).render('user/signin', {
-                 errorMessage: message,
-                 returnUrl: req.session.returnUrl || null
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: message
             });
         }
 
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(statusCodes.NOT_FOUND).render('user/signin', {
-                errorMessage: errorMessages.EMAIL_NOT_REGISTERED,
-                returnUrl: req.session.returnUrl || null
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.NOT_FOUND,
+                message: errorMessages.INVALID_CREDENTIALS
             });
         }
 
         if (user.status === 'blocked') {
-            return res.render('user/signin', {
-                 error: 'Your account has been blocked by the admin. Please contact support.',
-                 returnUrl: req.session.returnUrl || null
-            })
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.FORBIDDEN,
+                message: 'Your account has been blocked by the admin. Please contact support.'
+            });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
-            return res.status(statusCodes.UNAUTHORIZED).render('user/signin', {
-                errorMessage: errorMessages.INVALID_PASSWORD,
-                returnUrl: req.session.returnUrl || null
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.UNAUTHORIZED,
+                message: errorMessages.INVALID_CREDENTIALS
             });
         }
 
         if (!user.isVerified) {
-            return res.status(statusCodes.FORBIDDEN).render('user/signin', {
-                errorMessage: "Please verify your email before signing in.",
-                returnUrl: req.session.returnUrl || null
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.FORBIDDEN,
+                message: 'Please verify your email before signing in.'
             });
         }
         const returnUrl = req.session.returnUrl
         delete req.session.returnUrl
-
         req.session.userId = user._id;
-        req.session.successMessage = `Welcome back, ${user.name}! 🎉`;
+        
+        let redirectUrl = '/'
 
         if(returnUrl && isValidReturnUrl(returnUrl)){
-            return res.redirect(returnUrl);
+            redirectUrl = returnUrl;
         }
 
-        res.redirect('/')
+        return sendResponse(res,{
+            success: true,
+            statusCode: statusCodes.OK,
+            message: `Welcome back ${user.name}! 🎉`,
+            data: { redirect: redirectUrl }
+        });
     } catch (err) {
         console.error('Signin Error :', err)
         next(err)
@@ -336,10 +397,7 @@ export const oauthCallbackController = async (req, res) => {
     if (!req.user) {
         return res.redirect('/signin');
     }
-    // const user = await User.findById(req.session.userId)
-    // if(user.status === 'blocked'){
-    //     res.render('user/signin',{error: "Your account has been blocked by admin."})
-    // }
+    
     const returnUrl = req.session.returnUrl;
     delete req.session.returnUrl;
     req.session.userId = req.user._id;
@@ -356,31 +414,62 @@ export const oauthCallbackController = async (req, res) => {
 
 export const userLogout = (req, res, next) => {
     try {
-
         req.session.successMessage = "You have logged out successfully!"
 
+        const adminData = req.session.admin;
+
+        // For Google OAuth users
         if (req.isAuthenticated && req.isAuthenticated()) {
             req.logout(err => {
-                if (err) return next(err)
-            })
+                if (err) return next(err);
+                
+                if (adminData) {
+                    req.session.admin = adminData;
+                }
+                
+                // Clear only user data
+                delete req.session.userId;
+                delete req.session.signupEmail;
+                delete req.session.forgotPasswordEmail;
+                delete req.session.forgotPasswordOtpVerified;
+                delete req.session.pendingReferrerId;
+                delete req.session.returnUrl;
+                
+                // Force save session with admin data
+                req.session.save(err => {
+                    if (err) {
+                        console.error("Session save error:", err);
+                        return next(err);
+                    }
+                    
+                    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+                    res.set('Pragma', 'no-cache');
+                    res.set('Expires', '0');
+                    
+                    return res.redirect('/');
+                });
+            });
+        } else {
+            // For regular email/password users
+            delete req.session.userId;
+            delete req.session.signupEmail;
+            delete req.session.forgotPasswordEmail;
+            delete req.session.forgotPasswordOtpVerified;
+            delete req.session.pendingReferrerId;
+            delete req.session.returnUrl;
+            
+            res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            res.set('Pragma', 'no-cache');
+            res.set('Expires', '0');
+            
+            return res.redirect('/');
         }
-        if (req.session.userId) delete req.session.userId
-        if (req.session.passport) delete req.session.passport
 
-        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-        res.set('Pragma', 'no-cache');
-        res.set('Expires', '0');
-
-        // req.flash('success', 'You have logged out successfully!')
-        // console.log(req.flash())
-        // console.log(req.flash()[0])
-
-        return res.redirect('/')
     } catch (err) {
-        console.error("User Logout Error : ", err)
-        next(err)
+        console.error("User Logout Error:", err);
+        next(err);
     }
-}
+};
 
 export const loadForgetPassword = async (req, res, next) => {
     try {
@@ -428,7 +517,11 @@ export const postForgetPassword = async (req, res, next) => {
         return sendResponse(res, {
             success: true,
             statusCode: statusCodes.OK,
-            message: "OTP has been sent to your email address."
+            message: "OTP has been sent to your email address.",
+            data: {
+                redirect: '/verify-forgot-otp',
+                otpSentAt: Date.now()
+            }
         })
 
     } catch (err) {
@@ -461,8 +554,8 @@ export const postVerifyForgotOtp = async (req, res, next) => {
         const { confirmationCode } = req.body;
         const email = req.session.forgotPasswordEmail;
 
-        console.log("📩 Email in session:", email);
-        console.log("🔢 Confirmation code received:", confirmationCode);
+        console.log(" Email in session:", email);
+        console.log(" Confirmation code received:", confirmationCode);
 
         if (!email) {
             return sendResponse(res, {
@@ -480,19 +573,43 @@ export const postVerifyForgotOtp = async (req, res, next) => {
             });
         }
 
-        const otpRecord = await Otp.findOne({ email, otp: confirmationCode });
-        console.log(" OTP record found:", otpRecord);
+        const OTP_EXPIRE_MS = 60 * 1000; // 1 minute
 
-        if (!otpRecord || otpRecord.otp !== confirmationCode) {
+        const existingOtpRecord = await Otp.findOne({ email });
+        console.log(" OTP Record for email:", existingOtpRecord);
+
+        if (!existingOtpRecord) {
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.NOT_FOUND,
+                message: "OTP expired or not found. Please resend OTP."
+            })
+        }
+
+        const isExpired = Date.now() - existingOtpRecord.createdAt.getTime() > OTP_EXPIRE_MS;
+        if (isExpired) {
+            await Otp.deleteOne({ email });
+            console.log(' OTP expired and deleted');
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.NOT_FOUND,
+                message: 'OTP has expired. Please request a new one.'
+            })
+        }
+
+        if (existingOtpRecord.otp !== confirmationCode) {
+            console.log(` Wrong OTP entered. Expected: ${existingOtpRecord.otp}, Got: ${confirmationCode}`);
             return sendResponse(res, {
                 success: false,
                 statusCode: statusCodes.BAD_REQUEST,
-                message: errorMessages.OTP_INVALID || "Invalid OTP. Please try again."
+                message: "Invalid OTP. Please check and try again."
             })
         }
 
         await Otp.deleteOne({ email });
         req.session.forgotPasswordOtpVerified = true;
+
+        console.log(" OTP verified successfully for:", email);
 
         return sendResponse(res, {
             success: true,
@@ -501,7 +618,7 @@ export const postVerifyForgotOtp = async (req, res, next) => {
         })
 
     } catch (err) {
-        console.error("Error in postVerifyForgotOtp:", err)
+        console.error(" Error in postVerifyForgotOtp:", err)
         next(err)
     }
 }

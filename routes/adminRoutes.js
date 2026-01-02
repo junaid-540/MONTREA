@@ -14,7 +14,6 @@ import { createCoupon, getAddCouponPage, getCouponList, getEditCouponPage, toggl
 import { getReturnRequests, processRefund, updateReturnStatus } from '../controller/adminControllers/return.controller.js';
 import { addOffer, deleteOffer, getEditOffer, getFormData, getOffers, toggleOfferStatus, updateOffer } from '../controller/adminControllers/offer.controller.js';
 import { downloadSalesReportExcel, downloadSalesReportPDF, getSalesReportPage } from '../controller/adminControllers/salesReport.controller.js';
-// import { validateVariantImages } from '../middleware/validateVariantImages.js';
 
 
 const router = express.Router()
@@ -26,7 +25,7 @@ const router = express.Router()
 
 router.get('/',getLoginPage)
 router.post('/',postLogin)
-router.get('/logout',adminLogout)
+router.post('/logout',adminLogout)
 
 //Dashboard//
 

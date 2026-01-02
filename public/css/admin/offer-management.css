@@ -40,7 +40,7 @@ body {
 .table-responsive {
     background-color: #999;
     border-radius: 5px;
-    overflow: hidden;
+    overflow-x: auto;
 }
 
 .offers-table {

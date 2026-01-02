@@ -325,3 +325,155 @@ if (retryPaymentBtn) {
         }
     });
 }
+
+
+let reviewToDelete = null;
+const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+const deleteReviewModal = new bootstrap.Modal(document.getElementById('deleteReviewModal'));
+
+
+
+function openReviewModal(itemId, productName){
+    document.getElementById('reviewProductName').textContent = productName;
+    document.getElementById('reviewItemId').value = itemId;
+
+     // Reset form
+    document.querySelectorAll('.star-rating input[type="radio"]').forEach(input => {
+        input.checked = false;
+    });
+    document.getElementById('reviewText').value = '';
+    document.getElementById('ratingText').textContent = 'Tap a star to rate';
+    document.getElementById('charCount').textContent = '0';
+    document.getElementById('submitReviewBtn').disabled = true;
+    
+    reviewModal.show();
+}
+
+// Star rating interaction
+document.querySelectorAll('.star-rating input[type="radio"]').forEach(input => {
+    input.addEventListener('change', function() {
+        const rating = parseInt(this.value);
+        const ratingTexts = ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+        document.getElementById('ratingText').textContent = ratingTexts[rating - 1];
+        document.getElementById('submitReviewBtn').disabled = false;
+    });
+});
+
+// character count 
+
+document.getElementById('reviewText').addEventListener('input', function(){
+    document.getElementById('charCount').textContent = this.value.length;
+})
+
+// Submit Review
+document.getElementById('submitReviewBtn').addEventListener('click', async function() {
+    const itemId = document.getElementById('reviewItemId').value;
+    const orderId = document.getElementById('reviewOrderId').value;
+    const rating = document.querySelector('input[name="rating"]:checked')?.value;
+    const reviewText = document.getElementById('reviewText').value.trim();
+    
+    if (!rating) {
+        showToast('error', 'Please select a rating');
+        return;
+    }
+    
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    
+    try {
+        const response = await axios.post('/review/submit', {
+            orderId,
+            itemId,
+            rating,
+            reviewText
+        });
+        
+        if (response.data.success) {
+            showToast('success', 'Review submitted!');
+            reviewModal.hide();
+
+          // Update the UI immediately without page reload
+
+            const reviewSection = document.querySelector(`[data-item-id="${itemId}"] .review-section`);
+            if (reviewSection) {
+                const reviewData = {
+                    _id: response.data.data.reviewId,
+                    rating: rating,
+                    reviewText: reviewText,
+                    createdAt: new Date()
+                };
+                
+                const productName = document.querySelector(`[data-item-id="${itemId}"] .item-name`).textContent.trim();
+                
+                reviewSection.innerHTML = `
+                    <div class="status-info review-submitted">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <i class="fas fa-star me-2" style="color: #ffc107;"></i>
+                                <strong>Your Review:</strong> 
+                                <div class="stars small mt-1">
+                                    ${'<i class="fas fa-star"></i>'.repeat(rating)}${'<i class="far fa-star"></i>'.repeat(5 - rating)}
+                                </div>
+                                ${reviewText ? `<p class="mb-0 mt-2">${reviewText}</p>` : ''}
+                                <small class="text-muted">
+                                    Reviewed on ${new Date().toLocaleDateString('en-IN', { 
+                                        day: 'numeric', 
+                                        month: 'short', 
+                                        year: 'numeric' 
+                                    })}
+                                </small>
+                            </div>
+                            <div class="review-actions">
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="confirmDeleteReview('${reviewData._id}', '${productName}')">
+                                    <i class="fas fa-trash me-1"></i>Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        } else {
+            showToast('error', response.data.message);
+            this.disabled = false;
+            this.innerHTML = 'Submit Review';
+        }
+    } catch (error) {
+        showToast('error', error.response?.data?.message || 'Error submitting review');
+        this.disabled = false;
+        this.innerHTML = 'Submit Review';
+    }
+});
+
+// Confirm Delete Review
+function confirmDeleteReview(reviewId, productName) {
+    reviewToDelete = reviewId;
+    document.getElementById('deleteProductName').textContent = productName;
+    deleteReviewModal.show();
+}
+
+// Delete Review
+document.getElementById('confirmDeleteReviewBtn').addEventListener('click', async function() {
+    if (!reviewToDelete) return;
+    
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+    
+    try {
+        const response = await axios.delete(`/review/${reviewToDelete}`);
+        
+        if (response.data.success) {
+            showToast('success', 'Review deleted!');
+            deleteReviewModal.hide();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showToast('error', response.data.message);
+            this.disabled = false;
+            this.innerHTML = 'Yes, Delete';
+        }
+    } catch (error) {
+        showToast('error', error.response?.data?.message || 'Error deleting review');
+        this.disabled = false;
+        this.innerHTML = 'Yes, Delete';
+    }
+});

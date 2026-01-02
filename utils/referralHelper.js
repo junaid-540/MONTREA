@@ -82,8 +82,8 @@ export const processReferral = async (newUserId, referrerId) =>{
             {}
         );
 
-        console.log(` Referral processed: ${newUser.email} referred by ${referrerUser.name}`);
-        console.log(` Credited ₹${REFERRAL_REWARD_AMOUNT} to ${referrerUser.name}'s wallet`);
+        console.log(` Referral processed: ${newUser.email} referred by ${referredUser.name}`);
+        console.log(` Credited ₹${REFERRAL_REWARD_AMOUNT} to ${referredUser.name}'s wallet`);
 
         return {
             success: true,

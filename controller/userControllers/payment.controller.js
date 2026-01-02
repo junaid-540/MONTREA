@@ -13,6 +13,8 @@ import dotenv from "dotenv";
 import crypto from 'crypto'
 import { debitWallet, getOrCreateWallet, getWalletBalance } from '../../utils/walletHelper.js';
 import { incrementCouponUsage, validateCoupon, calculateCartTotals } from "../../utils/couponHelper.js";
+import { calculateCartItemsPrice, calculateCartSubtotalWithOffers, enrichCartItemsWithPrices } from "../../utils/cartPriceHelper.js";
+import { adjustCartQuantitiesToStock, filterValidItems } from "../../utils/cartHelpers.js";
 dotenv.config()
 
 
@@ -28,7 +30,6 @@ export const getPaymentPage = async (req,res,next) =>{
         const userId = req.session.userId;
         const selectedAddressId = req.session.selectedAddressId;
 
-        
         const cart = await Cart.findOne({userId})
         .populate('items.productId', 'name coverImage isListed categoryId')
         .populate('items.productVariantId', 'color size stock images price discountedPrice isListed');
@@ -42,6 +43,19 @@ export const getPaymentPage = async (req,res,next) =>{
             setSessionError(req,'Please select a delivery address');
             return res.redirect('/checkout');
         }
+
+        const { adjustedItems, hasStockChanges } = await adjustCartQuantitiesToStock(cart.items);
+        
+        if (hasStockChanges) {
+            // Save adjusted quantities
+            cart.items = adjustedItems;
+            await cart.save();
+            
+            setSessionError(req, 'Some item quantities were adjusted due to stock changes. Please review your cart.');
+            return res.redirect('/cart');
+        }
+
+
         const categoryIds = cart.items.map(item => item.productId?.categoryId).filter(Boolean);
         const categories  = await Category.find({_id: {$in: categoryIds}}).lean();
 
@@ -72,7 +86,7 @@ export const getPaymentPage = async (req,res,next) =>{
 
             enrichedItems.push({
                 productId: product?._id,
-                productVariantId: variant?._id,
+                productVariantId: variant,
                 productName: product?.name || 'Unknown Product',
                 productImage:  variant?.images?.[0]?.url|| product?.coverImage?.url || '/images/placeholder.jpg',
                 color: variant?.color,
@@ -80,7 +94,14 @@ export const getPaymentPage = async (req,res,next) =>{
                 quantity: item.quantity,
                 priceAtTime: item.priceAtTime,
                 discountedPriceAtTime: item.discountedPriceAtTime || 0,
-                isInvalid
+                isInvalid,
+                variantData: variant ? {
+                    _id: variant._id,
+                    price: variant.price,
+                    discountedPrice: variant.discountedPrice,
+                    isListed: variant.isListed,
+                    stock: variant.stock
+                } : null
             });
         }
 
@@ -89,10 +110,9 @@ export const getPaymentPage = async (req,res,next) =>{
             return res.redirect('/cart');
         }
 
-        const subtotal = enrichedItems.reduce((sum, item)=>{
-            const price = item.discountedPriceAtTime > 0 ? item.discountedPriceAtTime : item.priceAtTime;
-            return sum + (price * item.quantity);
-        },0);
+        const itemsWithPrices = await enrichCartItemsWithPrices(enrichedItems);
+        const validItems = filterValidItems(cart.items, categoryMap)
+        const subtotalWithOffers = await calculateCartSubtotalWithOffers(validItems);
 
         let couponDiscount = 0;
         let appliedCoupon = null;
@@ -101,7 +121,7 @@ export const getPaymentPage = async (req,res,next) =>{
             const coupon = await Coupon.findById(req.session.appliedCoupon.couponId);
 
             if(coupon){
-                const validation = validateCoupon(coupon, subtotal, userId);
+                const validation = validateCoupon(coupon, subtotalWithOffers, userId);
                 if(validation.valid){
                     couponDiscount = validation.discount;
                     appliedCoupon = {
@@ -121,11 +141,7 @@ export const getPaymentPage = async (req,res,next) =>{
             }
         }
 
-        const totals = calculateCartTotals(subtotal, couponDiscount);
-
-        // const shippingCharge = subtotal >= 1000 ? 0 : 50;
-        // const tax = subtotal * 0.18 ;
-        // const totalAmount = subtotal + shippingCharge + tax;
+        const totals = calculateCartTotals(subtotalWithOffers, couponDiscount);
 
         const shippingAddress = await Address.findOne({_id: selectedAddressId, userId}).lean();
         if(!shippingAddress){
@@ -141,8 +157,8 @@ export const getPaymentPage = async (req,res,next) =>{
         res.render('user/payment',{
             Title: 'payment',
             cart:{
-                items: enrichedItems,
-                itemsCount: enrichedItems.length
+                items: itemsWithPrices,
+                itemsCount: itemsWithPrices.length
             },
             user: res.locals.user || null,
             shippingAddress,
@@ -223,10 +239,15 @@ export const placeOrder = async (req,res,next) =>{
                 });
             }
 
-            const priceAtPurchase = item.priceAtTime;
-            const discountedPriceAtPurchase = item.discountedPriceAtTime || 0;
-            const finalPrice = discountedPriceAtPurchase > 0 ? discountedPriceAtPurchase : priceAtPurchase;
+
+            
+
+            const priceData = await calculateCartItemsPrice(variant, variant._id);
+            const finalPrice = priceData.displayPrice;
+            const originalPrice = priceData.originalPrice;
             const itemTotal = finalPrice * item.quantity;
+
+            subtotal += itemTotal;
 
             orderItems.push({
                 productId: product._id,
@@ -236,13 +257,16 @@ export const placeOrder = async (req,res,next) =>{
                 size: variant.size,
                 image:  variant.images?.[0]?.url || product.coverImage?.url || '',
                 quantity: item.quantity,
-                priceAtPurchase,
-                discountedPriceAtPurchase,
+                priceAtPurchase: originalPrice,
+                discountedPriceAtPurchase: finalPrice,
                 itemTotal,
-                itemStatus: 'Placed'
+                itemStatus: 'Placed',
+                hasOffer: priceData.hasOffer,
+                offerType: priceData.offerType,
+                discountPercentage: priceData.discountPercentage,
+                offerDetails: priceData.offerDetails
             });
 
-            subtotal += itemTotal;
         }
 
         const address = await Address.findOne({ _id: selectedAddressId, userId }).lean();
@@ -278,10 +302,18 @@ export const placeOrder = async (req,res,next) =>{
         }
 
         const subtotalAfterDiscount = subtotal - couponDiscount;
-        const shippingCharge = subtotalAfterDiscount >= 1000 ? 0 : 50;
-        const taxableAmount = subtotalAfterDiscount + shippingCharge;
-        const tax = taxableAmount * 0.18;
-        const totalAmount = Math.round(taxableAmount + tax);
+        const shippingCharge = subtotal >= 1000 ? 0 : 50;
+        // const taxableAmount = subtotalAfterDiscount + shippingCharge;
+        const tax = subtotalAfterDiscount * 0.18;
+        const totalAmount = Math.round(subtotalAfterDiscount + tax + shippingCharge);
+
+        if(paymentMethod === 'COD' && totalAmount > 1000){
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: 'Cash on delivery is not available for orders above ₹1000. Please choose another payment method.'
+            });
+        }
 
         // FOR COD - complete the order immediately
         if(paymentMethod === 'COD'){
@@ -465,7 +497,7 @@ export const placeOrder = async (req,res,next) =>{
                 statusCode: statusCodes.OK,
                 message: 'Proceed to payment',
                 data: {
-                    tempOrderId,
+                    tempOrderId : tempOrderId,
                     amount: totalAmount,
                     needsPayment: true
                 }

@@ -27,7 +27,7 @@ const errorMessages = {
     PASSWORD_INVALID: "Password must include letters and numbers only, min 6 chars.",
     CONFIRM_PASSWORD_REQUIRED: "Please confirm your password.",
     CONFIRM_PASSWORD_MISMATCH: "Passwords do not match.",
-    OTP_NOT_FOUND: "OTP not found or expired. Please resend OTP.",
+    OTP_NOT_FOUND: "OTP expired or not found. Please resend OTP.",
 
     // Admin //
     ADMIN_NOT_FOUND: "Admin not found.",

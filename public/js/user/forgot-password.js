@@ -36,13 +36,20 @@ form.addEventListener('submit', async (e) => {
     const response = await axios.post('/forgot-password', { email });
 
     if (response.data.success) {
+
+      const otpSentAt = response.data.data?.otpSentAt || Date.now();
+      sessionStorage.setItem('forgotPassword_otpSentAt', otpSentAt.toString());
+      sessionStorage.setItem('forgotPassword_resendCooldownStart', otpSentAt.toString());
+
       Swal.fire({
         icon: 'success',
         title: 'OTP Sent!',
         text: response.data.message || "Check your email for the OTP.",
-        timer: 3000, 
+        timer: 2000, 
         timerProgressBar: true, 
         showConfirmButton: false, 
+        allowOutsideClick: false,
+        allowEscapeKey: false,
         didClose: () => {
           window.location.href = '/verify-forgot-otp';
         },

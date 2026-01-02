@@ -65,11 +65,10 @@ export const signinValidation = Joi.object({
     }),
 
     password: Joi.string()
-    .pattern(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,50}$/)
+    // .pattern(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,50}$/)
     .required()
     .messages({
         'string.empty':errorMessages.PASSWORD_REQUIRED,
-        'string.pattern.base':errorMessages.PASSWORD_INVALID,
     }),
 });
 

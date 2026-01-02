@@ -1,4 +1,3 @@
-// middleware/multerConfig.js
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinary.js";
@@ -41,23 +40,7 @@ const upload = multer({
   },
 });
 
-// Memory storage for EDIT operations
-// const memoryStorage = multer.memoryStorage();
 
-// export const uploadMemory = multer({
-//   storage: memoryStorage,
-//   limits: {
-//     fileSize: 5 * 1024 * 1024,
-//     files: 3,
-//   },
-//   fileFilter: (req, file, cb) => {
-//     if (file.mimetype.startsWith("image/")) {
-//       cb(null, true);
-//     } else {
-//       cb(new Error("Only images allowed"), false);
-//     }
-//   },
-// });
 
 export const multerErrorHandler = (error, req, res, next) => {
   if (error instanceof multer.MulterError) {

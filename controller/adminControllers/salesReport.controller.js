@@ -4,13 +4,12 @@ import { generateSalesReportExcel } from "../../utils/generateSalesExcel.js";
 import { buildDateFilter } from "../../utils/builtDateFilter.js";
 import { calculateMetrics } from "../../utils/calculateMetrics.js";
 
-
 export const getSalesReportPage = async (req, res, next) => {
     try {
         const { filterType = 'all', startDate, endDate } = req.query;
         const dateFilter = buildDateFilter(filterType, startDate, endDate);
 
-        // Fetching orders excluded the pending and failed payments
+        // Fetch orders excluding pending and failed payments
         const orders = await Order.find({
             ...dateFilter,
             $or: [
@@ -19,7 +18,18 @@ export const getSalesReportPage = async (req, res, next) => {
                 { paymentMethod: 'Razorpay', paymentStatus: 'Paid' }
             ],
             orderStatus: { $nin: ['Pending'] }
-        }).populate('userId', 'name email').sort({ placedAt: -1 }).lean();
+        })
+        .populate('userId', 'name email')
+        .populate({
+            path: 'items.productId',
+            select: 'name'
+        })
+        .populate({
+            path: 'items.productVariantId',
+            select: 'price discountedPrice'
+        })
+        .sort({ placedAt: -1 })
+        .lean();
 
         // Calculate all metrics
         const metrics = calculateMetrics(orders);
@@ -59,7 +69,18 @@ export const downloadSalesReportPDF = async (req, res, next) => {
                 { paymentMethod: 'Razorpay', paymentStatus: 'Paid' }
             ],
             orderStatus: { $nin: ['Pending'] }
-        }).populate('userId', 'name email').sort({ placedAt: -1 }).lean();
+        })
+        .populate('userId', 'name email')
+        .populate({
+            path: 'items.productId',
+            select: 'name'
+        })
+        .populate({
+            path: 'items.productVariantId',
+            select: 'price discountedPrice'
+        })
+        .sort({ placedAt: -1 })
+        .lean();
 
         const metrics = calculateMetrics(orders);
 
@@ -97,7 +118,18 @@ export const downloadSalesReportExcel = async (req, res, next) => {
                 { paymentMethod: 'Razorpay', paymentStatus: 'Paid' }
             ],
             orderStatus: { $nin: ['Pending'] }
-        }).populate('userId', 'name email').sort({ placedAt: -1 }).lean();
+        })
+        .populate('userId', 'name email')
+        .populate({
+            path: 'items.productId',
+            select: 'name'
+        })
+        .populate({
+            path: 'items.productVariantId',
+            select: 'price discountedPrice'
+        })
+        .sort({ placedAt: -1 })
+        .lean();
 
         const metrics = calculateMetrics(orders);
 

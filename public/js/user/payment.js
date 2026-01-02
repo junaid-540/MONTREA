@@ -122,6 +122,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.payment-method:not(.disabled)').forEach(method => {
         method.addEventListener('click', function() {
+            const radioInput = this.querySelector('input[type="radio"]');
+            if(radioInput && radioInput.disabled){
+                return;
+            }
             document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
             this.classList.add('active');
             this.querySelector('input[type="radio"]').checked = true;
@@ -131,7 +135,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.payment-method.disabled').forEach(method => {
         method.addEventListener('click', function(e) {
             e.preventDefault();
-            showToast('This payment method is coming soon!', 'info');
+            const codRestrictionMsg = this.querySelector('.cod-restriction-msg');
+            if(codRestrictionMsg){
+                showToast('COD is not available for orders above ₹1000', 'warning');
+            }
         });
     });
 

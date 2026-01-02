@@ -1,6 +1,10 @@
-
 import Coupon from "../models/couponSchema.js";
 
+// Configuration constants for business rules
+const COUPON_CONFIG = {
+    MAX_PERCENTAGE_DISCOUNT: 70, // Maximum percentage discount allowed (70% max)
+    MAX_DISCOUNT_TO_SUBTOTAL_RATIO: 0.80 // Discount can't exceed 80% of subtotal
+};
 
 export const calculateDiscount = (coupon, cartSubtotal) => {
     let discount = 0;
@@ -18,10 +22,14 @@ export const calculateDiscount = (coupon, cartSubtotal) => {
         discount = coupon.discountValue;
     }
 
+    //  Discount cannot exceed 80% of subtotal (user must pay at least 20%)
+    const maxAllowedDiscount = cartSubtotal * COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO;
+    discount = Math.min(discount, maxAllowedDiscount);
+    
     // Discount cannot exceed subtotal
     discount = Math.min(discount, cartSubtotal);
 
-    return Math.round(discount * 100) / 100; // Round to 2 decimals
+    return Math.round(discount * 100) / 100; 
 };
 
 
@@ -60,7 +68,6 @@ export const validateCoupon = (coupon, cartSubtotal, userId) => {
         };
     }
 
-   
     const userUsageCount = getUserUsageCount(coupon, userId);
     if (userUsageCount >= coupon.perUserLimit) {
         return { 
@@ -93,7 +100,6 @@ export const getAvailableCoupons = async (userId, cartSubtotal = 0) => {
     try {
         const now = new Date();
 
-        // Find all active, non-expired coupons
         const coupons = await Coupon.find({
             isActive: true,
             startDate: { $lte: now },
@@ -101,18 +107,15 @@ export const getAvailableCoupons = async (userId, cartSubtotal = 0) => {
             $expr: { $lt: ['$usageCount', '$usageLimit'] }
         }).lean();
 
-        // Filter coupons user can still use
         const availableCoupons = [];
 
         for (const coupon of coupons) {
             const userUsageCount = getUserUsageCount(coupon, userId);
             
-            // Skip if user has used it max times
             if (userUsageCount >= coupon.perUserLimit) {
                 continue;
             }
 
-            // Check if user can apply it now
             const canApply = cartSubtotal >= coupon.minPurchaseAmount;
             let estimatedDiscount = 0;
 
@@ -147,10 +150,9 @@ export const getAvailableCoupons = async (userId, cartSubtotal = 0) => {
 
 export const calculateCartTotals = (subtotal, couponDiscount = 0) => {
     const subtotalAfterDiscount = subtotal - couponDiscount;
-    const shippingCharge = subtotalAfterDiscount >= 1000 ? 0 : 50;
-    const taxableAmount = subtotalAfterDiscount + shippingCharge;
-    const tax = taxableAmount * 0.18;
-    const totalAmount = taxableAmount + tax;
+    const shippingCharge = subtotal >= 1000 ? 0 : 50;
+    const tax = subtotalAfterDiscount * 0.18;
+    const totalAmount = subtotalAfterDiscount + tax + shippingCharge;
 
     return {
         subtotal: Math.round(subtotal),
@@ -160,7 +162,6 @@ export const calculateCartTotals = (subtotal, couponDiscount = 0) => {
         totalAmount: Math.round(totalAmount)
     };
 };
-
 
 
 export const formatCouponDisplay = (coupon) => {
@@ -181,13 +182,60 @@ export const formatCouponDisplay = (coupon) => {
         discountText,
         minPurchase: coupon.minPurchaseAmount,
         validUntil: coupon.endDate.toLocaleDateString('en-IN'),
-        expiresIn: Math.ceil((coupon.endDate - new Date()) / (1000 * 60 * 60 * 24)) // Days remaining
+        expiresIn: Math.ceil((coupon.endDate - new Date()) / (1000 * 60 * 60 * 24))
     };
 };
 
 /**
- * Increment coupon usage after successful order
+ * This prevents creation of invalid coupons
  */
+export const validateCouponCreation = (couponData) => {
+    const errors = [];
+
+    // 1. Percentage discount cannot exceed max limit
+    if (couponData.discountType === 'percentage') {
+        if (couponData.discountValue > COUPON_CONFIG.MAX_PERCENTAGE_DISCOUNT) {
+            errors.push(`Percentage discount cannot exceed ${COUPON_CONFIG.MAX_PERCENTAGE_DISCOUNT}%`);
+        }
+
+        // 2. If maxDiscount exists, it should be less than minPurchase
+        if (couponData.maxDiscountAmount && couponData.minPurchaseAmount) {
+            // Max discount should be reasonable compared to min purchase
+            const maxDiscountRatio = couponData.maxDiscountAmount / couponData.minPurchaseAmount;
+            if (maxDiscountRatio >= COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO) {
+                errors.push(
+                    `Maximum discount (₹${couponData.maxDiscountAmount}) is too high compared to minimum purchase (₹${couponData.minPurchaseAmount}). ` +
+                    `It should not exceed ${COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO * 100}% of minimum purchase.`
+                );
+            }
+        }
+    }
+
+    // 3. For fixed discount, it should be less than minPurchase
+    if (couponData.discountType === 'fixed') {
+        if (couponData.minPurchaseAmount && couponData.discountValue >= couponData.minPurchaseAmount) {
+            errors.push(
+                `Fixed discount (₹${couponData.discountValue}) cannot be equal to or greater than minimum purchase (₹${couponData.minPurchaseAmount})`
+            );
+        }
+
+        // Fixed discount shouldn't be too close to min purchase
+        if (couponData.minPurchaseAmount) {
+            const discountRatio = couponData.discountValue / couponData.minPurchaseAmount;
+            if (discountRatio >= COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO) {
+                errors.push(
+                    `Fixed discount should not exceed ${COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO * 100}% of minimum purchase amount`
+                );
+            }
+        }
+    }
+
+    return {
+        valid: errors.length === 0,
+        errors
+    };
+};
+
 export const incrementCouponUsage = async (couponId, userId, orderId) => {
     try {
         const coupon = await Coupon.findById(couponId);
@@ -195,16 +243,13 @@ export const incrementCouponUsage = async (couponId, userId, orderId) => {
             throw new Error('Coupon not found');
         }
 
-        // Increment global usage count
         coupon.usageCount += 1;
 
-        // Find or create user usage record
         const userUsageIndex = coupon.usedBy.findIndex(
             u => u.userId.toString() === userId.toString()
         );
 
         if (userUsageIndex === -1) {
-            // User hasn't used this coupon before
             coupon.usedBy.push({
                 userId,
                 usageCount: 1,
@@ -212,7 +257,6 @@ export const incrementCouponUsage = async (couponId, userId, orderId) => {
                 orders: [orderId]
             });
         } else {
-            // User has used this coupon before
             coupon.usedBy[userUsageIndex].usageCount += 1;
             coupon.usedBy[userUsageIndex].lastUsedAt = new Date();
             coupon.usedBy[userUsageIndex].orders.push(orderId);
@@ -227,9 +271,6 @@ export const incrementCouponUsage = async (couponId, userId, orderId) => {
     }
 };
 
-/**
- * Decrement coupon usage (for order cancellation/return)
- */
 export const decrementCouponUsage = async (couponId, userId, orderId) => {
     try {
         const coupon = await Coupon.findById(couponId);
@@ -237,29 +278,24 @@ export const decrementCouponUsage = async (couponId, userId, orderId) => {
             throw new Error('Coupon not found');
         }
 
-        // Decrement global usage count
         if (coupon.usageCount > 0) {
             coupon.usageCount -= 1;
         }
 
-        // Find user usage record
         const userUsageIndex = coupon.usedBy.findIndex(
             u => u.userId.toString() === userId.toString()
         );
 
         if (userUsageIndex !== -1) {
-            // Decrement user's usage count
             if (coupon.usedBy[userUsageIndex].usageCount > 0) {
                 coupon.usedBy[userUsageIndex].usageCount -= 1;
             }
 
-            // Remove order from the orders array
             coupon.usedBy[userUsageIndex].orders = 
                 coupon.usedBy[userUsageIndex].orders.filter(
                     o => o.toString() !== orderId.toString()
                 );
 
-            // If user has no more uses, remove them from usedBy array
             if (coupon.usedBy[userUsageIndex].usageCount === 0) {
                 coupon.usedBy.splice(userUsageIndex, 1);
             }

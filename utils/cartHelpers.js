@@ -1,10 +1,7 @@
 import Category from "../models/categorySchema.js";
+import ProductVariant from "../models/productVariantSchema.js";
 
-/**
- * Fetches categories and creates a lookup map
- * @param {Array} categoryIds - Array of category IDs
- * @returns {Object} Map of categoryId -> category object
- */
+
 export const getCategoryMap = async (categoryIds) => {
     const categories = await Category.find({ _id: { $in: categoryIds } }).lean();
     const categoryMap = {};
@@ -14,12 +11,8 @@ export const getCategoryMap = async (categoryIds) => {
     return categoryMap;
 };
 
-/**
- * Validates if a cart item is available (product, variant, and category are listed)
- * @param {Object} item - Cart item with populated productId and productVariantId
- * @param {Object} categoryMap - Map of categories
- * @returns {Object} { isValid, isOutOfStock, invalidReason }
- */
+
+
 export const validateCartItem = (item, categoryMap) => {
     const product = item.productId;
     const variant = item.productVariantId;
@@ -50,12 +43,7 @@ export const validateCartItem = (item, categoryMap) => {
     };
 };
 
-/**
- * Filters cart items to only include valid ones
- * @param {Array} items - Cart items
- * @param {Object} categoryMap - Map of categories
- * @returns {Array} Valid items only
- */
+
 export const filterValidItems = (items, categoryMap) => {
     return items.filter(item => {
         const product = item.productId;
@@ -70,11 +58,7 @@ export const filterValidItems = (items, categoryMap) => {
     });
 };
 
-/**
- * Calculates subtotal from valid cart items
- * @param {Array} items - Cart items
- * @returns {Number} Subtotal amount
- */
+
 export const calculateSubtotal = (items) => {
     return items.reduce((sum, item) => {
         const price = item.discountedPriceAtTime > 0 
@@ -84,12 +68,7 @@ export const calculateSubtotal = (items) => {
     }, 0);
 };
 
-/**
- * Checks if cart can proceed to checkout
- * @param {Array} items - Cart items with populated variants
- * @param {Object} categoryMap - Map of categories
- * @returns {Object} { canCheckout, hasInvalidItems }
- */
+
 export const checkCartStatus = (items, categoryMap) => {
     let hasInvalidItems = false;
     let canCheckout = true;
@@ -110,11 +89,7 @@ export const checkCartStatus = (items, categoryMap) => {
     return { canCheckout, hasInvalidItems };
 };
 
-/**
- * Gets complete cart summary with validation
- * @param {Array} items - Cart items with populated data
- * @returns {Object} { validItems, subtotal, validItemsCount, hasInvalidItems, canCheckout }
- */
+
 export const getCartSummary = async (items) => {
     if (items.length === 0) {
         return {
@@ -142,12 +117,7 @@ export const getCartSummary = async (items) => {
     };
 };
 
-/**
- * Enriches cart items with validation status and display data
- * @param {Array} items - Raw cart items
- * @param {Object} categoryMap - Map of categories
- * @returns {Array} Enriched items with all display properties
- */
+
 export const enrichCartItems = (items, categoryMap) => {
     return items.map(item => {
         const product = item.productId;
@@ -174,4 +144,48 @@ export const enrichCartItems = (items, categoryMap) => {
             invalidReason: validation.invalidReason
         };
     });
+};
+
+
+
+export const adjustCartQuantitiesToStock = async (cartItems) => {
+    const adjustedItems = [];
+    let hasStockChanges = false;
+    
+    for (const item of cartItems) {
+        const variant = item.productVariantId?._id 
+            ? item.productVariantId : await ProductVariant.findById(item.productVariantId);
+        
+        if (!variant) {
+            // Item is invalid, keep as is
+            adjustedItems.push(item);
+            continue;
+        }
+        
+        const currentStock = variant.stock || 0;
+        const cartQuantity = item.quantity || 0;
+        
+        if (currentStock === 0) {
+            item.isOutOfStock = true;
+            item.invalidReason = 'Out of Stock';
+            adjustedItems.push(item);
+            hasStockChanges = true;
+        } else if (currentStock < cartQuantity) {
+            // Stock reduced - adjust quantity
+            item.quantity = currentStock;
+            item.wasAdjusted = true;
+            item.previousQuantity = cartQuantity;
+            item.adjustmentReason = `Stock reduced to ${currentStock}`;
+            adjustedItems.push(item);
+            hasStockChanges = true;
+        } else {
+            // No changes needed
+            adjustedItems.push(item);
+        }
+    }
+    
+    return {
+        adjustedItems,
+        hasStockChanges
+    };
 };

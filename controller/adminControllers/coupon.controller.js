@@ -2,6 +2,7 @@ import Coupon from "../../models/couponSchema.js";
 import { sendResponse } from "../../utils/responseHandler.js";
 import statusCodes from "../../utils/statusCodes.js";
 import { getPaginateData } from "../../utils/helpers.js";
+import { validateCouponCreation } from "../../utils/couponHelper.js"; // ADD THIS IMPORT
 
 
 export const getCouponList = async (req,res,next) =>{
@@ -20,7 +21,7 @@ export const getCouponList = async (req,res,next) =>{
 
         const {data: coupons, totalPages, currentPage, search} =  await getPaginateData(Coupon,req,{
             filters: filterQuery,
-            searchField: ['code'],
+            searchFields: ['code'],
             sort: { createdAt: -1},
             limit: 7
         });
@@ -65,8 +66,8 @@ export const createCoupon = async (req,res,next) =>{
     try {
         const {code, description, discountType, discountValue, maxDiscountAmount, minPurchaseAmount, usageLimit, perUserLimit, startDate, endDate, isActive} = req.body;
 
-        if(!code || !description || ! discountType || !discountValue){
-            return sendResponse(res,{success: false, statusCode: statusCodes.BAD_REQUEST, message: 'Please fill requried fields'});
+        if(!code || !description || !discountType || !discountValue){
+            return sendResponse(res,{success: false, statusCode: statusCodes.BAD_REQUEST, message: 'Please fill required fields'});
         }
 
         const codeRegex = /^[A-Z0-9_-]+$/
@@ -83,8 +84,10 @@ export const createCoupon = async (req,res,next) =>{
         if(discValue <= 0){
             return sendResponse(res,{success: false, statusCode: statusCodes.BAD_REQUEST, message: 'Discount value must be greater than 0'});
         }
-        if(discountType === 'percentage' && discValue > 100){
-            return sendResponse(res,{success: false, statusCode: statusCodes.BAD_REQUEST, message: 'Percentage discount cannot exceed 100%'});
+        
+        // UPDATED: Changed from 100% to 70%
+        if(discountType === 'percentage' && discValue > 70){
+            return sendResponse(res,{success: false, statusCode: statusCodes.BAD_REQUEST, message: 'Percentage discount cannot exceed 70%'});
         }
 
         const start = new Date(startDate);
@@ -123,13 +126,24 @@ export const createCoupon = async (req,res,next) =>{
         if(discountType === 'percentage'){
             if(maxDiscountAmount && parseFloat(maxDiscountAmount) > 0){
                 couponData.maxDiscountAmount = parseFloat(maxDiscountAmount);
-            }else{
+            } else {
                 return sendResponse(res,{
                     success: false,
                     statusCode: statusCodes.BAD_REQUEST,
                     message: 'Max discount amount is required for percentage coupons'
                 });
             }
+        }
+
+        // NEW: Use helper function for business rule validation
+        const validation = validateCouponCreation(couponData);
+        if (!validation.valid) {
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: 'Coupon validation failed',
+                errors: validation.errors
+            });
         }
 
         const newCoupon = new Coupon(couponData);
@@ -188,9 +202,10 @@ export const updateCoupon = async (req,res,next) =>{
                 success: false,
                 statusCode: statusCodes.NOT_FOUND,
                 message: 'Coupon not found'
-                });
+            });
         }
-        if(!description || !description.trim().length === 0){
+        
+        if(!description || description.trim().length === 0){
             return sendResponse(res,{
                 success: false,
                 statusCode: statusCodes.BAD_REQUEST,
@@ -198,7 +213,7 @@ export const updateCoupon = async (req,res,next) =>{
             });
         }
 
-         const totalLimit = parseInt(usageLimit);
+        const totalLimit = parseInt(usageLimit);
         if (totalLimit < coupon.usageCount) {
             return sendResponse(res, {
                 success: false,
@@ -207,7 +222,6 @@ export const updateCoupon = async (req,res,next) =>{
             });
         }
 
-        // Validate per user limit
         const userLimit = parseInt(perUserLimit);
         if (userLimit < 1) {
             return sendResponse(res, {
@@ -225,7 +239,6 @@ export const updateCoupon = async (req,res,next) =>{
             });
         }
 
-        // Validate end date
         const newEndDate = new Date(endDate);
         if (isNaN(newEndDate.getTime())) {
             return sendResponse(res, {
@@ -243,21 +256,41 @@ export const updateCoupon = async (req,res,next) =>{
             });
         }
 
-        // Update fields
-        coupon.description = description.trim();
-        coupon.minPurchaseAmount = parseFloat(minPurchaseAmount) || 0;
-        coupon.usageLimit = totalLimit;
-        coupon.perUserLimit = userLimit;
-        coupon.endDate = newEndDate;
-        coupon.isActive = isActive === 'on' || isActive === true || isActive === 'true';
+        // Prepare updated coupon data
+        const updatedData = {
+            description: description.trim(),
+            minPurchaseAmount: parseFloat(minPurchaseAmount) || 0,
+            usageLimit: totalLimit,
+            perUserLimit: userLimit,
+            endDate: newEndDate,
+            isActive: isActive === 'on' || isActive === true || isActive === 'true'
+        };
 
         // Update max discount for percentage type
         if (coupon.discountType === 'percentage') {
             if (maxDiscountAmount && parseFloat(maxDiscountAmount) > 0) {
-                coupon.maxDiscountAmount = parseFloat(maxDiscountAmount);
+                updatedData.maxDiscountAmount = parseFloat(maxDiscountAmount);
             }
         }
 
+        // NEW: Merge existing coupon with updates and validate
+        const couponDataToValidate = {
+            ...coupon.toObject(),
+            ...updatedData
+        };
+
+        const validation = validateCouponCreation(couponDataToValidate);
+        if (!validation.valid) {
+            return sendResponse(res, {
+                success: false,
+                statusCode: statusCodes.BAD_REQUEST,
+                message: 'Coupon validation failed',
+                errors: validation.errors
+            });
+        }
+
+        // Apply updates
+        Object.assign(coupon, updatedData);
         await coupon.save();
 
         return sendResponse(res, {

@@ -660,3 +660,144 @@ body {
         font-size: 0.9rem;
     }
 }
+
+
+/* ========== REVIEWS STYLES FOR PRODUCT DETAILS ========== */
+
+.review-summary-compact {
+    padding: 1rem;
+    background: white;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.review-rating-large {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.stars {
+    color: #ffc107;
+}
+
+.review-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.review-card-compact {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: white;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+}
+
+.review-card-compact:last-child {
+    border-bottom: none;
+}
+
+.review-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.reviewer-icon-small {
+    width: 30px;
+    height: 30px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+/* Star rating distribution */
+.rating-distribution {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.rating-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.rating-bar .star-label {
+    width: 60px;
+    font-size: 0.9rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rating-bar .bar-container {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 10px;
+}
+
+.rating-bar .bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ffc107, #ff9800);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.rating-bar .percentage {
+    width: 40px;
+    text-align: right;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Verified purchase badge */
+.text-success {
+    color: #10b981 !important;
+}
+
+.fa-check-circle {
+    color: #10b981;
+}
+
+/* Review loading spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* No reviews message */
+.no-reviews {
+    color: #6c757d;
+}
+
+/* Scrollbar for review list */
+.review-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.review-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.review-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.review-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

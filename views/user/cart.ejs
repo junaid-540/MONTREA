@@ -13,12 +13,10 @@
                 <a href="/shop" class="btn btn-secondary">Continue shopping</a>
             </section>
         <% } else { %>
-            <!-- Cart with Items -->
             <section class="populated">
                 <div class="items-list">
                     <h2>Your Cart</h2>
                     
-                    <!-- Warning Banner for Invalid Items -->
                     <% if (hasInvalidItems) { %>
                         <div class="alert alert-warning">
                             <div class="alert-content">
@@ -33,24 +31,30 @@
                         </div>
                     <% } %>
 
-                    <!-- Cart Items -->
                     <% if (cart.items && cart.items.length > 0) { %>
                         <% cart.items.forEach((item, index) => { %>
                             <% 
-                                let displayPrice, originalPrice, saveAmount;
-                                if (!item.isInvalid) {
+                                let displayPrice, originalPrice, saveAmount, hasDiscount = false;
+                                const maxQty = Math.min(5, item.currentStock);
+                                
+                                // Use calculated price if available (includes offers)
+                                if (item.calculatedPrice && !item.isInvalid) {
+                                    displayPrice = item.calculatedPrice.displayPrice;
+                                    originalPrice = item.calculatedPrice.hasDiscount ? item.calculatedPrice.originalPrice : null;
+                                    hasDiscount = item.calculatedPrice.hasDiscount;
+                                    saveAmount = hasDiscount ? (originalPrice - displayPrice) * item.quantity : 0;
+                                } else if (!item.isInvalid) {
                                     displayPrice = item.discountedPriceAtTime > 0 ? item.discountedPriceAtTime : item.priceAtTime;
                                     originalPrice = item.discountedPriceAtTime > 0 ? item.priceAtTime : null;
-                                    saveAmount = originalPrice ? (originalPrice - displayPrice) : 0;
+                                    saveAmount = originalPrice ? (originalPrice - displayPrice) * item.quantity : 0;
+                                    hasDiscount = originalPrice !== null;
                                 }
-                                const maxQty = Math.min(5, item.currentStock);
                             %>
                             <div class="item <%= item.isInvalid ? 'item-invalid' : '' %> <%= item.isOutOfStock ? 'item-out-of-stock' : '' %>" 
                                  data-variant-id="<%= item.productVariantId %>"
                                  data-product-id="<%= item.productId %>" 
                                  data-invalid="<%= item.isInvalid %>">
                                 
-                                <!-- Product Image -->
                                 <img src="<%= item.productImage %>" 
                                      alt="<%= item.productName %>"
                                      class="item-image"
@@ -64,15 +68,39 @@
                                         </div>
                                         
                                         <% if (!item.isInvalid) { %>
+                                            <!-- Offer Badge -->
+                                            <% if (item.calculatedPrice && item.calculatedPrice.hasOffer) { %>
+                                                <div class="offer-applied-badge">
+                                                    <i class="fas fa-tag"></i>
+                                                    <%= Math.round(item.calculatedPrice.discountedPercentage) %>% OFF
+                                                    <% if (item.calculatedPrice.offerDetails) { %>
+                                                        <span class="offer-name">
+                                                            (<%= item.calculatedPrice.offerDetails.offerName %>)
+                                                        </span>
+                                                    <% } %>
+                                                </div>
+                                            <% } %>
+
+                                            <% if (item.wasAdjusted) { %>
+                                            <div class="stock-adjustment-notice">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                Quantity adjusted from <%= item.previousQuantity %> to <%= item.quantity %> due to stock availability
+                                            </div>
+                                        <% } %>
+                                            
                                             <div class="item-price">
-                                                <div class="price">₹<%= displayPrice.toFixed(2) %></div>
+                                                <div class="price">₹<%= Math.round(displayPrice) %></div>
                                                 <% if (originalPrice) { %>
-                                                    <span class="old-price">₹<%= originalPrice.toFixed(2) %></span>
+                                                    <span class="old-price">₹<%= Math.round(originalPrice) %></span>
+                                                    <% if (!item.calculatedPrice || !item.calculatedPrice.hasOffer) { %>
+                                                        <span class="discount-badge">
+                                                            <%= Math.round(((originalPrice - displayPrice) / originalPrice) * 100) %>% OFF
+                                                        </span>
+                                                    <% } %>
                                                 <% } %>
                                             </div>
                                         <% } %>
                                         
-                                        <!-- Status Badges -->
                                         <% if (item.isInvalid) { %>
                                             <div class="badge badge-invalid">❌ <%= item.invalidReason %></div>
                                         <% } else if (item.isOutOfStock) { %>
@@ -81,9 +109,8 @@
                                             <div class="badge badge-low-stock">📦 Only <%= item.currentStock %> left in stock</div>
                                         <% } %>
                                         
-                                        <!-- Save Amount -->
                                         <% if (!item.isInvalid && !item.isOutOfStock && saveAmount > 0) { %>
-                                            <div class="save">You save ₹<%= saveAmount.toFixed(2) %> each</div>
+                                            <div class="save">You save ₹<%= Math.round(saveAmount) %> total</div>
                                         <% } %>
                                     </div>
                                     
@@ -104,9 +131,9 @@
                                                                name="quantity" 
                                                                value="<%= item.quantity %>" 
                                                                min="1" 
-                                                               max="<%= maxQty %>" 
+                                                               max="<%= Math.min(5, item.currentStock || 0) %>" 
                                                                class="qty" 
-                                                               readonly>
+                                                               <%= item.isInvalid || item.isOutOfStock ? 'readonly disabled' : 'readonly' %>>
                                                         <button type="button" 
                                                                 class="qty-btn qty-increase" 
                                                                 data-variant-id="<%= item.productVariantId %>"
@@ -136,13 +163,12 @@
                     <% } %>
                 </div>
 
-                <!-- Order Summary Sidebar -->
                 <aside class="summary">
                     <h3>Order Summary</h3>
                     
                     <div class="summary-row">
                         <span>Subtotal:</span>
-                        <span>₹<%= cart.subtotal.toFixed(2) %></span>
+                        <span>₹<%= Math.round(cart.subtotal) %></span>
                     </div>
                     
                     <% if (hasInvalidItems) { %>
@@ -159,14 +185,8 @@
                     
                     <div class="summary-divider"></div>
                     
-                    <!-- <div class="summary-row summary-total">
-                        <span>Total:</span>
-                        <span>₹<%= cart.subtotal.toFixed(2) %></span>
-                    </div> -->
-                    
                     <p class="note">Taxes and shipping calculated at checkout</p>
                     
-                    <!-- Checkout Button -->
                     <% if (cart.totalItems > 0) { %>
                         <% if (canCheckout && cart.itemsCount > 0) { %>
                             <a href="/checkout" class="btn btn-primary checkout-btn">
@@ -182,7 +202,7 @@
                         <% } %>
                     <% } %>
                     
-                    <a href="/shop" class="continue-shopping">← Continue Shopping</a>
+                    <a href="/shop" class="btn btn-primary continue-shopping">← Continue Shopping</a>
                 </aside>
             </section>
         <% } %>

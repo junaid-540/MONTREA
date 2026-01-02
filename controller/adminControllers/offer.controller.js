@@ -63,11 +63,11 @@ export const getOffers = async (req,res,next) =>{
         if(search){
             const searchTerm = search.toLowerCase();
             offers = offers.filter(offer =>{
-                return (
-                    offer.offerName.toLowerCase().includes(searchTerm) ||
-                    (offer.productId?.name?.toLowerCase().includes(searchTerm)) ||
-                    (offer.productId.categoryId.name.toLowerCase().includes(searchTerm))
-                );
+                const offerNameMatch = offer.offerName?.toLowerCase().includes(searchTerm) || false;
+                const productNameMatch = offer.productId?.name.toLowerCase().includes(searchTerm) || false;
+                const categoryNameMatch = offer.type === 'product' && offer.productId?.categoryId?.name
+                        ? offer.productId.categoryId.name.toLowerCase().includes(searchTerm) : false;
+                return offerNameMatch || productNameMatch || categoryNameMatch
             });
         }
 

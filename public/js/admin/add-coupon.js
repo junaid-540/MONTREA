@@ -6,8 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const discountValueInput = document.getElementById('discountValue');
     const maxDiscountContainer = document.getElementById('maxDiscountContainer');
     const maxDiscountInput = document.getElementById('maxDiscountAmount');
+    const minPurchaseInput = document.getElementById('minPurchaseAmount');
 
-    // Set minimum date for date inputs
+    // Configuration constants (same as backend)
+    const COUPON_CONFIG = {
+        MAX_PERCENTAGE_DISCOUNT: 70,
+        MAX_DISCOUNT_TO_SUBTOTAL_RATIO: 0.80
+    };
+
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('startDate').setAttribute('min', today);
     document.getElementById('endDate').setAttribute('min', today);
@@ -18,17 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const selectedType = this.getAttribute('data-type');
             
             discountTypeOptions.forEach(opt => opt.classList.remove('active'));
-            
             this.classList.add('active');
-            
-            // Update hidden input
             discountTypeInput.value = selectedType;
             
-            // Update UI based on type
             if (selectedType === 'percentage') {
                 discountValueLabel.textContent = 'Discount Percentage';
-                discountValueInput.setAttribute('max', '100');
-                discountValueInput.setAttribute('placeholder', 'e.g., 20');
+                discountValueInput.setAttribute('max', COUPON_CONFIG.MAX_PERCENTAGE_DISCOUNT);
+                discountValueInput.setAttribute('placeholder', `e.g., 20 (Max ${COUPON_CONFIG.MAX_PERCENTAGE_DISCOUNT}%)`);
                 maxDiscountContainer.style.display = 'block';
             } else {
                 discountValueLabel.textContent = 'Discount Amount (₹)';
@@ -38,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 maxDiscountInput.value = '';
             }
             
-            // Clear validation
             clearError(discountValueInput);
         });
     });
@@ -48,11 +49,13 @@ document.addEventListener('DOMContentLoaded', function() {
         this.value = this.value.toUpperCase();
     });
 
-    // Add event listeners to hide errors on focus for all input fields
+    // Add event listeners to hide errors on focus
     const inputFields = [
         document.getElementById('couponCode'),
         document.getElementById('couponDescription'),
-        document.getElementById('discountValue'),
+        discountValueInput,
+        maxDiscountInput,
+        minPurchaseInput,
         document.getElementById('usageLimit'),
         document.getElementById('perUserLimit'),
         document.getElementById('startDate'),
@@ -61,9 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     inputFields.forEach(input => {
         if (input) {
-            input.addEventListener('focus', () => {
-                clearError(input);
-            });
+            input.addEventListener('focus', () => clearError(input));
         }
     });
 
@@ -94,15 +95,137 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Discount value validation with business rules
     if (discountValueInput) {
         discountValueInput.addEventListener('blur', function() {
-            const discountValue = parseFloat(this.value);
-            if (!discountValue || discountValue <= 0) {
-                showError(this, 'Discount value must be greater than 0');
-            } else if (discountTypeInput.value === 'percentage' && discountValue > 100) {
-                showError(this, 'Percentage cannot exceed 100%');
-            }
+            validateDiscountValue();
         });
+    }
+
+    // Max discount validation
+    if (maxDiscountInput) {
+        maxDiscountInput.addEventListener('blur', function() {
+            validateMaxDiscount();
+        });
+    }
+
+    // Min purchase validation
+    if (minPurchaseInput) {
+        minPurchaseInput.addEventListener('blur', function() {
+            validateMinPurchase();
+        });
+    }
+
+    // Cross-field validation when any pricing field changes
+    [discountValueInput, maxDiscountInput, minPurchaseInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', function() {
+                // Trigger validation after a short delay
+                setTimeout(() => {
+                    if (discountTypeInput.value === 'percentage') {
+                        validateMaxDiscount();
+                    } else {
+                        validateDiscountValue();
+                    }
+                }, 300);
+            });
+        }
+    });
+
+    function validateDiscountValue() {
+        const discountValue = parseFloat(discountValueInput.value);
+        const minPurchase = parseFloat(minPurchaseInput.value) || 0;
+        
+        if (!discountValue || discountValue <= 0) {
+            showError(discountValueInput, 'Discount value must be greater than 0');
+            return false;
+        }
+        
+        if (discountTypeInput.value === 'percentage') {
+            if (discountValue > COUPON_CONFIG.MAX_PERCENTAGE_DISCOUNT) {
+                showError(
+                    discountValueInput, 
+                    `Percentage cannot exceed ${COUPON_CONFIG.MAX_PERCENTAGE_DISCOUNT}% for business safety`
+                );
+                return false;
+            }
+        } else if (discountTypeInput.value === 'fixed') {
+            // Fixed discount validation
+            if (minPurchase > 0) {
+                if (discountValue >= minPurchase) {
+                    showError(
+                        discountValueInput, 
+                        `Fixed discount (₹${discountValue}) cannot equal or exceed minimum purchase (₹${minPurchase})`
+                    );
+                    return false;
+                }
+                
+                const ratio = discountValue / minPurchase;
+                if (ratio >= COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO) {
+                    showError(
+                        discountValueInput, 
+                        `Discount should not exceed ${COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO * 100}% of minimum purchase`
+                    );
+                    return false;
+                }
+            }
+        }
+        
+        clearError(discountValueInput);
+        return true;
+    }
+
+    function validateMaxDiscount() {
+        const maxDiscount = parseFloat(maxDiscountInput.value);
+        const minPurchase = parseFloat(minPurchaseInput.value) || 0;
+        
+        if (!maxDiscount || maxDiscount <= 0) {
+            clearError(maxDiscountInput);
+            return true; // Max discount is optional
+        }
+        
+        if (minPurchase > 0) {
+            const ratio = maxDiscount / minPurchase;
+            
+            if (ratio >= COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO) {
+                showError(
+                    maxDiscountInput, 
+                    `Max discount (₹${maxDiscount}) is too high. Should not exceed ${COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO * 100}% of min purchase (₹${minPurchase})`
+                );
+                return false;
+            }
+            
+            // Friendly suggestion
+            const recommendedMax = Math.floor(minPurchase * COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO);
+            if (maxDiscount > recommendedMax) {
+                showWarning(
+                    maxDiscountInput,
+                    `Recommended max discount: ₹${recommendedMax} (${COUPON_CONFIG.MAX_DISCOUNT_TO_SUBTOTAL_RATIO * 100}% of ₹${minPurchase})`
+                );
+            }
+        }
+        
+        clearError(maxDiscountInput);
+        return true;
+    }
+
+    function validateMinPurchase() {
+        const minPurchase = parseFloat(minPurchaseInput.value) || 0;
+        
+        if (minPurchase < 0) {
+            showError(minPurchaseInput, 'Minimum purchase cannot be negative');
+            return false;
+        }
+        
+        // Validate against existing discount values
+        if (discountTypeInput.value === 'percentage') {
+            validateMaxDiscount();
+        } else {
+            validateDiscountValue();
+        }
+        
+        clearError(minPurchaseInput);
+        return true;
     }
 
     const usageLimitInput = document.getElementById('usageLimit');
@@ -132,8 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const startDateInput = document.getElementById('startDate');
     if (startDateInput) {
         startDateInput.addEventListener('blur', function() {
-            const startDate = this.value;
-            if (!startDate) {
+            if (!this.value) {
                 showError(this, 'Start date is required');
             }
         });
@@ -157,10 +279,8 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // Clear all previous errors
         document.querySelectorAll('.is-invalid').forEach(el => clearError(el));
         
-        // Validate form
         if (!validateForm()) {
             return;
         }
@@ -189,19 +309,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Error creating coupon:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.response?.data?.message || 'Failed to create coupon'
-            });
+            const errorMessage = error.response?.data?.message || 'Failed to create coupon';
+            
+            // If validation errors from backend
+            if (error.response?.data?.errors) {
+                const errorList = error.response.data.errors.join('<br>');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    html: errorList
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage
+                });
+            }
         }
     });
     
-    // Validation function
     function validateForm() {
         let isValid = true;
         
-        // Code
+        // Code validation
         const code = document.getElementById('couponCode').value.trim();
         if (!code) {
             showError(document.getElementById('couponCode'), 'Coupon code is required');
@@ -214,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
         
-        // Description
+        // Description validation
         const description = document.getElementById('couponDescription').value.trim();
         if (!description) {
             showError(document.getElementById('couponDescription'), 'Description is required');
@@ -224,24 +355,23 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
         
-        // Discount Value
-        const discountValue = parseFloat(document.getElementById('discountValue').value);
-        if (!discountValue || discountValue <= 0) {
-            showError(document.getElementById('discountValue'), 'Discount value must be greater than 0');
-            isValid = false;
-        } else if (discountTypeInput.value === 'percentage' && discountValue > 100) {
-            showError(document.getElementById('discountValue'), 'Percentage cannot exceed 100%');
+        // Discount value validation with business rules
+        if (!validateDiscountValue()) {
             isValid = false;
         }
         
-        // Usage Limit
+        // Max discount validation (if applicable)
+        if (discountTypeInput.value === 'percentage' && !validateMaxDiscount()) {
+            isValid = false;
+        }
+        
+        // Usage limits
         const usageLimit = parseInt(document.getElementById('usageLimit').value);
         if (!usageLimit || usageLimit < 1) {
             showError(document.getElementById('usageLimit'), 'Usage limit must be at least 1');
             isValid = false;
         }
         
-        // Per User Limit
         const perUserLimit = parseInt(document.getElementById('perUserLimit').value);
         if (!perUserLimit || perUserLimit < 1) {
             showError(document.getElementById('perUserLimit'), 'Per user limit must be at least 1');
@@ -251,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
         
-        // Dates
+        // Date validation
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
         
@@ -280,6 +410,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (feedback) {
             feedback.textContent = message;
             feedback.style.display = 'block';
+            feedback.classList.remove('text-warning');
+            feedback.classList.add('text-danger');
+        }
+    }
+    
+    function showWarning(input, message) {
+        const feedbackId = input.id + 'Feedback';
+        const feedback = document.getElementById(feedbackId);
+        if (feedback) {
+            feedback.textContent = message;
+            feedback.style.display = 'block';
+            feedback.classList.remove('text-danger');
+            feedback.classList.add('text-warning');
         }
     }
     

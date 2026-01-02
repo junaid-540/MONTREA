@@ -5,9 +5,11 @@ import { sendResponse } from "../../utils/responseHandler.js";
 import statusCodes from "../../utils/statusCodes.js";
 import errorMessages from "../../utils/errorMessages.js";
 import Wishlist from "../../models/wishlistSchema.js";
-import {getCategoryMap,enrichCartItems,getCartSummary,filterValidItems,calculateSubtotal} from "../../utils/cartHelpers.js";
-
+import {getCategoryMap,enrichCartItems,getCartSummary,filterValidItems,calculateSubtotal, adjustCartQuantitiesToStock} from "../../utils/cartHelpers.js";
+import { enrichCartItemsWithPrices, calculateCartSubtotalWithOffers } from "../../utils/cartPriceHelper.js";
 const MAX_QUANTITY_PER_PRODUCT = 5;
+
+
 
 export const getCartPage = async (req, res, next) => {
     try {
@@ -35,11 +37,29 @@ export const getCartPage = async (req, res, next) => {
             });
         }
 
-        const categoryIds = cart.items.map(item => item.productId?.categoryId).filter(Boolean);
+        const { adjustedItems, hasStockChanges } = await adjustCartQuantitiesToStock(cart.items)
+
+        if(hasStockChanges){
+            cart.items = adjustedItems;
+            await cart.save();
+
+            if(!req.session.messages) req.session.messages = [];
+            req.session.messages.push({
+                type: 'warning',
+                text: 'Some item quantities were adjusted due to stock changes. Please review your cart.'
+            });
+
+        }
+
+        const categoryIds = adjustedItems.map(item => item.productId?.categoryId).filter(Boolean);
         const categoryMap = await getCategoryMap(categoryIds);
         
-        const enrichedItems = enrichCartItems(cart.items, categoryMap);
-        const { validItems, subtotal, hasInvalidItems, canCheckout } = await getCartSummary(cart.items);
+        const enrichedItems = enrichCartItems(adjustedItems, categoryMap);
+
+        const validItems = filterValidItems(adjustedItems, categoryMap);
+        const subtotalWithOffers = await calculateCartSubtotalWithOffers(validItems);
+        const itemsWithPrices = await enrichCartItemsWithPrices(enrichedItems);
+        const { hasInvalidItems, canCheckout } = await getCartSummary(adjustedItems);
 
         const messages = req.session.messages || [];
         delete req.session.messages;
@@ -47,8 +67,8 @@ export const getCartPage = async (req, res, next) => {
         res.render('user/cart', {
             Title: 'Shopping Cart',
             cart: {
-                items: enrichedItems,
-                subtotal: subtotal,
+                items: itemsWithPrices,
+                subtotal: subtotalWithOffers,
                 itemsCount: validItems.length,
                 totalItems: enrichedItems.length
             },
@@ -99,7 +119,7 @@ export const clearInvalidItems = async (req, res, next) => {
         const clearedCount = cartLength - validItems.length;
         await cart.save();
 
-        const subtotal = calculateSubtotal(validItems);
+        const subtotal = calculateCartSubtotalWithOffers(validItems);
         const { canCheckout } = await getCartSummary(validItems);
 
         return sendResponse(res, {
@@ -428,7 +448,11 @@ export const updateCartQuantity = async (req, res, next) => {
 
         await cart.save();
 
-        const { validItemsCount, subtotal } = await getCartSummary(cart.items);
+        const categoryIds = cart.items.map(item => item.productId?.categoryId).filter(Boolean);
+        const categoryMap = await getCategoryMap(categoryIds);
+        const validItems = filterValidItems(cart.items, categoryMap);
+        const subtotal = await calculateCartSubtotalWithOffers(validItems);
+
         const maxQty = Math.min(MAX_QUANTITY_PER_PRODUCT, variant.stock);
 
         console.log('Update Cart - Success:', {
@@ -443,7 +467,7 @@ export const updateCartQuantity = async (req, res, next) => {
             message: 'Cart Updated successfully',
             data: {
                 quantity: qty,
-                itemsCount: validItemsCount,
+                itemsCount: validItems.length,
                 totalItems: cart.items.length,
                 subtotal: subtotal,
                 maxQty: maxQty
@@ -512,7 +536,11 @@ export const removeFromCart = async (req, res, next) => {
         await cart.save();
         console.log("✅ Remove from cart - Successfully removed item");
 
-        const summary = await getCartSummary(cart.items);
+        const categoryIds = cart.items.map(item => item.productId?.categoryId).filter(Boolean);
+        const categoryMap = await getCategoryMap(categoryIds);
+        const validItems = filterValidItems(cart.items, categoryMap);
+        const subtotal = await calculateCartSubtotalWithOffers(validItems);
+        const {hasInvalidItems, canCheckout} = await getCartSummary(cart.items);
 
         return sendResponse(res, {
             success: true,
@@ -520,15 +548,15 @@ export const removeFromCart = async (req, res, next) => {
             message: 'Item removed from cart successfully',
             data: {
                 cartItemscount: cart.items.length,
-                itemsCount: summary.validItemsCount,
-                subtotal: summary.subtotal,
+                itemsCount: validItems.length,
+                subtotal: subtotal,
                 isEmpty: cart.items.length === 0,
-                hasInvalidItems: summary.hasInvalidItems,
-                canCheckout: summary.canCheckout
+                hasInvalidItems: hasInvalidItems,
+                canCheckout: canCheckout
             }
         });
     } catch (err) {
-        console.error("💥 Error in removeFromCart:", err);
+        console.error(" Error in removeFromCart:", err);
         next(err);
     }
 };
@@ -641,7 +669,11 @@ export const moveToWishlist = async (req, res, next) => {
         );
         await cart.save();
 
-        const summary = await getCartSummary(cart.items);
+        const categoryIds = cart.items.map(item => item.productId?.categoryId).filter(Boolean);
+        const categoryMap = await getCategoryMap(categoryIds);
+        const validItems = filterValidItems(cart.items, categoryMap);
+        const subtotal = await calculateCartSubtotalWithOffers(validItems);
+        const {hasInvalidItems, canCheckout} = await getCartSummary(cart.items);
 
         return sendResponse(res, {
             success: true,
@@ -657,11 +689,11 @@ export const moveToWishlist = async (req, res, next) => {
                 },
                 cartItemscount: cart.items.length,
                 wishlistItemsCount: wishlist.items.length,
-                itemsCount: summary.validItemsCount,
-                subtotal: summary.subtotal,
+                itemsCount: validItems.length,
+                subtotal: subtotal,
                 isEmpty: cart.items.length === 0,
-                hasInvalidItems: summary.hasInvalidItems,
-                canCheckout: summary.canCheckout,
+                hasInvalidItems: hasInvalidItems,
+                canCheckout: canCheckout,
                 alreadyInWishlist: existingItemIndex > -1
             }
         });

@@ -6,7 +6,8 @@ const passwordInput = document.getElementById('password');
 const confirmPasswordInput = document.getElementById('confirmPassword');
 const passwordToggle = document.getElementById('passwordToggle');
 const confirmPasswordToggle = document.getElementById('confirmPasswordToggle');
-const referralCodeInput = document.getElementById('referralCode')
+const referralCodeInput = document.getElementById('referralCode');
+const submitBtn = form.querySelector('button[type="submit"]');
 
 const nameFeedback = document.getElementById('nameFeedback');
 const emailFeedback = document.getElementById('emailFeedback');
@@ -36,6 +37,21 @@ confirmPasswordToggle.addEventListener('click', () => {
     }
 });
 
+// Button loading state helper
+function setButtonLoading(button, isLoading, loadingText = 'Processing...') {
+    if (isLoading) {
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+        button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${loadingText}`;
+        button.style.cursor = 'not-allowed';
+        button.style.opacity = '0.7';
+    } else {
+        button.disabled = false;
+        button.textContent = button.dataset.originalText || button.textContent;
+        button.style.cursor = 'pointer';
+        button.style.opacity = '1';
+    }
+}
 
 function validateName(name) {
     const nameRegex = /^[A-Za-z\s]{2,30}$/;
@@ -79,6 +95,7 @@ function validateReferralCode(code){
     if(!referralRegex.test(code.trim())){
         return 'Invalid format. Must be REF-XXXXX (e.g., REF-ABC12)';
     }
+    return null;
 }
 
 referralCodeInput.addEventListener('input',(e)=>{
@@ -92,8 +109,6 @@ function showError(input, feedback, message) {
     feedback.style.display = 'block';
     feedback.textContent = message;
 }
-
-
 
 function hideError(input, feedback) {
     input.classList.remove('is-invalid');
@@ -139,7 +154,7 @@ referralCodeInput.addEventListener('blur', ()=>{
 });
 
 // Remove error on focus
-[nameInput, emailInput, phoneInput, passwordInput, confirmPasswordInput].forEach(input => {
+[nameInput, emailInput, phoneInput, passwordInput, confirmPasswordInput, referralCodeInput].forEach(input => {
     input.addEventListener('focus', () => {
         if (input.classList.contains('is-invalid')) {
             input.classList.remove('is-invalid');
@@ -156,8 +171,10 @@ referralCodeInput.addEventListener('blur', ()=>{
     });
 });
 
-// ------------------ Form Submission Validation ------------------
-form.addEventListener('submit', (e) => {
+// ------------------ Form Submission with AJAX ------------------
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
     let isValid = true;
 
     const validations = [
@@ -178,47 +195,72 @@ form.addEventListener('submit', (e) => {
         }
     });
 
-    if (!isValid) e.preventDefault();
+    if (!isValid) return;
+
+    // Prevent double submission
+    if (submitBtn.disabled) return;
+
+    setButtonLoading(submitBtn, true, 'Creating Account...');
+
+    try {
+        const response = await axios.post('/signup', {
+            name: nameInput.value.trim(),
+            email: emailInput.value.trim(),
+            phone: phoneInput.value.trim(),
+            password: passwordInput.value,
+            confirmPassword: confirmPasswordInput.value,
+            referralCode: referralCodeInput.value.trim() || undefined
+        });
+
+        if (response.data.success) {
+            // Store OTP send time in sessionStorage for timer persistence
+            sessionStorage.setItem('otpSentAt', Date.now().toString());
+            sessionStorage.setItem('resendCooldownStart', Date.now().toString());
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: response.data.message,
+                timer: 1500,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                willClose: () => {
+                    window.location.href = response.data.data.redirect || '/verify-otp';
+                }
+            });
+            form.reset();
+        } else {
+            setButtonLoading(submitBtn, false);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!',
+                text: response.data.message,
+                confirmButtonColor: '#e31414'
+            });
+        }
+    } catch (error) {
+        setButtonLoading(submitBtn, false);
+        
+        if (error.response && error.response.data) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!',
+                text: error.response.data.message || 'Something went wrong.',
+                confirmButtonColor: '#e31414'
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Server Error',
+                text: 'Something went wrong. Please try again later.',
+                confirmButtonColor: '#e31414'
+            });
+        }
+    }
 });
 
-
-document.addEventListener('DOMContentLoaded', () => {
-
-  if(successMessage){
-    Swal.fire({
-      icon: 'success',
-      title: 'Success!',
-      text: successMessage,
-      showConfirmButton: true,
-      confirmButtonColor: '#3085d6',
-      timer: 4000
-    });
-  }
-
-  if(errorMessage){
-    Swal.fire({
-      icon: 'error',
-      title: 'Oops...',
-      text: errorMessage,
-      confirmButtonColor: '#e31414ff',
-    });
-  }
-
-  // Smooth scroll (optional)
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener("click", function(e){
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute("href"));
-      if(target) target.scrollIntoView({ behavior: "smooth" });
-    });
-  });
-
-});
-
-window.addEventListener('pageshow',function (){
+window.addEventListener('pageshow', function() {
     const form = document.getElementById('signupForm');
-    if(form) form.reset()
-})
-
-
-
+    if(form) form.reset();
+});

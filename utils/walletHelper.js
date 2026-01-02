@@ -1,8 +1,5 @@
 import Wallet from "../models/walletSchema.js";
 
-/**
- * Get or create wallet for a user
- */
 
 export const getOrCreateWallet = async (userId) =>{
     try {
@@ -23,10 +20,6 @@ export const getOrCreateWallet = async (userId) =>{
 };
 
 
-/**
- * Add money to wallet (Credit)
- * Without using mongoDB transaction
- */
 
 export const creditWallet = async (userId, amount, description, orderId = null , orderIdDisplay = null, razorpayDetails = {}) =>{
     try {
@@ -66,10 +59,6 @@ export const creditWallet = async (userId, amount, description, orderId = null ,
 }
 
 
-/**
- * Deduct money from wallet (debit)
- * Without using mongoDB transaction
- */
 
 export const debitWallet = async (userId, amount, description, orderId = null, orderIdDisplay = null) => {
     try {
@@ -111,9 +100,7 @@ export const debitWallet = async (userId, amount, description, orderId = null, o
     }
 };
 
-/**
- * Check if user has sufficient balance
- */
+
 export const checkWalletBalance = async (userId, requiredAmount) => {
     try {
         const wallet = await Wallet.findOne({ userId });
@@ -133,9 +120,7 @@ export const checkWalletBalance = async (userId, requiredAmount) => {
 };
 
 
-/**
- * Get wallet balance
- */
+
 export const getWalletBalance = async (userId) => {
     try {
         const wallet = await Wallet.findOne({ userId });

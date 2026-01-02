@@ -67,11 +67,23 @@ export const generateSalesReportExcel = async (reportData, stream) => {
         worksheet.addRow(['Total Discount:', `₹${reportData.totalDiscount}`]);
         worksheet.addRow(['Coupon Discount:', `₹${reportData.totalCouponDiscount}`]);
         worksheet.addRow(['Average Order:', `₹${reportData.totalOrders > 0 ? Math.round(reportData.totalSales / reportData.totalOrders) : 0}`]);
+        
+        // NEW: Add returns and refunds to summary
+        worksheet.addRow(['Total Returns:', reportData.totalReturns]);
+        worksheet.addRow(['Return Amount:', `₹${reportData.totalReturnAmount}`]);
+        worksheet.addRow(['Total Cancellations:', reportData.totalCancellations]);
+        worksheet.addRow(['Cancellation Amount:', `₹${reportData.totalCancellationAmount}`]);
+        worksheet.addRow(['Total Refunds:', `₹${reportData.totalRefunds}`]);
 
-        // Style summary cells
-        for (let i = 5; i <= 9; i++) {
+        // Style summary cells (now includes more rows)
+        for (let i = 5; i <= 14; i++) {
             worksheet.getRow(i).getCell(1).font = { bold: true };
-            worksheet.getRow(i).getCell(2).font = { bold: true, color: { argb: 'FF3B82F6' } };
+            if (i <= 9) {
+                worksheet.getRow(i).getCell(2).font = { bold: true, color: { argb: 'FF3B82F6' } };
+            } else {
+                // Style returns/refunds in red
+                worksheet.getRow(i).getCell(2).font = { bold: true, color: { argb: 'FFEF4444' } };
+            }
         }
 
         // Financial Breakdown Section
@@ -85,22 +97,40 @@ export const generateSalesReportExcel = async (reportData, stream) => {
         };
 
         worksheet.addRow(['Product Subtotal:', `₹${reportData.totalSubtotal}`]);
-        // worksheet.addRow(['Product Discounts:', `-₹${reportData.totalDiscount}`]);
         worksheet.addRow(['Coupon Discounts:', `-₹${reportData.totalCouponDiscount}`]);
         worksheet.addRow(['Shipping Charges:', `+₹${reportData.totalShipping}`]);
         worksheet.addRow(['Tax (GST 18%):', `+₹${reportData.totalTax}`]);
         worksheet.addRow(['Net Revenue:', `₹${reportData.totalSales}`]);
 
         // Style financial cells
-        const financialStartRow = worksheet.lastRow.number - 6;
+        const financialStartRow = worksheet.lastRow.number - 5;
         for (let i = financialStartRow; i <= worksheet.lastRow.number - 1; i++) {
             worksheet.getRow(i).getCell(1).font = { bold: true };
             worksheet.getRow(i).getCell(2).font = { bold: true, color: { argb: 'FF059669' } };
         }
-        
-        // Style formula row
-        worksheet.getRow(worksheet.lastRow.number).getCell(1).font = { italic: true, size: 10 };
-        worksheet.getRow(worksheet.lastRow.number).getCell(2).font = { italic: true, size: 10, color: { argb: 'FF6B7280' } };
+
+        // NEW: Returns & Cancellations Breakdown Section
+        worksheet.addRow([]);
+        const refundRow = worksheet.addRow(['RETURNS & CANCELLATIONS']);
+        refundRow.font = { bold: true, size: 14 };
+        refundRow.getCell(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE5E7EB' }
+        };
+
+        worksheet.addRow(['Cancelled Items:', reportData.totalCancellations]);
+        worksheet.addRow(['Cancellation Refunds:', `-₹${reportData.totalCancellationAmount}`]);
+        worksheet.addRow(['Returned Items:', reportData.totalReturns]);
+        worksheet.addRow(['Return Refunds:', `-₹${reportData.totalReturnAmount}`]);
+        worksheet.addRow(['Total Refunds:', `-₹${reportData.totalRefunds}`]);
+
+        // Style refund cells
+        const refundStartRow = worksheet.lastRow.number - 5;
+        for (let i = refundStartRow; i <= worksheet.lastRow.number; i++) {
+            worksheet.getRow(i).getCell(1).font = { bold: true };
+            worksheet.getRow(i).getCell(2).font = { bold: true, color: { argb: 'FFEF4444' } };
+        }
 
         // Payment Method Breakdown Section
         worksheet.addRow([]);
@@ -120,12 +150,38 @@ export const generateSalesReportExcel = async (reportData, stream) => {
             
             worksheet.addRow([
                 `${method}:`,
-                `${data.count} order  | ₹${Math.round(data.amount)}`
+                `${data.count} orders | ₹${Math.round(data.amount)}`
             ]);
             
             const lastRow = worksheet.lastRow;
             lastRow.getCell(1).font = { bold: true };
             lastRow.getCell(2).font = { bold: true, color: { argb: 'FF8B5CF6' } };
+        });
+
+        // NEW: Order Status Breakdown Section
+        worksheet.addRow([]);
+        const statusRow = worksheet.addRow(['ORDER STATUS BREAKDOWN']);
+        statusRow.font = { bold: true, size: 14 };
+        statusRow.getCell(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE5E7EB' }
+        };
+
+        // Add status breakdown
+        Object.entries(reportData.statusBreakdown).forEach(([status, count]) => {
+            const percentage = reportData.totalOrders > 0 
+                ? ((count / reportData.totalOrders) * 100).toFixed(1) 
+                : 0;
+            
+            worksheet.addRow([
+                `${status}:`,
+                `${count} orders (${percentage}%)`
+            ]);
+            
+            const lastRow = worksheet.lastRow;
+            lastRow.getCell(1).font = { bold: true };
+            lastRow.getCell(2).font = { bold: true, color: { argb: 'FF3B82F6' } };
         });
 
         // Empty row
@@ -155,14 +211,20 @@ export const generateSalesReportExcel = async (reportData, stream) => {
 
         // Data Rows
         reportData.orders.forEach((order, index) => {
-            // Calculate values
+            // CHANGED: Calculate values excluding cancelled AND returned items
             const cancelledItemsTotal = order.items
                 .filter(item => item.itemStatus === 'Cancelled')
                 .reduce((sum, item) => sum + item.itemTotal, 0);
             
-            const actualAmount = order.totalAmount - cancelledItemsTotal;
+            const returnedItemsTotal = order.items
+                .filter(item => item.itemStatus === 'Returned')
+                .reduce((sum, item) => sum + item.itemTotal, 0);
             
-            const validItems = order.items.filter(item => item.itemStatus !== 'Cancelled');
+            const actualAmount = order.totalAmount - cancelledItemsTotal - returnedItemsTotal;
+            
+            const validItems = order.items.filter(item => 
+                item.itemStatus !== 'Cancelled' && item.itemStatus !== 'Returned'
+            );
             const itemsSold = validItems.reduce((sum, item) => sum + item.quantity, 0);
 
             const row = worksheet.addRow({

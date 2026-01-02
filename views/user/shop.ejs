@@ -159,75 +159,74 @@
                                             </h5>
 
                                             <% if (product.variants && product.variants.length > 0) { %>
-  <% 
-    // Use offerData min/max prices which already include offer calculations
-    const minPrice = product.offerData ? product.offerData.minPrice : 
-                    Math.min(...product.variants.map(v => v.calculatedPriceData ? v.calculatedPriceData.finalPrice : 
-                          (v.discountedPrice && v.discountedPrice < v.price ? v.discountedPrice : v.price)));
-    
-    const maxPrice = product.offerData ? product.offerData.maxPrice : 
-                    Math.max(...product.variants.map(v => v.calculatedPriceData ? v.calculatedPriceData.finalPrice : 
-                          (v.discountedPrice && v.discountedPrice < v.price ? v.discountedPrice : v.price)));
-    
-    // Get original price for comparison (before any discounts)
-    const originalPrices = product.variants.map(v => v.price);
-    const minOriginalPrice = Math.min(...originalPrices);
-    const maxOriginalPrice = Math.max(...originalPrices);
-    
-    const hasDiscount = product.offerData ? 
-                       (product.offerData.hasOffer || product.offerData.hasManualDiscount) :
-                       product.variants.some(v => v.discountedPrice && v.discountedPrice < v.price);
-    
-    const showRange = minPrice !== maxPrice;
-    const discountPercentage = product.offerData ? 
-                              product.offerData.discountPercentage : 
-                              (hasDiscount ? Math.round(((minOriginalPrice - minPrice) / minOriginalPrice) * 100) : 0);
-  %>
-  
-  <div class="product-pricing">
-    <% if (hasDiscount && discountPercentage > 0) { %>
-      <span class="price-original">
-        ₹ <%= minOriginalPrice.toLocaleString() %>
-      </span>
-    <% } %>
-    
-    <span class="price-current">
-      ₹ <%= minPrice.toLocaleString() %>
-    </span>
-    
-    <% if (showRange) { %>
-      <span class="price-range-separator">-</span>
-      <span class="price-current">
-        ₹ <%= maxPrice.toLocaleString() %>
-      </span>
-    <% } %>
-  </div>
+                                                <% 
+                                                    const minPrice = product.offerData ? product.offerData.minPrice : 
+                                                                    Math.min(...product.variants.map(v => v.calculatedPriceData ? v.calculatedPriceData.finalPrice : 
+                                                                        (v.discountedPrice && v.discountedPrice < v.price ? v.discountedPrice : v.price)));
+                                                    
+                                                    const maxPrice = product.offerData ? product.offerData.maxPrice : 
+                                                                    Math.max(...product.variants.map(v => v.calculatedPriceData ? v.calculatedPriceData.finalPrice : 
+                                                                        (v.discountedPrice && v.discountedPrice < v.price ? v.discountedPrice : v.price)));
+                                                    
+                                                    // Get original price for comparison (before any discounts)
+                                                    const originalPrices = product.variants.map(v => v.price);
+                                                    const minOriginalPrice = Math.min(...originalPrices);
+                                                    const maxOriginalPrice = Math.max(...originalPrices);
+                                                    
+                                                    const hasDiscount = product.offerData ? 
+                                                                    (product.offerData.hasOffer || product.offerData.hasManualDiscount) :
+                                                                    product.variants.some(v => v.discountedPrice && v.discountedPrice < v.price);
+                                                    
+                                                    const showRange = minPrice !== maxPrice;
+                                                    const discountPercentage = product.offerData ? 
+                                                                            product.offerData.discountPercentage : 
+                                                                            (hasDiscount ? Math.round(((minOriginalPrice - minPrice) / minOriginalPrice) * 100) : 0);
+                                                %>
+                                                
+                                                <div class="product-pricing">
+                                                    <% if (hasDiscount && discountPercentage > 0) { %>
+                                                    <span class="price-original">
+                                                        ₹ <%= Math.round(minOriginalPrice) %>
+                                                    </span>
+                                                    <% } %>
+                                                    
+                                                    <span class="price-current">
+                                                    ₹ <%= Math.round(minPrice) %>
+                                                    </span>
+                                                    
+                                                    <!-- <% if (showRange) { %>
+                                                    <span class="price-range-separator">-</span>
+                                                    <span class="price-current">
+                                                        ₹ <%= maxPrice.toLocaleString() %>
+                                                    </span>
+                                                    <% } %> -->
+                                                </div>
 
-  <!-- Offer Name Badge (Below Price) -->
-  <% if (product.offerData && product.offerData.offerDetails) { %>
-    <div class="offer-name-badge">
-      <i class="fas fa-tag"></i>
-      <%= product.offerData.offerDetails.offerName %>
-    </div>
-  <% } %>
+                                                <!-- Offer Name Badge (Below Price) -->
+                                                <% if (product.offerData && product.offerData.offerDetails) { %>
+                                                    <div class="offer-name-badge">
+                                                    <i class="fas fa-tag"></i>
+                                                    <%= product.offerData.offerDetails.offerName %>
+                                                    </div>
+                                                <% } %>
 
-  <!-- Variant Colors -->
-  <div class="variant-colors mt-2 d-flex flex-wrap gap-1">
-    <% product.variants.forEach(v => {
-      const rawColor = v && v.color ? String(v.color).trim() : '';
-      const safeColor = rawColor 
-        ? rawColor.toLowerCase().replace(/\s+/g, '') 
-        : '#ccc';
-    %>
-      <span class="color-dot"
-        style="background-color:<%= safeColor %>;"
-        title="<%= rawColor || 'No color' %>">
-      </span>
-    <% }) %>
-  </div>
-<% } else { %>
-  <p class="product-price">Price N/A</p>
-<% } %>
+                                                <!-- Variant Colors -->
+                                                <div class="variant-colors mt-2 d-flex flex-wrap gap-1">
+                                                    <% product.variants.forEach(v => {
+                                                    const rawColor = v && v.color ? String(v.color).trim() : '';
+                                                    const safeColor = rawColor 
+                                                        ? rawColor.toLowerCase().replace(/\s+/g, '') 
+                                                        : '#ccc';
+                                                    %>
+                                                    <span class="color-dot"
+                                                        style="background-color:<%= safeColor %>;"
+                                                        title="<%= rawColor || 'No color' %>">
+                                                    </span>
+                                                    <% }) %>
+                                                </div>
+                                                <% } else { %>
+                                                <p class="product-price">Price N/A</p>
+                                                <% } %>
                                         </div>
                                     </div>
                                 </div>

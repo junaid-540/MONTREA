@@ -213,3 +213,84 @@ body {
         text-align: center;
       }
     }
+
+/* Resend button styles */
+.resend-link {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 500;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.resend-link:hover:not(.disabled) {
+  color: #357abd;
+  text-decoration: underline;
+}
+
+.resend-link.disabled,
+.resend-link:disabled {
+  color: #999 !important;
+  cursor: not-allowed !important;
+  text-decoration: none !important;
+  opacity: 0.6 !important;
+  pointer-events: none !important;
+}
+
+/* Verify button loading state */
+.verify-btn:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+  background-color: #666 !important;
+}
+
+/* Bootstrap spinner (in case it's not included) */
+.spinner-border {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: text-bottom;
+  border: 0.15em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-border 0.75s linear infinite;
+}
+
+.spinner-border-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-width: 0.125em;
+}
+
+@keyframes spinner-border {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+button[disabled] {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.invalid-feedback {
+  display: none;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #dc3545;
+}
+
+.form-control.is-invalid {
+  border-bottom-color: #dc3545 !important;
+}
+
+.form-control.is-invalid:focus {
+  border-bottom-color: #dc3545 !important;
+  box-shadow: none;
+}
