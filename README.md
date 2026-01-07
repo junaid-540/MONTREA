@@ -121,5 +121,5 @@ Admin dashboards & reporting
 Real-world e-commerce logic handling
 ```
 
-📄 License
+## 📄 License
 Educational project for learning purposes.
