@@ -190,9 +190,9 @@ function setupFormSubmission() {
             submitBtn.classList.add('loading');
         }
 
-        // --- Axios PUT request ---
+        //  Axios PUT request 
         try {
-            const response = await axios.put(`/admin/products/edit/${productId}`, {
+            const response = await axios.put(`/admin/products/${productId}`, {
                 name: nameValue.trim(),
                 description: descValue.trim(),
                 categoryId: catValue,

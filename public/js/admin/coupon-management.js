@@ -14,7 +14,7 @@ if (successMessage && successMessage.trim() !== '') {
 document.querySelectorAll('.btn-edit').forEach(button => {
     button.addEventListener('click', function() {
         const couponId = this.getAttribute('data-id');
-        window.location.href = `/admin/coupon/edit/${couponId}`;
+        window.location.href = `/admin/coupon/${couponId}/edit`;
     });
 });
 
@@ -37,7 +37,7 @@ document.querySelectorAll('.btn-activate').forEach(button => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.post(`/admin/coupon/toggle-status/${couponId}`);
+                const response = await axios.patch(`/admin/coupon/${couponId}/status`);
                 
                 if (response.data.success) {
                     Swal.fire({
@@ -87,7 +87,7 @@ document.querySelectorAll('.btn-deactivate').forEach(button => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.post(`/admin/coupon/toggle-status/${couponId}`);
+                const response = await axios.patch(`/admin/coupon/${couponId}/status`);
                 
                 if (response.data.success) {
                     Swal.fire({

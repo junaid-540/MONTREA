@@ -23,9 +23,9 @@ export const getOrCreateWallet = async (userId) =>{
 
 export const creditWallet = async (userId, amount, description, orderId = null , orderIdDisplay = null, razorpayDetails = {}) =>{
     try {
-        const wallet = await Wallet.findOne({userId});
+        const wallet = await getOrCreateWallet(userId);
         if(!wallet){
-            throw new Error('Wallet not found');
+            throw new Error('Failed to create or retrieve wallet');
         }
 
         const newBalance = wallet.balance + amount;
@@ -62,10 +62,10 @@ export const creditWallet = async (userId, amount, description, orderId = null ,
 
 export const debitWallet = async (userId, amount, description, orderId = null, orderIdDisplay = null) => {
     try {
-        const wallet = await Wallet.findOne({ userId });
+        const wallet = await getOrCreateWallet(userId);
         
         if (!wallet) {
-            throw new Error('Wallet not found');
+            throw new Error('Failed to create or retrieve wallet');
         }
         
         if (wallet.balance < amount) {

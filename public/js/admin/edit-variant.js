@@ -499,7 +499,7 @@ function setupFormSubmission() {
 
         try {
             const response = await axios.put(
-                `/admin/products/variants/edit/${variantId}`,
+                `/admin/variants/${variantId}`,
                 formData,
                 {
                     headers: {

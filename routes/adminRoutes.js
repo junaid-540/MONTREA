@@ -34,7 +34,7 @@ router.get('/dashboard',adminAuth,getDashboard)
 //Customers routes//
 
 router.get('/customer',adminAuth,getCustomersPage)
-router.patch('/users/toggle-block/:id',toggleBlockUser);
+router.patch('/users/:id/block-status',toggleBlockUser);
 
 
 //Category routes//
@@ -42,18 +42,18 @@ router.patch('/users/toggle-block/:id',toggleBlockUser);
 router.get('/category',adminAuth,getCategories);
 router.get('/category/add',adminAuth,getAddCategoryPage)
 router.post('/category/add',adminAuth,validateRequest(addCategoryValidation),addCategory);
-router.get('/category/edit/:id',adminAuth,getEitCategoryPage)
-router.put('/category/edit/:id',adminAuth,validateRequest(editCategoryValidation),editCategory);
-router.patch('/category/toggle/:id',adminAuth,toggleCategoryStatus)
+router.get('/category/:id/edit',adminAuth,getEitCategoryPage)
+router.put('/category/:id',adminAuth,validateRequest(editCategoryValidation),editCategory);
+router.patch('/category/:id/status',adminAuth,toggleCategoryStatus)
 
 
 // Products Management
 router.get("/products", adminAuth, getProducts);
 router.get("/products/add", adminAuth, getAddProductPage);
 router.post("/products/add", adminAuth,upload.any(),validateRequest(addProductValidation),addProduct);
-router.get("/products/edit/:id", adminAuth,getEditProductPage);
-router.put("/products/edit/:id", adminAuth,validateRequest(editProductValidation),editProduct);
-router.patch("/products/toggle/:id", adminAuth,toggleProductStatus);
+router.get("/products/:id/edit", adminAuth,getEditProductPage);
+router.put("/products/:id", adminAuth,validateRequest(editProductValidation),editProduct);
+router.patch("/products/:id/status", adminAuth,toggleProductStatus);
 
 
 
@@ -64,9 +64,9 @@ router.patch("/products/toggle/:id", adminAuth,toggleProductStatus);
 router.get("/products/:productId/variants", adminAuth, getProductVariants);
 router.get('/products/:productId/variants/add',adminAuth,getAddVariant)
 router.post("/products/:productId/variants/add",adminAuth,upload.array("images", 3),validateRequest(addVariantValidation), addVariant);
-router.get('/products/variants/edit/:id',adminAuth,getEditVariant)
-router.put("/products/variants/edit/:id", adminAuth, upload.any(), editVariant);
-router.patch("/products/variants/toggle/:id", adminAuth, toggleVariantStatus);
+router.get('/variants/:id/edit',adminAuth,getEditVariant)
+router.put("/variants/:id", adminAuth, upload.any(), editVariant);
+router.patch("/variants/:id/status", adminAuth, toggleVariantStatus);
 
 
 
@@ -86,9 +86,9 @@ router.patch('/order/:orderId/items/:itemId/status',adminAuth, updateItemStatus)
 router.get('/coupon',adminAuth,getCouponList)
 router.get('/coupon/add',adminAuth,getAddCouponPage);
 router.post('/coupon/add',adminAuth,createCoupon);
-router.get('/coupon/edit/:id',adminAuth,getEditCouponPage);
-router.post('/coupon/edit/:id',adminAuth,updateCoupon);
-router.post('/coupon/toggle-status/:id',adminAuth,toggleCouponStatus);
+router.get('/coupon/:id/edit',adminAuth,getEditCouponPage);
+router.put('/coupon/:id',adminAuth,updateCoupon);
+router.patch('/coupon/:id/status',adminAuth,toggleCouponStatus);
 
 
 
@@ -106,10 +106,10 @@ router.post('/refund-return/process-refund',adminAuth,processRefund)
 router.get('/offers',adminAuth,getOffers);
 router.get('/offers/form-data',adminAuth,getFormData)
 router.post("/offers/add", adminAuth, addOffer);
-router.get("/offers/edit/:id", adminAuth, getEditOffer);
-router.post("/offers/edit/:id", adminAuth,updateOffer);
-router.post("/offers/toggle-status/:id", adminAuth, toggleOfferStatus);
-router.post("/offers/delete/:id", adminAuth, deleteOffer);
+router.get("/offers/:id/edit", adminAuth, getEditOffer);
+router.put("/offers/:id", adminAuth,updateOffer);
+router.patch("/offers/:id/status", adminAuth, toggleOfferStatus);
+router.delete("/offers/:id", adminAuth, deleteOffer);
 
 
 

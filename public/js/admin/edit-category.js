@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!isValid) return;
 
         try {
-            const response = await axios.put(`/admin/category/edit/${categoryId}`, {
+            const response = await axios.put(`/admin/category/${categoryId}`, {
                 name,
                 description
             });

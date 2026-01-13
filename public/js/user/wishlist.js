@@ -180,9 +180,7 @@ async function handleRemoveFromWishlist(event) {
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
     
     try {
-        const response = await axios.post('/wishlist/remove', {
-            productVariantId: variantId
-        });
+        const response = await axios.delete(`/wishlist/items/${variantId}`);
 
         const data = response.data;
 

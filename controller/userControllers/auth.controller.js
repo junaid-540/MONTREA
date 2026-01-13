@@ -415,14 +415,14 @@ export const oauthCallbackController = async (req, res) => {
 export const userLogout = (req, res, next) => {
     try {
         req.session.successMessage = "You have logged out successfully!"
-
         const adminData = req.session.admin;
-
+        
         // For Google OAuth users
         if (req.isAuthenticated && req.isAuthenticated()) {
             req.logout(err => {
                 if (err) return next(err);
                 
+                // Restore admin data if it exists
                 if (adminData) {
                     req.session.admin = adminData;
                 }
@@ -435,7 +435,7 @@ export const userLogout = (req, res, next) => {
                 delete req.session.pendingReferrerId;
                 delete req.session.returnUrl;
                 
-                // Force save session with admin data
+                // Force save session with admin data preserved
                 req.session.save(err => {
                     if (err) {
                         console.error("Session save error:", err);
@@ -464,7 +464,6 @@ export const userLogout = (req, res, next) => {
             
             return res.redirect('/');
         }
-
     } catch (err) {
         console.error("User Logout Error:", err);
         next(err);

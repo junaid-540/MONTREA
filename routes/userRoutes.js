@@ -1,5 +1,5 @@
 import express from 'express'
-import { getHomePage, getProductDetails, getShopPage } from '../controller/userControllers/home.controller.js';
+import { aboutUs, getHomePage, getProductDetails, getShopPage } from '../controller/userControllers/home.controller.js';
 import { getSignup , postSignup , postVerifyOtp , getResendOtp , getSignin , postSignin , oauthCallbackController , userLogout, loadForgetPassword, postForgetPassword, getVeriyForgotOtp, getResendForgotOtp, postVerifyForgotOtp, LoadResetPassword, resetPassword, getVerifyOtp} from '../controller/userControllers/auth.controller.js';
 import passport from 'passport';
 import { userFinder } from '../middleware/userfinder.js';
@@ -44,6 +44,7 @@ router.get('/auth/google',passport.authenticate('google',{
 router.get('/auth/google/callback',passport.authenticate("google",{
     failureRedirect:'/signin',
     failureMessage:true,
+    keepSessionInfo: true,
 }), oauthCallbackController)
 router.post('/logout',userLogout)
 router.get('/forgot-password',preventCache,loadForgetPassword)
@@ -62,8 +63,8 @@ router.get('/product/:id',getProductDetails)
 
 // profile routes //
 router.get('/profile',checkSession,getProfile)
-router.get('/edit-profile',checkSession,getEditProfile)
-router.post('/edit-profile',checkSession,upload.single("profileImage"),validateRequest(editProfileValidation),updateProfile)
+router.get('/profile/edit',checkSession,getEditProfile)
+router.put('/profile',checkSession,upload.single("profileImage"),validateRequest(editProfileValidation),updateProfile)
 router.get('/verify-email-change',checkSession,getVerifyEmailChange);
 router.post('/verify-email-change',checkSession,postVerifyEmailChange);
 router.get('/resend-email-change-otp',checkSession,getResendEmailChangeOtp);
@@ -78,16 +79,16 @@ router.get('/add-address',checkSession,getAddAddress)
 router.post('/add-address',checkSession,validateRequest(addAddressValidation),postAddAddress)
 router.get('/edit-address/:id',checkSession,getEditAddress);
 router.post('/edit-address/:id',checkSession,validateRequest(addAddressValidation),postEditAddress);
-router.delete('/delete-address/:id',checkSession,deleteAddress);
-router.post('/set-default-address/:id',checkSession,setDefaultAddress)
+router.delete('/address/:id',checkSession,deleteAddress);
+router.patch('/address/:id/default',checkSession,setDefaultAddress)
 
 
 // cart routes //
 router.get('/cart',checkSession,getCartPage);
-router.post('/cart/add',checkSession,addToCart)
-router.get('/cart/check/:variantId',checkVariantInCart)
-router.post('/cart/clear-invalid',checkSession,clearInvalidItems)
-router.post('/cart/update',checkSession,updateCartQuantity)
+router.post('/cart/items',checkSession,addToCart)
+router.get('/cart/items/:variantId/exists',checkVariantInCart)
+router.delete('/cart/invalid-items',checkSession,clearInvalidItems)
+router.patch('/cart/items/:variantId',checkSession,updateCartQuantity)
 router.post('/cart/remove',checkSession,removeFromCart)
 router.post('/cart/move-to-wishlist', checkSession, moveToWishlist);
 
@@ -124,9 +125,9 @@ router.get('/order/:orderId/invoice',checkSession,downloadInvoice);
 // Wishlist Routes //
 
 router.get('/wishlist',checkSession,getWishlist)
-router.post('/wishlist/add',checkSession,addToWishlist);
-router.get('/wishlist/check/:variantId',checkVariantInWishlist)
-router.post('/wishlist/remove',checkSession,removeFromWishlist)
+router.post('/wishlist/items',checkSession,addToWishlist);
+router.get('/wishlist/items/:variantId/exists',checkVariantInWishlist)
+router.delete('/wishlist/items/:variantId',checkSession,removeFromWishlist)
 router.post('/wishlist/move-to-cart',checkSession,moveToCart)
 
 
@@ -144,8 +145,8 @@ router.get('/wallet/transactions', checkSession, getTransactionHistory);
 // Coupon Routes //
 
 router.get('/coupons/available', checkSession, getAvailableCouponsForUser);
-router.post('/checkout/apply-coupon', checkSession, applyCouponToCart);
-router.post('/checkout/remove-coupon', checkSession, removeCoupon);
+router.post('/checkout/coupon', checkSession, applyCouponToCart);
+router.delete('/checkout/coupon', checkSession, removeCoupon);
 router.get('/checkout/validate-coupon', checkSession, validateCouponBeforePayment);
 
 
@@ -157,5 +158,9 @@ router.get('/refer',checkSession,getReferralPage)
 router.post('/review/submit',checkSession,submitReview);
 router.delete('/review/:reviewId',checkSession,deleteReview);
 router.get('/review/product/:productId', getProductReviews);
+
+
+// aboutUS
+router.get('/about',aboutUs)
 
 export default router

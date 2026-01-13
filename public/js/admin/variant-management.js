@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!result.isConfirmed) return;
 
         try {
-          const response = await axios.patch(`/admin/products/variants/toggle/${variantId}`);
+          const response = await axios.patch(`/admin/variants/${variantId}/status`);
           const { isListed } = response.data.data;
           const message = response.data.message;
 

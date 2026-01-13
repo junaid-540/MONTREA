@@ -346,6 +346,7 @@ function openReviewModal(itemId, productName){
     document.getElementById('charCount').textContent = '0';
     document.getElementById('submitReviewBtn').disabled = true;
     
+    
     reviewModal.show();
 }
 

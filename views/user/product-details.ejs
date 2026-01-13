@@ -94,15 +94,10 @@
                 <!-- Size Selection -->
                 <div class="mt-3">
                     <label class="fw-bold">SIZE:</label>
-                    <div class="size-selector">
-                        <% availableSizes.forEach((size, index) => { %>
-                            <button class="size-btn <%= index === 0 ? 'active' : '' %>"
-                                data-size="<%= size %>" onclick="selectSize('<%= size %>', this)">
-                                <%= size %>
-                            </button>
-                        <% }) %>
+                    <div class="size-selector" id="sizeSelector">
+                        
                     </div>
-                    <input type="hidden" id="selectedSize" value="<%= availableSizes[0] || '' %>">
+                    <input type="hidden" id="selectedSize" value="">
                 </div>
 
                 <!-- Quantity Selection -->

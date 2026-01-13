@@ -238,9 +238,15 @@ export const validateCouponCreation = (couponData) => {
 
 export const incrementCouponUsage = async (couponId, userId, orderId) => {
     try {
+        if (!couponId) {
+            console.log('No coupon ID provided, skipping increment');
+            return { success : true, skipped: true};
+        }
+
         const coupon = await Coupon.findById(couponId);
-        if (!coupon) {
-            throw new Error('Coupon not found');
+        if(!coupon){
+            console.warn(` Coupon ${couponId} not found, skipping increment`);
+            return { success: true, skipped: true, reason: 'Coupon not found'};
         }
 
         coupon.usageCount += 1;

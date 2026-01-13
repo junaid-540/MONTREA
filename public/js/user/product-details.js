@@ -1,6 +1,40 @@
 const variants = window.variants || [];
 const variantsWithPrices = window.variantsWithPrices || [];
 
+
+function getSizesForColor(color) {
+    return [...new Set(
+        variants
+            .filter(v => v.color === color && v.isListed !== false)
+            .map(v => v.size)
+    )];
+}
+
+function renderSizesForColor(color) {
+    const sizeSelector = document.getElementById('sizeSelector');
+    sizeSelector.innerHTML = '';
+
+    const sizes = getSizesForColor(color);
+
+    if (!sizes.length) {
+        document.getElementById('selectedSize').value = '';
+        return;
+    }
+
+    sizes.forEach((size, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'size-btn' + (index === 0 ? ' active' : '');
+        btn.dataset.size = size;
+        btn.textContent = size;
+        btn.onclick = () => selectSize(size, btn);
+        sizeSelector.appendChild(btn);
+    });
+
+    document.getElementById('selectedSize').value = sizes[0];
+}
+
+
+
 function UpdateCartBadge(count){
     const cartLink = document.querySelector('a[href="/cart"]');
     if(!cartLink) return ;
@@ -112,14 +146,18 @@ function changeImage(src, element) {
 }
 
 function selectColor(color, element) {
-    document.querySelectorAll('.color-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
+    document.querySelectorAll('.color-btn').forEach(btn =>
+        btn.classList.remove('active')
+    );
     element.classList.add('active');
     document.getElementById('selectedColor').value = color;
 
+    // 🔥 THIS IS THE FIX
+    renderSizesForColor(color);
+
     updateVariant();
 }
+
 
 function selectSize(size, element) {
     document.querySelectorAll('.size-btn').forEach(btn => {
@@ -304,7 +342,7 @@ function updateVariant() {
 
 async function checkIfVariantInCart(variantId) {
     try {
-        const response = await fetch(`/cart/check/${variantId}`);
+        const response = await fetch(`/cart/items/${variantId}/exists`);
         const data = await response.json();
 
         if (data.success && data.data) {
@@ -319,7 +357,7 @@ async function checkIfVariantInCart(variantId) {
 
 async function checkIfVariantInWishlist(variantId) {
     try {
-        const response = await fetch(`/wishlist/check/${variantId}`);
+        const response = await fetch(`/wishlist/items/${variantId}/exists`);
         const data = await response.json();
 
         if (data.success && data.data) {
@@ -394,6 +432,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }).showToast();
     }
+
+const defaultColor = document.getElementById('selectedColor')?.value;
+if (defaultColor) {
+    renderSizesForColor(defaultColor);
+}
+
 
     const addToCartBtn = document.getElementById('addToCartBtn');
 
@@ -489,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
             this.textContent = 'ADDING...';
 
             try {
-                const response = await fetch('/cart/add', {
+                const response = await fetch('/cart/items', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -509,7 +553,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     try {
                         data = JSON.parse(raw);
                     } catch (err) {
-                        console.error('Invalid JSON from /cart/add:', raw);
+                        console.error('Invalid JSON from /cart/items:', raw);
                     }
                 }
 
@@ -681,7 +725,7 @@ document.addEventListener('DOMContentLoaded', function () {
             this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ADDING...';
 
             try {
-                const response = await fetch('/wishlist/add', {
+                const response = await fetch('/wishlist/items', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -700,7 +744,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     try {
                         data = JSON.parse(raw);
                     } catch (err) {
-                        console.error('Invalid JSON from /wishlist/add:', raw);
+                        console.error('Invalid JSON from /wishlist/items:', raw);
                     }
                 }
 

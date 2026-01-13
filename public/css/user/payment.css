@@ -21,13 +21,18 @@ body {
     color: var(--primary-black);
     -webkit-font-smoothing: antialiased;
     line-height: 1.6;
-}
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+ }
 
-/* Main Container */
+/* Main Container - FIXED padding to prevent navbar overlap */
 .payment-container {
     max-width: 1140px;
-    margin: 0 auto 5rem;
-    padding: 40px 15px 0;
+    margin: 0 auto;
+    padding: 40px 15px 5rem;
+    width: 100%;
+    flex: 1;
 }
 
 .back-btn {
@@ -159,6 +164,7 @@ body {
 
 .payment-details {
     flex: 1;
+    min-width: 0; /* Prevents overflow issues */
 }
 
 .payment-details h4 {
@@ -229,6 +235,8 @@ body {
 
 .address-content p {
     margin: 5px 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .address-tag {
@@ -278,16 +286,19 @@ body {
     background-color: #f9f9f9;
     object-fit: cover;
     border-radius: 6px;
+    flex-shrink: 0;
 }
 
 .product-details {
     flex-grow: 1;
+    min-width: 0;
 }
 
 .product-name {
     font-weight: 600;
     margin-bottom: 5px;
     font-size: 0.95rem;
+    word-wrap: break-word;
 }
 
 .product-meta {
@@ -370,35 +381,6 @@ body {
     gap: 5px;
 }
 
-/* Responsive */
-@media (max-width: 992px) {
-    .content-wrapper {
-        grid-template-columns: 1fr;
-    }
-
-    .summary-wrapper {
-        position: static;
-        margin-top: 30px;
-        max-height: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .payment-container {
-        padding: 20px 15px 0;
-    }
-
-    .payment-wrapper,
-    .summary-wrapper,
-    .delivery-address-card {
-        padding: 20px;
-    }
-
-    .payment-method {
-        padding: 20px;
-    }
-}
-
 .wallet-balance-info {
     color: #c5a47e;
     font-weight: 600;
@@ -440,4 +422,149 @@ body {
 .offer-badge i {
     font-size: 9px;
     margin-right: 3px;
+}
+
+/* FIXED Responsive Styles */
+@media (max-width: 1200px) {
+    .payment-container {
+        max-width: 95%;
+    }
+}
+
+@media (max-width: 992px) {
+    .content-wrapper {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .summary-wrapper {
+        position: static;
+        margin-top: 0;
+        max-height: none;
+        top: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .payment-container {
+        padding: 20px 15px 3rem; /* Reduced bottom padding on mobile */
+        margin-bottom: 2rem;
+    }
+
+    .payment-wrapper,
+    .summary-wrapper,
+    .delivery-address-card {
+        padding: 20px;
+    }
+
+    .payment-method {
+        padding: 18px;
+        flex-wrap: wrap;
+    }
+
+    .payment-details {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+    }
+
+    .back-btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .payment-container {
+        padding: 15px 12px 2rem;
+    }
+
+    .payment-wrapper,
+    .summary-wrapper,
+    .delivery-address-card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .payment-method {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .payment-icon {
+        font-size: 1.5rem;
+        width: 40px;
+    }
+
+    .payment-details h4 {
+        font-size: 1rem;
+    }
+
+    .payment-details p {
+        font-size: 0.82rem;
+    }
+
+    .product-item {
+        gap: 12px;
+    }
+
+    .product-img {
+        width: 50px;
+        height: 74px;
+    }
+
+    .product-name {
+        font-size: 0.9rem;
+    }
+
+    .btn-place-order {
+        padding: 14px;
+        font-size: 0.95rem;
+    }
+
+    .coming-soon-badge {
+        font-size: 0.65rem;
+        padding: 4px 10px;
+    }
+
+    .cod-restriction-msg {
+        font-size: 0.75rem;
+        padding: 5px 8px;
+    }
+}
+
+@media (max-width: 400px) {
+    .payment-method {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .radio-indicator {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+
+    .payment-icon {
+        align-self: flex-start;
+    }
+
+    .payment-details {
+        width: 100%;
+    }
+
+    .product-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .price-wrapper {
+        align-items: flex-start;
+        margin-top: 8px;
+    }
 }

@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
           // Send request to toggle
-          const response = await axios.patch(`/admin/products/toggle/${productId}`);
+          const response = await axios.patch(`/admin/products/${productId}/status`);
           const { isListed } = response.data.data;
           const message = response.data.message;
 

@@ -27,7 +27,7 @@ passwordToggle.addEventListener('click', () => {
 function validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim()) return 'Email is required';
-    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    if (!emailRegex.test(email.trim())) return 'Please enter a valid email address';
     return null;
 }
 

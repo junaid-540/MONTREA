@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = Object.fromEntries(formData.entries());
         data.isActive = document.getElementById('isActive')?.checked || false;
         try {
-            const response = await axios.post(`/admin/offers/edit/${offerId}`, data);
+            const response = await axios.put(`/admin/offers/${offerId}`, data);
             
             if (response.data.success) {
                 await Swal.fire({

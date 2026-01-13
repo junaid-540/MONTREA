@@ -95,7 +95,7 @@ async function updateCartQuantity(form, newQuantity) {
     increaseBtn.disabled = true;
 
     try {
-        const response = await axios.post('/cart/update', {
+        const response = await axios.patch(`/cart/items/${variantId}`, {
             productVariantId: variantId,
             quantity: newQuantity
         });
@@ -346,7 +346,7 @@ function clearInvalidItems() {
 
 async function clearInvalidItemsRequest(invalidItems) {
     try {
-        const response = await axios.post('/cart/clear-invalid');
+        const response = await axios.delete('/cart/invalid-items');
 
         if (response.data.success) {
             const isSingleItem = invalidItems.length === 1;

@@ -554,7 +554,7 @@ export const toggleOfferStatus = async (req, res, next) => {
 export const deleteOffer = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { type } = req.body;
+        const { type } = req.query;
 
         if (!type || (type !== 'product' && type !== 'category')) {
             return sendResponse(res, {

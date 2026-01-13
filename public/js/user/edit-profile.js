@@ -287,7 +287,7 @@ document.addEventListener("DOMContentLoaded", function () {
         saveBtn.textContent = 'Saving...';
 
         try {
-            const response = await axios.post('/edit-profile', formData, {
+            const response = await axios.put('/profile', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
@@ -344,25 +344,25 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    document.querySelectorAll('a[href="/logout"]').forEach(link => {
-        link.addEventListener("click", function (e) {
-            e.preventDefault();
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Do you want to log out?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, log out!',
-                cancelButtonText: 'Cancel',
-                scrollbarPadding: false,
-                heightAuto: false
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/logout';
-                }
-            });
-        });
-    });
+    // document.querySelectorAll('a[href="/logout"]').forEach(link => {
+    //     link.addEventListener("click", function (e) {
+    //         e.preventDefault();
+    //         Swal.fire({
+    //             title: "Are you sure?",
+    //             text: "Do you want to log out?",
+    //             icon: 'warning',
+    //             showCancelButton: true,
+    //             confirmButtonColor: '#3085d6',
+    //             cancelButtonColor: '#d33',
+    //             confirmButtonText: 'Yes, log out!',
+    //             cancelButtonText: 'Cancel',
+    //             scrollbarPadding: false,
+    //             heightAuto: false
+    //         }).then((result) => {
+    //             if (result.isConfirmed) {
+    //                 window.location.href = '/logout';
+    //             }
+    //         });
+    //     });
+    // });
 });

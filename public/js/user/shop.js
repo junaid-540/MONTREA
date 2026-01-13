@@ -19,7 +19,7 @@ function UpdateWishlistBadge(count) {
 
 async function checkIfVariantInWishlist(variantId) {
   try {
-    const response = await fetch(`/wishlist/check/${variantId}`);
+    const response = await fetch(`/wishlist/items/${variantId}/exists`);
     const data = await response.json();
     if (data.success && data.data) {
       return data.data.inWishlist;
@@ -104,7 +104,7 @@ async function handleWishlistClick(event, icon) {
   icon.style.opacity = '0.6';
 
   try {
-    const response = await fetch('/wishlist/add', {
+    const response = await fetch('/wishlist/items', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -123,7 +123,7 @@ async function handleWishlistClick(event, icon) {
       try {
         data = JSON.parse(raw);
       } catch (err) {
-        console.error('Invalid JSON from /wishlist/add:', raw);
+        console.error('Invalid JSON from /wishlist/items:', raw);
       }
     }
 

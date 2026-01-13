@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!result.isConfirmed) return;
 
                 try {
-                    const response = await axios.patch(`/admin/users/toggle-block/${userId}`);
+                    const response = await axios.patch(`/admin/users/${userId}/block-status`);
                     const { status} = response.data.data;
                     const  message  = response.data.message;
 

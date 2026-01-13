@@ -269,8 +269,9 @@ export const removeFromWishlist = async (req,res,next) =>{
             });
         }
 
-        const {productVariantId} = req.body;
-        if(!productVariantId){
+        const {variantId} = req.params;
+        console.log("params",variantId)
+        if(!variantId){
             return sendResponse(res,{
                 success: false,
                 statusCode: statusCodes.NOT_FOUND,
@@ -290,7 +291,7 @@ export const removeFromWishlist = async (req,res,next) =>{
         const originalCount = wishlist.items.length;
 
         wishlist.items = wishlist.items.filter(
-            item => item.productVariantId.toString() !== productVariantId
+            item => item.productVariantId.toString() !== variantId
         );
 
         if(originalCount === wishlist.items.length){

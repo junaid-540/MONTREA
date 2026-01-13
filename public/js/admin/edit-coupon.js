@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = Object.fromEntries(formData.entries());
         
         try {
-            const response = await axios.post(`/admin/coupon/edit/${couponId}`, data);
+            const response = await axios.put(`/admin/coupon/${couponId}`, data);
             
             if (response.data.success) {
                 await Swal.fire({

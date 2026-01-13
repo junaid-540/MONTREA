@@ -351,7 +351,7 @@ export const placeOrder = async (req,res,next) =>{
             await newOrder.save();
 
             // incremeant coupon usage //
-            if(couponData){
+            if(couponData && couponData.couponId){
                 await incrementCouponUsage(couponData.couponId, userId, newOrder._id);
             }
 
@@ -422,7 +422,7 @@ export const placeOrder = async (req,res,next) =>{
 
             await newOrder.save()
 
-            if(couponData){
+            if(couponData && couponData.couponId){
                 await incrementCouponUsage(couponData.couponId, userId, newOrder._id);
             }
 

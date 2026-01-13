@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 heightAuto: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    axios.delete(`/delete-address/${addressId}`, {
+                    axios.delete(`/address/${addressId}`, {
                         headers: {
                             'Content-Type': 'application/json',
                         }
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (this.classList.contains('active')) return;
             
             const addressId = this.getAttribute('data-id');
-            axios.post(`/set-default-address/${addressId}`, {}, {
+            axios.patch(`/address/${addressId}/default`, {}, {
                 headers: {
                     'Content-Type': 'application/json',
                 }

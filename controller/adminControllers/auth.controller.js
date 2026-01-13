@@ -67,7 +67,7 @@ export const postLogin = async (req,res,next) =>{
         };
 
         req.session.successMessage = `Welcome back, ${admin.name}`
-
+        
         res.redirect('/admin/dashboard');
     } catch (err) {       
         console.error("Admin Login Error:", err);
@@ -76,19 +76,46 @@ export const postLogin = async (req,res,next) =>{
 }
 
 
-export const adminLogout = (req,res,next) =>{
+export const adminLogout = (req, res, next) => {
     try {  
-        if(req.session.admin) delete req.session.admin;
+        // Preserve all user session data (including Google OAuth)
+        const userSessionData = {
+            userId: req.session.userId,
+            signupEmail: req.session.signupEmail,
+            forgotPasswordEmail: req.session.forgotPasswordEmail,
+            forgotPasswordOtpVerified: req.session.forgotPasswordOtpVerified,
+            pendingReferrerId: req.session.pendingReferrerId,
+            returnUrl: req.session.returnUrl,
+            passport: req.session.passport 
+        };
 
-        res.clearCookie('connect.sid');
-        res.set('Cache-Control','no-store, no-cache, must-revalidate, private');
-        res.set('Pragma', 'no-cache');
-        res.set('Expires', '0');
-
-        return res.redirect('/admin')
-    } catch (err) {
         
+        delete req.session.admin;
+        
+        // Restore user data if user is logged in
+        if (userSessionData.userId || userSessionData.passport) {
+            Object.keys(userSessionData).forEach(key => {
+                if (userSessionData[key] !== undefined) {
+                    req.session[key] = userSessionData[key];
+                }
+            });
+        }
+
+        // DON'T clear the cookie - save the modified session instead
+        req.session.save(err => {
+            if (err) {
+                console.error("Session save error:", err);
+                return next(err);
+            }
+            
+            res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            res.set('Pragma', 'no-cache');
+            res.set('Expires', '0');
+            
+            return res.redirect('/admin');
+        });
+    } catch (err) {
         console.error("Admin Logout Error:", err);
-        next(err)
+        next(err);
     }
 }

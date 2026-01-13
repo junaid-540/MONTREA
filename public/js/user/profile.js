@@ -25,29 +25,29 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Get ALL logout links (returns NodeList)
-    const logoutLinks = document.querySelectorAll('a[href="/logout"]');
+    // const logoutLinks = document.querySelectorAll('a[href="/logout"]');
     
-    // Loop through EACH link and add event listener
-    logoutLinks.forEach(function(logoutLink) {
-        logoutLink.addEventListener("click", function(e) {
-            e.preventDefault();
+    // // Loop through EACH link and add event listener
+    // logoutLinks.forEach(function(logoutLink) {
+    //     logoutLink.addEventListener("click", function(e) {
+    //         e.preventDefault();
             
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Do you want to log out?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, log out!',
-                cancelButtonText: 'Cancel',
-                scrollbarPadding: false,
-                heightAuto: false
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/logout';
-                }
-            });
-        });
-    });
+    //         Swal.fire({
+    //             title: "Are you sure?",
+    //             text: "Do you want to log out?",
+    //             icon: 'warning',
+    //             showCancelButton: true,
+    //             confirmButtonColor: '#3085d6',
+    //             cancelButtonColor: '#d33',
+    //             confirmButtonText: 'Yes, log out!',
+    //             cancelButtonText: 'Cancel',
+    //             scrollbarPadding: false,
+    //             heightAuto: false
+    //         }).then((result) => {
+    //             if (result.isConfirmed) {
+    //                 window.location.href = '/logout';
+    //             }
+    //         });
+    //     });
+    // });
 });

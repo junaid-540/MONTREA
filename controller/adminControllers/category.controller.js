@@ -13,12 +13,12 @@ export const getCategories = async (req,res,next) =>{
             const {data:categories,search,totalPages,currentPage} = await getPaginateData(Category,req,{
                 searchFields:["name"],
                 sort: {createdAt: -1},
-                limit:3,
+                limit:5,
             });
 
             
 
-            let pageSize = 3;
+            let pageSize = 5;
 
             res.render('admin/category-management',{
                 Title: 'Category Management',
@@ -145,17 +145,6 @@ export const editCategory = async (req,res,next) =>{
     try {
         
         const {id} = req.params;
-
-        // const {error,value} = editCategoryValidation.validate(req.body,{abortEarly:false})
-
-        // if(error){
-        //     return sendResponse(res,{
-        //         success: false,
-        //         message: error.details.map(e => e.message).join(', '),
-        //         statusCodes: statusCodes.BAD_REQUEST,
-        //     });
-        // }
-
         const {name,description} = req.body;
 
         const category = await Category.findById(id);
@@ -166,6 +155,21 @@ export const editCategory = async (req,res,next) =>{
                 message:errorMessages.CATEGORY_NOT_FOUND,
                 statusCode:statusCodes.NOT_FOUND,
             });
+        }
+
+        if(!name && name.trim() !== category.name){
+            const existingCategory = await Category.findOne({
+                name: { $regex: `${name}`, $options: "i"},
+                _id: { $ne: id} 
+            });
+
+            if(existingCategory){
+                return sendResponse(res,{
+                    success: false,
+                    statusCode: statusCodes.CONFLICT,
+                    message: errorMessages.CATEGORY_ALREADY_EXISTS
+                })
+            }
         }
 
         category.name = name ?? category.name;
@@ -182,6 +186,13 @@ export const editCategory = async (req,res,next) =>{
         
     } catch (err) {
         console.error("Error in editCategory:",err)
+        if(err.code === 11000){
+            return sendResponse(res,{
+                success: false,
+                statusCode: statusCodes.CONFLICT,
+                message: errorMessages.CATEGORY_ALREADY_EXISTS
+            });
+        }
         next(err)
     }
 }

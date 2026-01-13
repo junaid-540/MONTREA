@@ -16,6 +16,8 @@ body {
     background-color: rgb(248, 249, 250);
     color: var(--primary-black);
     -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Wallet Content Container */

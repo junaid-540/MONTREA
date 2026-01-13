@@ -56,7 +56,7 @@ export const generateInvoice = (order, stream) => {
                .font('Helvetica-Bold')
                .text('PAYMENT INFO:', 350, 160);
 
-               const paymentStatusText = order.paymentMethod === 'COD' && order.orderStatus === 'Delivered'
+            const paymentStatusText = order.paymentMethod === 'COD' && order.orderStatus === 'Delivered'
                                     ? 'Paid (Cash on delivery)'
                                     : order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1);
 
@@ -64,6 +64,7 @@ export const generateInvoice = (order, stream) => {
                .font('Helvetica')
                .text(`Method: ${order.paymentMethod}`, 350, 180)
                .text(`Status: ${paymentStatusText}`, 350, 195);
+
 
             // Line
             doc.moveTo(50, 270)
@@ -152,6 +153,28 @@ export const generateInvoice = (order, stream) => {
                .text(`${order.subtotal.toFixed(2)}`, 450, yPosition, { width: 80, align: 'right' });
             yPosition += 20;
 
+            // Product Discount (if any product-level discounts exist)
+            if (order.discount > 0) {
+                doc.fillColor('#10b981')
+                   .text('Product Discount:', totalsX, yPosition, { width: 100, align: 'left' })
+                   .text(`-${order.discount.toFixed(2)}`, 450, yPosition, { width: 80, align: 'right' })
+                   .fillColor('#000000');
+                yPosition += 20;
+            }
+
+            // Coupon Discount (if applied)
+            if (order.code && order.discountAmount > 0) {
+                const couponLabel = order.discountType === 'percentage' 
+                    ? `Coupon (${order.code} - ${order.discountValue}%):`
+                    : `Coupon (${order.code}):`;
+                
+                doc.fillColor('#10b981')
+                   .text(couponLabel, totalsX, yPosition, { width: 100, align: 'left' })
+                   .text(`-${order.discountAmount.toFixed(2)}`, 450, yPosition, { width: 80, align: 'right' })
+                   .fillColor('#000000');
+                yPosition += 20;
+            }
+
             // Tax
             doc.text('Tax (GST):', totalsX, yPosition, { width: 100, align: 'left' })
                .text(`${Math.round(order.tax.toFixed(2))}`, 450, yPosition, { width: 80, align: 'right' });
@@ -161,15 +184,6 @@ export const generateInvoice = (order, stream) => {
             doc.text('Shipping:', totalsX, yPosition, { width: 100, align: 'left' })
                .text(order.shippingCharge === 0 ? 'FREE' : `${order.shippingCharge.toFixed(2)}`, 450, yPosition, { width: 80, align: 'right' });
             yPosition += 20;
-
-            // Discount (if any)
-            if (order.discount > 0) {
-                doc.fillColor('#10b981')
-                   .text('Discount:', totalsX, yPosition, { width: 100, align: 'left' })
-                   .text(`-${order.discount.toFixed(2)}`, 450, yPosition, { width: 80, align: 'right' })
-                   .fillColor('#000000');
-                yPosition += 20;
-            }
 
             // Line before grand total
             doc.moveTo(350, yPosition)
@@ -183,6 +197,17 @@ export const generateInvoice = (order, stream) => {
                .font('Helvetica-Bold')
                .text('TOTAL:', totalsX, yPosition, { width: 100, align: 'left' })
                .text(`${Math.round(order.totalAmount.toFixed(2))}`, 450, yPosition, { width: 80, align: 'right' });
+
+            // Savings Summary (if applicable)
+            const totalSavings = (order.discount || 0) + (order.discountAmount || 0);
+            if (totalSavings > 0) {
+                yPosition += 25;
+                doc.fontSize(10)
+                   .font('Helvetica')
+                   .fillColor('#10b981')
+                   .text(`You saved ${totalSavings.toFixed(2)} on this order!`, 350, yPosition, { width: 180, align: 'right' })
+                   .fillColor('#000000');
+            }
 
             // Return note if applicable
             if (hasCompletedReturn) {

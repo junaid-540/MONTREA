@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const categoryId = btn.dataset.id;
             if (!categoryId) return console.error("Category ID is undefined!");
             
-            window.location.href = `/admin/category/edit/${categoryId}`;
+            window.location.href = `/admin/category/${categoryId}/edit`;
         });
     });
 
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!result.isConfirmed) return;
 
                 try {
-                    const response = await axios.patch(`/admin/category/toggle/${categoryId}`);
+                    const response = await axios.patch(`/admin/category/${categoryId}/status`);
                     const { isListed } = response.data.data;
                     const message = response.data.message;
 

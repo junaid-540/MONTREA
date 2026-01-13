@@ -3,6 +3,7 @@ import Category from "../../models/categorySchema.js";
 import { getPaginateData } from "../../utils/helpers.js";
 import ProductVariant from "../../models/productVariantSchema.js";
 import { calculateVariantPrice, getProductOffers } from "../../utils/offerCalculator.js";
+import User from "../../models/userSchema.js";
 
 
 
@@ -395,7 +396,7 @@ export const getProductDetails = async (req, res, next) => {
       pageJs: "/public/js/user/product-details.js",
       user: res.locals.user || null,
       availableColors,
-      availableSizes,
+      // availableSizes,
       relatedProducts,
       defaultVariant,
       successMessage,
@@ -406,5 +407,20 @@ export const getProductDetails = async (req, res, next) => {
   } catch (err) {
     console.error('Error loading product details:', err);
     next(err);
+  }
+}
+
+
+export const aboutUs = async (req,res,next) =>{
+  try {
+    res.render('user/about',{
+      is404: true,
+      user: res.locals.user || null,
+      Title: 'About Us',
+      pageCss: "/public/css/user/about.css"
+    })
+  } catch (err) {
+    console.error('Error Loading aboutUs page :',err);
+    next(err)
   }
 }

@@ -192,7 +192,7 @@ document.querySelectorAll('.btn-edit').forEach(button => {
     button.addEventListener('click', function() {
         const offerId = this.getAttribute('data-id');
         const offerType = this.getAttribute('data-type');
-        window.location.href = `/admin/offers/edit/${offerId}?type=${offerType}`;
+        window.location.href = `/admin/offers/${offerId}/edit/?type=${offerType}`;
     });
 });
 
@@ -216,7 +216,7 @@ document.querySelectorAll('.btn-activate').forEach(button => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.post(`/admin/offers/toggle-status/${offerId}`, { type: offerType });
+                const response = await axios.patch(`/admin/offers/${offerId}/status`, { type: offerType });
                 
                 if (response.data.success) {
                     Swal.fire({
@@ -267,7 +267,7 @@ document.querySelectorAll('.btn-deactivate').forEach(button => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.post(`/admin/offers/toggle-status/${offerId}`, { type: offerType });
+                const response = await axios.patch(`/admin/offers/${offerId}/status`, { type: offerType });
                 
                 if (response.data.success) {
                     Swal.fire({
@@ -318,7 +318,7 @@ document.querySelectorAll('.btn-delete').forEach(button => {
 
         if (result.isConfirmed) {
             try {
-                const response = await axios.post(`/admin/offers/delete/${offerId}`, { type: offerType });
+                const response = await axios.delete(`/admin/offers/${offerId}?type=${offerType}`);
                 
                 if (response.data.success) {
                     Swal.fire({

@@ -274,7 +274,7 @@ async function applyCoupon(code, fromModal = false) {
     }
     
     try {
-        const response = await axios.post('/checkout/apply-coupon', {
+        const response = await axios.post('/checkout/coupon', {
             couponCode: couponCode
         }, {
             headers: { 'Content-Type': 'application/json' }
@@ -306,7 +306,7 @@ async function applyCoupon(code, fromModal = false) {
     // Remove coupon
 async function removeCoupon() {
     try {
-        const response = await axios.post('/checkout/remove-coupon', {}, {
+        const response = await axios.delete('/checkout/coupon', {}, {
             headers: { 'Content-Type': 'application/json' }
         });
         
