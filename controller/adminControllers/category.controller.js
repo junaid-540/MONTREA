@@ -157,7 +157,7 @@ export const editCategory = async (req,res,next) =>{
             });
         }
 
-        if(!name && name.trim() !== category.name){
+        if(name && name.trim() !== category.name){
             const existingCategory = await Category.findOne({
                 name: { $regex: `${name}`, $options: "i"},
                 _id: { $ne: id} 
