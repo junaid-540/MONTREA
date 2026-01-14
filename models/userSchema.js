@@ -67,10 +67,9 @@ const userSchema = new mongoose.Schema(
 
         referralCode: {
             type: String,
-            unique: true,
-            // required: true,
             uppercase: true,
             trim: true,
+            default: null
         },
 
         referredBy: {
@@ -119,7 +118,7 @@ userSchema.index(
     {unique: true , partialFilterExpression : { phone :{ $type : "string"}}}
 )
 
-// userSchema.index({referralCode: 1})
+userSchema.index({referralCode: 1},{unique: true, partialFilterExpression: { referralCode: {$type: "string"} }})
 
 const User = mongoose.model('User',userSchema)
 
